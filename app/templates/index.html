@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" type= "text/css" href= "{{ url_for('static',filename='main.css') }}">
+    <title>GenePlexus</title>
+</head>
+    <body>
+       <header>
+          <div class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+            <a class="navbar-brand" href="#">Krishnan Lab GenePlexus</a>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <ul class="navbar-nav mr-auto">
+                    <li class="navbar-item active">
+                        <a class="nav-link" href="{{ url_for('index') }}">Home</a>
+                    </li>
+                    <li class="navbar-item active">
+                        <a class="nav-link"  href="{{ url_for('about') }}">About</a>
+                    </li>
+                </ul>
+            </div>
+          </div>
+        </header>
+       <div class="sidenav">
+            <form id="model-form" action="{{ url_for('index') }}" method="POST", enctype="multipart/form-data">
+                <div class="item-content">
+                   <span>
+                        <div>
+                            <br><br>
+                                <br>
+                                <input type="file"
+                                       name="input_genes"
+                                       accept="txt/csv"
+                                       />
+                        </div>
+                        <br><br>
+                        <div>
+                            <label>Network: </label>
+                            <br>
+                            {{ form.network }}
+                        </div>
+                        <br><br>
+                        <div>
+                            <label>Features: </label>
+                            <br>
+                            <div class="select">
+                                {{ form.features }}
+                            </div>
+                        </div>
+                        <br><br>
+                        <div>
+                            <label>Negative Class: </label>
+                            <br>
+                            <div class="select">
+                                {{ form.negativeclass }}
+                            </div>
+                        </div>
+                        <br><br>
+                        <div>
+                            <label>Cross Validation: </label>
+                            {{ form.crossvalidation }}
+                        </div>
+                        <br><br>
+                        <div>
+                            <input type="submit" class="select" value="Run Model" onclick="$('#divLoading').show();">
+                        </div>
+                   </span>
+                </div>
+            </form>
+       </div>
+        <div class="container">
+            <div class="fill_container">
+                <div id="divLoading">
+                    <div id="loading"><img src="{{ url_for('static', filename='loader.gif') }}"></div>
+                </div>
+                <h2>Welcome to GenePlexus</h2>
+            </div>
+        </div>
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    </body>
+</html>

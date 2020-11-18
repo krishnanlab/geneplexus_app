@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+    <div class="container">
+        <h1>This is the About page</h1>
+        <p>This is some text on the about page.</p>
+        <p><a href="{{ url_for('index') }}">Back</a></p>
+    </div>
+{% endblock %}
