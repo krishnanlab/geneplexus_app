@@ -113,8 +113,9 @@ def run_SL(pos_genes_in_net, negative_genes, net_genes, net_type, features, CV):
     return mdl_weights, probs, avgps
 
 
-def make_prob_df(net_genes, probs, pos_genes_in_net, negative_genes):
+def make_prob_df(net_genes,probs,pos_genes_in_net,negative_genes):
     Entrez_to_Symbol = load_dict('Entrez_to_Symbol')
+    Entrez_to_Name = load_dict('Entrez_to_Name')
     prob_results = []
     for idx in range(len(net_genes)):
         if net_genes[idx] in pos_genes_in_net:
@@ -124,41 +125,48 @@ def make_prob_df(net_genes, probs, pos_genes_in_net, negative_genes):
         else:
             class_label = 'U'
         try:
-            syms_tmp = '/'.join(Entrez_to_Symbol[net_genes[idx]])  # allows for multimapping
+            syms_tmp = '/'.join(Entrez_to_Symbol[net_genes[idx]]) #allows for multimapping
         except KeyError:
             syms_tmp = 'N/A'
-        prob_results.append([net_genes[idx], syms_tmp, probs[idx], class_label])
-    df_probs = pd.DataFrame(prob_results, columns=['Entrez', 'Symbol', 'Probability', 'Class-Label'])
-    df_probs = df_probs.astype({'Entrez': str, 'Probability': float})
-    df_probs = df_probs.sort_values(by=['Probability'], ascending=False)
+        try:
+            name_tmp = '/'.join(Entrez_to_Name[net_genes[idx]]) #allows for multimapping
+        except KeyError:
+            name_tmp = 'N/A'
+        prob_results.append([net_genes[idx],syms_tmp,name_tmp,probs[idx],class_label])
+    df_probs = pd.DataFrame(prob_results,columns=['Entrez','Symbol','Name','Probability','Class-Label'])
+    df_probs = df_probs.astype({'Entrez':str,'Probability':float})
+    df_probs = df_probs.sort_values(by=['Probability'],ascending=False)
     return df_probs, Entrez_to_Symbol
 
 
-def make_sim_dfs(mdl_weights, GSC, net_type, features):
+def make_sim_dfs(mdl_weights,GSC,net_type,features):
     dfs_out = []
     for target_set in ['GO', 'DisGeNet']:
-        weights = load_dict('weights', net_type_=net_type, target_set_=target_set, features_=features)
-        order = load_txtfile('GSC_order', net_type_=net_type, target_set_=target_set)
-        cor_mat = load_npyfile('cor_mat', GSC_=GSC, target_set_=target_set, net_type_=net_type, features_=features)
-        add_row = np.zeros((1, len(order)))
+        weights_dict = load_dict('weights',net_type_=net_type,target_set_=target_set,features_=features)
+        if target_set == 'GO':
+            weights_dict_GO = weights_dict
+        if target_set == 'DisGeNet':
+            weights_dict_Dis = weights_dict
+        order = load_txtfile('GSC_order',net_type_=net_type,target_set_=target_set)
+        cor_mat = load_npyfile('cor_mat',GSC_=GSC,target_set_=target_set,net_type_=net_type,features_=features)
+        add_row = np.zeros((1,len(order)))
         for idx, aset in enumerate(order):
-            cos_sim = 1 - cosine(weights[aset]['Weights'], mdl_weights)
-            add_row[0, idx] = cos_sim
-        cor_mat = np.concatenate((cor_mat, add_row), axis=0)
-        last_row = cor_mat[-1, :]
+            cos_sim = 1 - cosine(weights_dict[aset]['Weights'],mdl_weights)
+            add_row[0,idx] = cos_sim
+        cor_mat = np.concatenate((cor_mat,add_row),axis=0)
+        last_row = cor_mat[-1,:]
         zq = np.maximum(0, (last_row - np.mean(last_row)) / np.std(last_row))
-        zs = np.maximum(0, (last_row - np.mean(cor_mat, axis=0)) / np.std(cor_mat, axis=0))
-        z = np.sqrt(zq ** 2 + zs ** 2)
+        zs = np.maximum(0, (last_row - np.mean(cor_mat,axis=0)) / np.std(cor_mat,axis=0))
+        z = np.sqrt(zq**2 + zs**2)
         results_tmp = []
-        for idx2, geneID_tmp in enumerate(order):
-            ID_tmp = geneID_tmp
-            Name_tmp = weights[geneID_tmp]['Name']
+        for idx2, termID_tmp in enumerate(order):
+            ID_tmp = termID_tmp
+            Name_tmp = weights_dict[termID_tmp]['Name']
             z_tmp = z[idx2]
-            results_tmp.append([ID_tmp, Name_tmp, z_tmp])
-        df_tmp = pd.DataFrame(results_tmp, columns=['ID', 'Name', 'Similarity']).sort_values(by=['Similarity'],
-                                                                                             ascending=False)
+            results_tmp.append([ID_tmp,Name_tmp,z_tmp])
+        df_tmp = pd.DataFrame(results_tmp,columns=['ID','Name','Similarity']).sort_values(by=['Similarity'],ascending=False)
         dfs_out.append(df_tmp)
-    return dfs_out[0], dfs_out[1]
+    return dfs_out[0], dfs_out[1], weights_dict_GO, weights_dict_Dis
 
 
 def make_small_edgelist(df_probs, net_type, Entrez_to_Symbol):
@@ -275,6 +283,12 @@ def load_dict(file_type, anIDtype_=None, GSC_=None, net_type_=None, target_set_=
         if file_loc == 'local':
             with open(f'{data_path}ID_conversion/Homo_sapiens_Entrez_to_Symbol_All-Mappings.pickle',
                       'rb') as handle:
+                output_dict = pickle.load(handle)
+        elif file_loc == 'cloud':
+            raise ValueError('cloud is not yet implemented')
+    elif file_type == 'Entrez_to_Name':
+        if file_loc == 'local':
+            with open(f'{data_path}ID_conversion/Homo_sapiens__Entrez-to-Name__All-Mappings.pickle','rb') as handle:
                 output_dict = pickle.load(handle)
         elif file_loc == 'cloud':
             raise ValueError('cloud is not yet implemented')

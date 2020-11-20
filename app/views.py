@@ -79,7 +79,7 @@ def index():
         mdl_weights, probs, avgps = models.run_SL(pos_genes_in_net, negative_genes, net_genes, net_type, features, CV)
         negative_genes = models.get_negatives(pos_genes_in_net, net_type, GSC)
         df_probs, Entrez_to_Symbol = models.make_prob_df(net_genes, probs, pos_genes_in_net, negative_genes)
-        df_GO, df_dis = models.make_sim_dfs(mdl_weights, GSC, net_type, features)  # both of these dfs will be displaed on the webserver
+        df_GO, df_dis, weights_dict_GO, weights_dict_Dis = models.make_sim_dfs(mdl_weights,GSC,net_type,features) # both of these dfs will be displaed on the webserver
         graph = models.make_small_edgelist(df_probs, net_type, Entrez_to_Symbol)
 
         tic1 = "{:.2f}".format(time.time()-tic)

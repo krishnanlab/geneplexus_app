@@ -5,18 +5,18 @@ $(document).ready( function () {
         fixedHeader: true,
         columnDefs: [
             {
-                targets: [0, 1],
+                targets: [0, 2],
                 className: "dt-left"
             },
             {
-                targets: [ 2 ],
+                targets: [ 3 ],
                 className: "dt-right",
                 render: function (data, type, full) {
                     return parseFloat(data).toFixed(2);
                 }
             },
             {
-                targets: [ 3 ],
+                targets: [ 4 ],
                 className: "dt-center"
             }
         ],
