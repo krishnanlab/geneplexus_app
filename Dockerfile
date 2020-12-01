@@ -2,7 +2,12 @@
 #
 FROM python:3.9
 
-ENV LANG=C.UTF-8 LC_ALL=C.UTF-8 PATH="/usr/local/bin:${PATH}" \
+ENV LC_ALL=en_US.UTF-8 \
+LANG=en_US.UTF-8 \
+LANGUAGE=en_US.UTF-8
+
+#ENV LANG=C.UTF-8 LC_ALL=C.UTF-8 
+ENV PATH="/usr/local/bin:${PATH}" \
 HOME_SITE="/home/site/wwwroot" \
 PORT=8000 \
 SSH_PORT=2222
@@ -15,15 +20,18 @@ EXPOSE 8000 2222
 # these may not be used depending on ENV config
 # then do what's needed to make azure app service ssh work
 RUN apt-get update \
-    && apt-get install -y  openssh-server tcptraceroute libxext6 libsm6 libxrender1 curl libglib2.0-0 \
+    && apt-get install -y  locales locales-all openssh-server tcptraceroute libxext6 libsm6 libxrender1 curl libglib2.0-0 \
        dialog wget bzip2 ca-certificates git \
     && apt-get clean \
+    && locale-gen en_US.UTF-8 \
     && mkdir -p /etc/ssh \ 
     && echo 'root:Docker!' | chpasswd \
     && echo "MSU ADS DataScience Flask Application for Azure App Service" > /etc/motd \
     && mkdir -p $HOME_SITE 
     # && echo "cd /home" >> /etc/bash.bashrc \
     # && mkdir -p $HOME_SITE/instance && mkdir -p $HOME_SITE/instance/uploads && mkdir -p $HOME_SITE/instance/downloads
+
+
 
 COPY ./azure/sshd_config /etc/ssh/
 
