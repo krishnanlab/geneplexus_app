@@ -1,6 +1,6 @@
 # DockerFile for geneplexus application
 #
-FROM python:3.8
+FROM python:3.9
 
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8 PATH="/usr/local/bin:${PATH}" \
 HOME_SITE="/home/site/wwwroot" \
