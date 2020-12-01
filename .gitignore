@@ -3,4 +3,7 @@ app/data_backend
 __pycache__/
 .env
 
+*.py[cod]
+*$py.class
+
 __pycache__
