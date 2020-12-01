@@ -29,10 +29,17 @@ using bash with an external data folder:
 ```bash
 export DATAFOLDER=/Volumes/hpchome/data_backend
 
-docker run -d --env-file .env -p 8000:8000 -v $(pwd):/home/site/wwwroot -v /Volumes/hpchome/data_backend:/home/site/wwwroot/app/data_backend    --name geneplexus_container geneplexus:latest`
+docker run -d  --env-file azure/.azenv -p 8000:8000 -v $(pwd):/home/site/wwwroot -v /Volumes/hpchome/data_backend:/home/site/wwwroot/app/data_backend   --name geneplexus_container geneplexus:latest
 ```
 
 Did it work?  `docker ps`
+
+Note The dockerfile starts the webserver automatically, which may make it difficult to debug.  To start a docker container with a bash shell in which you can manually start the webserver or flask shell for debugging, use this  run command (in the main code directory)
+
+```bash
+docker run -it  --env-file azure/.azenv -p 8000:8000 -v $(pwd):/home/site/wwwroot -v /Volumes/hpchome/data_backend:/home/site/wwwroot/app/data_backend  --entrypoint=""  geneplexus:latest bash
+```
+
 
 Browse http://localhost:8000    To log-in to the running container with bash: 
 
