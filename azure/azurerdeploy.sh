@@ -37,8 +37,11 @@
 
 az_set_vars ()
 {
+
     # variables
-    export IMAGE=geneplexus
+
+    # TODO introduce a department name here, and prefix other names with that, and use for the ACR
+    export IMAGE=geneplexus # TODO => rename to AZDOCKERIMAGE
     export PROJECT=krishnanlabgeneplexus
     export RG=ADS${PROJECT}Dev
 
@@ -46,6 +49,7 @@ az_set_vars ()
     # Uppercase characters are detected in the registry name. When using its server url in docker commands, to avoid authentication errors, use all lowercase.
 
     export ACR=${PROJECT}acr  # this could be better_named, or a department-wide ACR 
+
     export PLAN=${PROJECT}_serviceplan
     export APPNAME=geneplexus
     export AZLOCATION=northcentralus
@@ -56,7 +60,7 @@ az_set_vars ()
     # if you are testing a flask app dev server, change this to 5000
     # but don't use flask app dev server for production!
     export PORT=8000
-    export TAG=latest
+    export TAG=latest  # TODO => rename to AZDOCKERTAG
 }
 
 ### should check if $RG is a group and if not create it
@@ -122,27 +126,27 @@ az_create_webapp ()
     # also reads a local .azenv file
     # make an app,  and tell it about the registry
     az appservice plan create --name $PLAN --resource-group $RG --location $AZLOCATION --number-of-workers 2 --sku $AZ_SERVICE_PLAN_SKU --is-linux --tags "$AZTAGS"
-    # az webapp create --resource-group $RG --plan $PLAN --name $APPNAME --deployment-container-image-name $ACR.azurecr.io/$IMAGE:$TAG --tags "$AZTAGS"
 
-    #TODO this must be a function somewhere
-    export AZ_ACR_PW=$(az acr credential show --name $ACR -g $RG  --output tsv  --query="passwords[0]|value")
-
-    # example from azure docs
-    # az webapp create --name <app_name> --plan AppServiceLinuxDockerPlan --resource-group myResourceGroup \
-    # --deployment-container-image-name <acr_registry_name>.azurecr.io/<container_name:version>
-
-
-    az webapp create -g $RG -p $PLAN -n $APPNAME --tags "$AZTAGS" \
-            --deployment-container-image-name $ACR.azurecr.io/$IMAGE:$TAG  
-            # \
+    # commands to use a container registry that requires credentrials - not neeed for an ACR in the same subscription
+    # export AZ_ACR_PW=$(az acr credential show --name $ACR -g $RG  --output tsv  --query="passwords[0]|value")
+    # az webapp create -g $RG -p $PLAN -n $APPNAME --tags "$AZTAGS" \
+            # --deployment-container-image-name $ACR.azurecr.io/$IMAGE:$TAG  \
             # --docker-registry-server-user $ACR  \
             # --docker-registry-server-password $AZ_ACR_PW
+
+
+    # CLI to create web app using custom container from 'local' Azure container repository (ACR)
+    az webapp create -g $RG -p $PLAN -n $APPNAME --tags "$AZTAGS" \
+            --deployment-container-image-name $ACR.azurecr.io/$IMAGE:$TAG  
 
     # TODO: see how to use these for for CI/CD from gitlab
                 #  [--deployment-local-git]
                 #  [--deployment-source-branch]
                 #  [--deployment-source-url]
 
+    # Azure documentation say this is on by default, but that's a lie.  You must turn it on manually like this
+    # this allows the /home/site/wwwroot folder to be mounted into the custom container 
+    az webapp config appsettings set --resource-group $RG --name $APPNAME --settings WEBSITES_ENABLE_APP_SERVICE_STORAGE=true
 
     # note - setting the docker image from ACR in this way fails the log-in
     # use the method below to send a password 
@@ -162,7 +166,12 @@ az_create_webapp ()
             --application-logging  filesystem \
             --docker-container-logging filesystem \
             --level information
-    ## NEXT git push! 
+
+    ## NEXT 
+    # the dockerfile does not contain the app scripts, only software to run it
+    # use the portal to set your userid and password for "local git deploy",
+    # and portal to copy/paste the deployment git URL, 
+    # add that remote to your app repository and push
 
 }
 
@@ -184,6 +193,10 @@ az_build_container ()
     az acr build -t $IMAGE:$TAG -r $ACR .
 }
 
+az_app_set_container ()
+{
+   az webapp config container set --name $APPNAME --resource-group $RG --docker-custom-image-name ${ACR}.azurecr.io/$IMAGE:$TAG --docker-registry-server-url https://${ACR}.azurecr.io 
+}
 
 az_app_stage ()
 {
@@ -211,6 +224,7 @@ az_app_stage ()
     open http://${APPNAME}.azurewebsites.net/?x-ms-routing-name=${SLOTNAME}
 
 }
+
 
 az_app_set_production_container () 
 {
@@ -331,7 +345,7 @@ az_local_docker_teardown ()
 
 az_create_container_instance ()
 {
-# users the Aziure Containers Instances instead of App Service
+# users the Azure Containers Instances instead of App Service
 az container create -g $RG --name $APPNAME \
     --ports 80 443 8000 22 2222 --ip-address Public \
     --image $ACR.azurecr.io/$IMAGE:$TAG \
@@ -339,6 +353,69 @@ az container create -g $RG --name $APPNAME \
     --registry-password $(az acr credential show --name $ACR -g $RG  --output tsv  --query="passwords[0]|value") 
     #     --dns-name-label $APPNAME
 
+}
+
+#################
+# storage account 
+# this is used for mounting files to the web application to access large files
+# so that they do not go into the container itself or sit on the web app
+az_create_file_storage ()
+{
+
+export AZSTORAGESKU="Premium_LRS"
+export AZSTORAGENAME="${APPNAME}storage"
+export AZSHARENAME="${APPNAME}files"
+# cheaper options 
+# SKU=Standard_LRS
+az storage account create -g $RG --name $AZSTORAGENAME -l $AZLOCATION \
+    --sku $AZSTORAGESKU --kind FileStorage \
+    --tags $AZTAGS
+
+export AZSTORAGEKEY=$(az storage account keys list -g $RG -n $AZSTORAGENAME --query [0].value -o tsv)
+
+az storage share create --account-name  $AZSTORAGENAME --name $AZSHARENAME --account-key $AZSTORAGEKEY --enabled-protocol SMB 
+
+## to create the storage, the app needs an "identity"  
+
+AZAPPIDENTITY=$(az webapp identity assign --resource-group $RG --name $APPNAME --query principalId --output tsv)
+
+az webapp config storage-account add --resource-group $RG \
+    --name $APPNAME \
+    --custom-id $AZAPPIDENTITY \
+    --storage-type AzureFiles \
+    --share-name $AZSHARENAME \
+    --account-name $AZSTORAGENAME --access-key $AZSTORAGEKEY \
+    --mount-path /mnt
+
+az webapp config storage-account add --resource-group $RG \
+    --name $APPNAME \
+    --custom-id $AZAPPIDENTITY \
+    --storage-type AzureFiles \
+    --share-name $AZSHARENAME \
+    --account-name $AZSTORAGENAME --access-key $AZSTORAGEKEY \\
+}
+ 
+# todo fix this (it doesn't work)
+# see https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-files
+az_copy_hpcc_to_files ()
+{
+    SOURCEFOLDER=$1 
+    # TODO check that a source folder was sent!!!
+
+    AZSTORAGENAME="${APPNAME}storage"
+    AZSHARENAME="${APPNAME}files"
+
+    # for blob storage, doesn't work for Azure files
+    # AZSTORAGEKEY=$(az storage account keys list -g $RG -n $AZSTORAGENAME --query [0].value -o tsv)
+
+    # for azure files
+    # this assumes the identity was set
+    # TODO check if an identity is actually set, and if not, set one
+    AZAPPIDENTITY=$(az webapp identity show --resource-group $RG --name $APPNAME --query principalId --output tsv)
+    AZSTORAGEURL="https://${AZSTORAGENAME}.file.core.windows.net/${AZSHARENAME}?${AZSASTOKEN}"
+    
+    COPY_CMD="azcopy copy $SOURCEFOLDER $AZSTORAGEURL --recursive"
+    ssh hpcc $CMD
 }
 
 #############
@@ -436,7 +513,7 @@ az_set_app_hostname ()
 {
     # TODO check that an argument was set
 
-   if [[ -z "$1" ]]; then
+if [[ -z "$1" ]]; then
     "No     hostname provided, exiting"
 else  
     az webapp config hostname add \
