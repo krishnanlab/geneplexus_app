@@ -16,7 +16,10 @@ service ssh start
 # Get environment variables to show up in SSH session
 eval $(printenv | sed -n "s/^\([^=]\+\)=\(.*\)$/export \1=\2/p" | sed 's/"/\\\"/g' | sed '/=/s//="/' | sed 's/$/"/' >> /etc/profile)
 
-cd $HOME_SITE
+# cd $HOME_SITE
+
 # flask run -p 8000
-export GUNICORN_CMD_ARGS="--bind=0.0.0.0  --timeout 36000  --log-file /home/site/err.log --workers=2 --threads=4 --worker-class=gthread"
-gunicorn  --timeout 36000 --bind=0.0.0.0:8000 app:app
+# note: this env variable moved to Dockerfile, so that it may be overriddend with -e param during docker run
+# export GUNICORN_CMD_ARGS="--bind=0.0.0.0  --timeout 36000  --log-file /home/site/err.log --workers=2 --threads=4 --worker-class=gthread"
+
+gunicorn  --chdir $HOME_SITE --timeout 36000 --bind=0.0.0.0:8000 app:app
