@@ -7,7 +7,9 @@ var svg = d3.select("svg"),
 var g = svg.append('g')
     .attr("class", "everything");
 
-var radius = 30;
+// define scale variable and range for node sizing
+var nodescale = d3.scaleLinear().domain([0, .1]).range([1, 10])
+
 
 var items = [
     {
@@ -74,12 +76,12 @@ function initializeSimulation() {
 // values for all forces
 forceProperties = {
     center: {
-        x: 0.5,
-        y: 0.5
+        x: 0.4,
+        y: 0.4
     },
     charge: {
         enabled: true,
-        strength: -30,
+        strength: -1200,
         distanceMin: 1,
         distanceMax: 2000
     },
@@ -140,6 +142,55 @@ function initializeDisplay() {
 
     var menu = contextMenu().items('Entrez Lookup', 'Symbol Lookup');
 
+    var toggle = 0;
+    // functions for highlighting neighboring links
+    /*
+    const linkedByIndex = {};
+    dataset.links.forEach(d => {
+        linkedByIndex[`${d.source.index},${d.target.index}`] = 1;
+    });
+
+    function isConnected(a, b) {
+        return linkedByIndex[`${a.index},${b.index}`] || linkedByIndex[`${b.index},${a.index}`] || a.index === b.index;
+    }
+
+    function fade(opacity) {
+        return d => {
+          node.style('stroke-opacity', function (o) {
+            const thisOpacity = isConnected(d, o) ? 1 : opacity;
+            this.setAttribute('fill-opacity', thisOpacity);
+            return thisOpacity;
+          });
+
+          link.style('stroke-opacity', o => (o.source === d || o.target === d ? 1 : opacity));
+
+        };
+    }
+
+    // New fade functions
+    var linkedByIndex = {};
+    dataset.links.forEach(function(d) {
+      linkedByIndex[d.source.index + "," + d.target.index] = 1;
+    });
+
+    function isConnected(a, b) {
+        return linkedByIndex[a.index + "," + b.index] || linkedByIndex[b.index + "," + a.index] || a.index == b.index;
+    }
+
+    function fade(opacity) {
+        return function(d) {
+            node.style("stroke-opacity", function(o) {
+                thisOpacity = isConnected(d, o) ? 1 : opacity;
+                this.setAttribute('fill-opacity', thisOpacity);
+                return thisOpacity;
+            });
+
+            link.style("stroke-opacity", opacity).style("stroke-opacity", function(o) {
+                return o.source === d || o.target === d ? 1 : opacity;
+            });
+        };
+    }
+    */
     // set the data and properties of link lines
     link = g.append("g")
         .attr("class", "links")
@@ -147,7 +198,8 @@ function initializeDisplay() {
         .data(dataset.links)
         .enter().append("line")
         .style("stroke", "#ADA9A8")
-        .style("stroke-width", function(d) { return (d.weight*2); });
+        .style("stroke-width", function(d) { return (d.weight); })
+        //.on('mouseout.fade', fade(1));
 
 
     // set the data and properties of node circles
@@ -155,17 +207,25 @@ function initializeDisplay() {
         .attr("class", "nodes")
         .selectAll("circle")
         .data(dataset.nodes)
-        .enter().append("circle")
-        .attr("r", function(d){ return Math.exp(d.Probability)*10})
+        .enter()
+        // add note g element for each node here.
+        .append("g")
+        // position the g element like the circle element use to be.
+
+
+    node.append("circle")
+        .attr("r", function(d){return nodescale(d.Probability)})
+        //.attr("r", function(d){ return Math.exp(d.Probability)*10})
         .attr("fill", function(d){return myColor(d.Class) })
         .on('mouseover', tool_tip.show)
+        //.on('mouseover.fade', fade(0.1))
         .on('mouseout', tool_tip.hide)
+  	    //.on('mouseout.fade', fade(1))
         .on('contextmenu', d3.contextmenu(items));
 
-    labels = node.append("text")
-        .text(function(d) { return d.Symbol; })
-        .attr('x', -6)
-        .attr('y', 0);
+    node.append("text")
+        .attr("text-anchor", "middle")
+        .text(function(d) { return d.Symbol; });
 
     //add drag capabilities
     var drag_handler = d3.drag()

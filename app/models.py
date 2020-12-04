@@ -54,7 +54,27 @@ def intial_ID_convert(input_genes):
                 elif idx == len(convert_types) - 1:
                     convert_out.append([agene, 'Could Not be mapped to Entrez'])
     df_convert_out = pd.DataFrame(convert_out, columns=['Original_ID', 'ID_converted_to_Entrez'])
+    df_convert_out = df_convert_out.astype({'Original_ID': str, 'ID_converted_to_Entrez': str})
     return convert_IDs, df_convert_out
+
+
+def make_validation_df(df_convert_out):
+    table_info = []
+    num_converted_to_Entrez = df_convert_out[~(df_convert_out['ID_converted_to_Entrez']=='Could Not be mapped to Entrez')].shape[0]
+    table_info.append('The number of input genes is %i'%df_convert_out.shape[0])
+    table_info.append('The number of input genes that could be converted to Entrez is %i'%num_converted_to_Entrez)
+    converted_genes = df_convert_out['ID_converted_to_Entrez'].to_numpy()
+    for anet in ['BioGRID','STRING','STRING-EXP','GIANT-TN']:
+        net_genes = load_txtfile('net_genes',net_type_=anet)
+        table_info.append('The number of genes in %s is %i'%(anet,len(net_genes)))
+        df_tmp = df_convert_out[df_convert_out['ID_converted_to_Entrez'].isin(net_genes)]
+        pos_genes_in_net = np.intersect1d(converted_genes,net_genes)
+        table_info.append('The number of input genes in %s is %i'%(anet,df_tmp.shape[0]))
+        table_info.append('The number of unique positive genes in %s is %i'%(anet,len(pos_genes_in_net)))
+        tmp_ins = np.full(len(converted_genes),'N',dtype=str)
+        tmp_ins[df_tmp.index.to_numpy()] = 'Y'
+        df_convert_out['In_%s?'%anet] = tmp_ins
+    return df_convert_out, table_info
 
 
 def get_genes_in_network(convert_IDs, net_type):

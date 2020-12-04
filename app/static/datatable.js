@@ -3,14 +3,27 @@ $(document).ready( function () {
         dom: '<"dom_wrapper fh-fixedHeader"Bf>tip',
         buttons: ['copy', 'excel', 'pdf' ],
         fixedHeader: true,
+        order: [[ 3, "desc" ]],
         columnDefs: [
             {
-                targets: [0, 2],
-                className: "dt-left"
+                targets: [0],
+                className: "dt-left",
+                render: function (data, type, row, meta) {
+                    if(type === 'display') {
+                        data = '<a target="_blank" href="https://www.ncbi.nlm.nih.gov/gene/' + encodeURIComponent(data) + '">' + data + '</a>';
+                    }
+                    return data;
+                }
+
+            },
+            {
+                targets: [1, 2]
             },
             {
                 targets: [ 3 ],
                 className: "dt-right",
+                defaultOrder: true,
+                sortOrder: 'desc',
                 render: function (data, type, full) {
                     return parseFloat(data).toFixed(2);
                 }
@@ -26,26 +39,43 @@ $(document).ready( function () {
         }
     });
 
-    var probstable = $('#probstable').DataTable();
-
-    $('#probstable tbody').on('click', 'tr', function () {
-        var data = probstable.row( this ).data();
-        alert( 'You clicked on Entrez '+data[0]+'\'s row' );
-    });
-
-
     $('#gotable').DataTable({
+        responsive: {
+            details: {
+                display: $.fn.dataTable.Responsive.display.modal( {
+                    header: function ( row ) {
+                        var data = row.data();
+                        return 'Details for '+data[0]+' '+data[1];
+                    }
+                } ),
+                renderer: $.fn.dataTable.Responsive.renderer.tableAll({
+                    tableClass: 'table'
+                })
+            }
+        },
         dom: '<"dom_wrapper fh-fixedHeader"Bf>tip',
         buttons: ['copy', 'excel', 'pdf' ],
         fixedHeader: true,
+        order: [[ 2, "desc" ]],
         columnDefs: [
             {
-                targets: [0, 1],
-                className: "dt-left"
+                responsivePriority: 1,
+                targets: [0],
+                className: "dt-left all",
+                render: function (data, type, row, meta) {
+                    if(type === 'display') {
+                        data = '<a target="_blank" href="http://amigo.geneontology.org/amigo/term/' + encodeURIComponent(data) + '">' + data + '</a>';
+                    }
+                    return data;
+                }
+            },
+            {
+                targets: [1],
+                className: "dt-left all"
             },
             {
                 targets: [2],
-                className: "dt-right"
+                className: "dt-right all"
             }
         ],
         pagingType: "full_numbers",
@@ -58,6 +88,38 @@ $(document).ready( function () {
         dom: '<"dom_wrapper fh-fixedHeader"Bf>tip',
         buttons: ['copy', 'excel', 'pdf' ],
         fixedHeader: true,
+        order: [[ 2, "desc" ]],
+        columnDefs: [
+            {
+                targets: [0],
+                className: "dt-left",
+                render: function (data, type, row, meta) {
+                    if(type === 'display') {
+                        data = '<a target="_blank" href="https://disease-ontology.org/?id=' + encodeURIComponent(data) + '">' + data + '</a>';
+                    }
+                    return data;
+                }
+            },
+            {
+                targets: [1],
+                className: "dt-left"
+            },
+            {
+                targets: [2],
+                className: "dt-right"
+            }
+        ],
+        pagingType: "full_numbers",
+        initComplete: function(){
+            $("#distable").show();
+        }
+    });
+
+
+    $('#validatetable').DataTable({
+        dom: '<"dom_wrapper fh-fixedHeader"Bf>tip',
+        buttons: ['copy', 'excel', 'pdf' ],
+        fixedHeader: true,
         columnDefs: [
             {
                 targets: [0, 1],
@@ -70,7 +132,7 @@ $(document).ready( function () {
         ],
         pagingType: "full_numbers",
         initComplete: function(){
-            $("#distable").show();
+            $("#validatetable").show();
         }
     });
 } );
