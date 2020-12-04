@@ -1,6 +1,5 @@
 body {
   margin: 0;
-  padding: 0;
   width: 100%;
   display: flex;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -49,6 +48,14 @@ div.fill_container {
   height: 100%;
 }
 
+
+.fieldset{
+    background-color: #fbfbfb;
+}
+
+.btn-sm{
+    width: 150px;
+}
 
 #loading {
   position: absolute;
@@ -117,7 +124,7 @@ div.input-item-content{
     float: left;
 }
 
-#model_time{
+.box_padding{
     padding: 10px;
 }
 
@@ -149,5 +156,9 @@ div.dom_wrapper {
 }
 
 #distable {
+    display: none;
+}
+
+#validatetable {
     display: none;
 }

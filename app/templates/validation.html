@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.6.4/css/buttons.bootstrap4.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.6/css/responsive.dataTables.min.css">
+    <script src="https://kit.fontawesome.com/e6f3faaa40.js" crossorigin="anonymous"></script>
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='main.css') }}">
+    <title>GenePlexus</title>
+</head>
+    <body>
+       <header>
+          <div class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+            <a class="navbar-brand" href="#">Krishnan Lab GenePlexus</a>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <ul class="navbar-nav mr-auto">
+                    <li class="navbar-item active">
+                        <a class="nav-link" href="{{ url_for('index') }}">Home</a>
+                    </li>
+                    <li class="navbar-item active">
+                        <a class="nav-link"  href="{{ url_for('about') }}">About</a>
+                    </li>
+                </ul>
+            </div>
+          </div>
+        </header>
+       <div class="sidenav">
+            <form id="model-form" action="{{ url_for('index') }}" method="POST", enctype="multipart/form-data">
+                <div class="item-content">
+                   <span>
+                       <br>
+                       <fieldset class="border box_padding fieldset">
+                           <label>
+                               1. Upload File of Genes
+                           </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                                  data-content="Upload a file of Gene Ids.  File can a be delimited by
+                                  comma, tab or a newline"><i class="fas fa-question-circle"></i></a>
+                           <div>
+                                <div class="box_padding">
+                                    <input class=" btn btn-sm"
+                                           type="file"
+                                           name="input_genes"
+                                           accept="txt/csv"
+                                           />
+                                </div>
+                           </div>
+                           <br>
+                           <label>
+                               2. Validate gene file
+                           </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                                  data-content="Before the model can be run, validate the gene file against all network
+                                   to ensure enough data for meaningful results"><i class="fas fa-question-circle"></i></a>
+                            <div class="col text-center">
+                                <input type="submit" disabled name="submit_button" class="btn btn-sm border dark" value="Validate File" onclick="$('#divLoading').show();">
+                            </div>
+                           <br>
+                           <label>
+                               3. Review Results
+                           </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                                  data-content="Review the validation results"><i class="fas fa-question-circle"></i></a>
+                       </fieldset>
+                       <br>
+                       <fieldset class="border box_padding fieldset">
+                           <label>
+                               4. Job Name
+                           </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                                  data-content="A job name must be supplied so that the output can be picked up after
+                                    the model has run."><i class="fas fa-question-circle"></i></a>
+                           <div>
+                            {{ form.job }}
+                           </div>
+                           <br>
+                           <label>
+                               5. Select a Network
+                           </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                                  data-content="Once a file has been validated, the additional options become available.
+                                  select a network to use"><i class="fas fa-question-circle"></i></a>
+                           <div>
+                            {{ form.network }}
+                           </div>
+                           <br>
+                           <label>
+                               6. Select feature
+                           </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                              data-content="Select the feature"><i class="fas fa-question-circle"></i></a>
+                           <div class="select">
+                                {{ form.features }}
+                            </div>
+                            <br>
+                           <label>
+                               7. Select a Negative Class
+                           </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                              data-content="Select the Negative Class"><i class="fas fa-question-circle"></i></a>
+                            <div class="select">
+                                {{ form.negativeclass }}
+                            </div>
+                            <br>
+                           <label>
+                               8. Cross Validation
+                           </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                              data-content="Check to do Cross-Validation"><i class="fas fa-question-circle"></i></a>
+                            {{ form.crossvalidation }}
+                            <div>
+                                <input type="submit" name="submit_button" class="select" value="Run Model" onclick="$('#divLoading').show();">
+                            </div>
+                       </fieldset>
+                   </span>
+                </div>
+            </form>
+       </div>
+        <div class="container">
+            <div class="border border-dark">
+                <div class="box_padding">
+                    <b>File Summary</b><br>
+                    <div class="row">
+                        <div class="col-xs-6 text-left col-sm-6">
+                            {{( table_info[0] )}}<br>
+                            {{( table_info[1] )}}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-6 text-left col-sm-6">
+                            {{( table_info[2] )}}<br>
+                            {{( table_info[3] )}}<br>
+                            {{( table_info[4] )}}<br>
+                        </div>
+                        <div class="col-xs-6 text-left col-sm-6">
+                            {{( table_info[5] )}}<br>
+                            {{( table_info[6] )}}<br>
+                            {{( table_info[7] )}}<br>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-6 text-left col-sm-6">
+                            {{( table_info[8] )}}<br>
+                            {{( table_info[9] )}}<br>
+                            {{( table_info[10] )}}<br>
+                        </div>
+                        <div class="col-xs-6 text-left col-sm-6">
+                            {{( table_info[11] )}}<br>
+                            {{( table_info[12] )}}<br>
+                            {{( table_info[13] )}}<br>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {{ validate_table|safe }}
+            <div class="fill_container">
+                <div id="divLoading">
+                    <div id="loading"><img src="{{ url_for('static', filename='loader.gif') }}"></div>
+                </div>
+            </div>
+        </div>
+        <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+        <!--<script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>-->
+        <script src="https://cdn.datatables.net/v/dt/dt-1.10.22/datatables.min.js"></script>
+        <script src="https://cdn.datatables.net/1.10.22/js/dataTables.bootstrap.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/1.6.4/js/dataTables.buttons.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/1.6.4/js/buttons.bootstrap4.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+        <script src="https://cdn.datatables.net/buttons/1.6.4/js/buttons.html5.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/1.6.4/js/buttons.print.min.js"></script>
+        <script src="https://cdn.datatables.net/responsive/2.2.6/js/dataTables.responsive.min.js"></script>
+        <script src="https://cdn.datatables.net/responsive/2.2.6/js/responsive.bootstrap.min.js"></script>
+        <script src="https://d3js.org/d3.v4.min.js"></script>
+        <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+        <script src="{{url_for('static', filename='datatable.js')}}"></script>
+        <script src="{{url_for('static', filename='validation.js')}}"></script>
+    </body>
+</html>

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://kit.fontawesome.com/e6f3faaa40.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" type= "text/css" href= "{{ url_for('static',filename='main.css') }}">
     <title>GenePlexus</title>
 </head>
@@ -26,59 +27,57 @@
             <form id="model-form" action="{{ url_for('index') }}" method="POST", enctype="multipart/form-data">
                 <div class="item-content">
                    <span>
-                        <div>
-                            <br><br>
-                                <br>
-                                <input type="file"
-                                       name="input_genes"
-                                       accept="txt/csv"
-                                       />
-                        </div>
-                        <br><br>
-                        <div>
-                            <label>Network: </label>
-                            <br>
-                            {{ form.network }}
-                        </div>
-                        <br><br>
-                        <div>
-                            <label>Features: </label>
-                            <br>
-                            <div class="select">
-                                {{ form.features }}
+                       <br>
+                       <fieldset class="border box_padding fieldset">
+                           <label>
+                               1. Upload File of Genes
+                           </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                                  data-content="Upload a file of Gene Ids.  File can a be delimited by
+                                  comma, tab or a newline"><i class="fas fa-question-circle"></i></a>
+                           <div>
+                                <div class="box_padding">
+                                    <input class=" btn btn-sm"
+                                           type="file"
+                                           name="input_genes"
+                                           accept="txt/csv"
+                                           />
+                                </div>
+                           </div>
+                           <br>
+                           <label>
+                               2. Validate gene file
+                           </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                                  data-content="Before the model can be run, validate the gene file against all network
+                                   to ensure enough data for meaningful results"><i class="fas fa-question-circle"></i></a>
+                            <div class="col text-center">
+                                <input type="submit" disabled name="submit_button" class="btn btn-sm border dark" value="Validate File" onclick="$('#divLoading').show();">
                             </div>
-                        </div>
-                        <br><br>
-                        <div>
-                            <label>Negative Class: </label>
-                            <br>
-                            <div class="select">
-                                {{ form.negativeclass }}
-                            </div>
-                        </div>
-                        <br><br>
-                        <div>
-                            <label>Cross Validation: </label>
-                            {{ form.crossvalidation }}
-                        </div>
-                        <br><br>
-                        <div>
-                            <input type="submit" class="select" value="Run Model" onclick="$('#divLoading').show();">
-                        </div>
+                           <br>
+                           <label>
+                               3. Review Results
+                           </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                                  data-content="Review the validation results"><i class="fas fa-question-circle"></i></a>
+                       </fieldset>
                    </span>
                 </div>
             </form>
        </div>
         <div class="container">
+            <div class="border border-dark">
+                <div class="box_padding">
+                    <h2>Welcome to GenePlexus</h2>
+                </div>
+            </div>
+
             <div class="fill_container">
                 <div id="divLoading">
                     <div id="loading"><img src="{{ url_for('static', filename='loader.gif') }}"></div>
                 </div>
-                <h2>Welcome to GenePlexus</h2>
             </div>
         </div>
-        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+        <script src="{{url_for('static', filename='index.js')}}"></script>
     </body>
 </html>
