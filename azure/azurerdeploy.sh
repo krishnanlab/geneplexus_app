@@ -370,6 +370,7 @@ az storage account create -g $RG --name $AZSTORAGENAME -l $AZLOCATION \
     --sku $AZSTORAGESKU --kind BlobStorage \
     --tags $AZTAGS
 }
+
 az_create_file_storage ()
 {
 
@@ -406,7 +407,6 @@ az webapp config storage-account add --resource-group $RG \
     --account-name $AZSTORAGENAME --access-key $AZSTORAGEKEY \\
 }
  
-
 # todo fix this (it doesn't work)
 # see https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-files
 az_copy_hpcc_to_files ()
