@@ -40,8 +40,13 @@ def index():
 
         # Make a new list that has the IDs converted to ENSG
         # NOTE: This should be moved to the models file
-        with open('./app/data_backend/ID_conversion/Homo_sapiens_Entrez_to_ENSG_All-Mappings.pickle', 'rb') as handle:
+        
+        with open(app.config.get('DATA_PATH') + '/ID_conversion/Homo_sapiens_Entrez_to_ENSG_All-Mappings.pickle', 'rb') as handle:
             convert_tmp = pickle.load(handle)
+
+        #with open('./app/data_backend/ID_conversion/Homo_sapiens_Entrez_to_ENSG_All-Mappings.pickle', 'rb') as handle:
+        #    convert_tmp = pickle.load(handle)
+
         input_genes_ENSG = []
         for agene in input_genes_Entrez:
             if agene in convert_tmp:
