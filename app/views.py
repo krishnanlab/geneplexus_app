@@ -36,6 +36,8 @@ def index():
         GSC = form.negativeclass.data
         CV = form.crossvalidation.data
 
+        jobname = form.job.data
+
         tic = time.time()
 
         # Make a new list that has the IDs converted to ENSG
@@ -56,22 +58,39 @@ def index():
         convert_IDs, df_convert_out = models.intial_ID_convert(input_genes_ENSG)
 
         if request.form['submit_button'] == 'Validate File':
+            app.logger.info('validate button')
+
             df_convert_out, table_info = models.make_validation_df(df_convert_out)
             return render_template("validation.html", form=form, table_info=table_info,
                                            validate_table=df_convert_out.to_html(index=False, classes='table table-striped table-bordered" id = "validatetable'))
 
         elif request.form['submit_button'] == 'Run Model':
+
+            app.logger.info('running model, jobname %s', jobname )
+
+            app.logger.info('1. get_genese_in_network')
             pos_genes_in_net, genes_not_in_net, net_genes = models.get_genes_in_network(convert_IDs,
                                                                                         net_type)  # genes_not_in_net could be an output file
+            app.logger.info('2. get_negatives')                                                                            
             negative_genes = models.get_negatives(pos_genes_in_net, net_type, GSC)
+
+            app.logger.info('3. run_SL... features=%s, CV=%s', features, CV)
             mdl_weights, probs, avgps = models.run_SL(pos_genes_in_net, negative_genes, net_genes, net_type, features, CV)
+
+            app.logger.info('4. get_negatives...')
             negative_genes = models.get_negatives(pos_genes_in_net, net_type, GSC)
+
+            app.logger.info('5. make_prob_df...')
             df_probs, Entrez_to_Symbol = models.make_prob_df(net_genes, probs, pos_genes_in_net, negative_genes)
+
+            app.logger.info('6. make_sim_dfs...')
             df_GO, df_dis, weights_dict_GO, weights_dict_Dis = models.make_sim_dfs(mdl_weights,GSC,net_type,features) # both of these dfs will be displaed on the webserver
+
+            app.logger.info('7. make_small_edgelist...')
             graph = models.make_small_edgelist(df_probs, net_type, Entrez_to_Symbol)
 
             tic1 = "{:.2f}".format(time.time()-tic)
-
+            app.logger.info('model complete, rendering template')
             return render_template("results.html", tic1=tic1, form=form, graph=graph,
                                    probs_table=df_probs.to_html(index=False, classes='table table-striped table-bordered" id = "probstable'),
                                    go_table=df_GO.to_html(index=False, classes='table table-striped table-bordered nowrap" style="width: 100%;" id = "gotable'),
