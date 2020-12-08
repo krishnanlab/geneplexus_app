@@ -195,7 +195,12 @@ az_build_container ()
 
 az_app_set_container ()
 {
-   az webapp config container set --name $APPNAME --resource-group $RG --docker-custom-image-name ${ACR}.azurecr.io/$IMAGE:$TAG --docker-registry-server-url https://${ACR}.azurecr.io 
+   az webapp config container set --name $APPNAME --resource-group $RG --docker-custom-image-name ${ACR}.azurecr.io/$IMAGE:$TAG --docker-registry-server-url https://${ACR}.azurecr.io
+   # this setting gets set to false sometimes, so set to true AGAIN here 
+   az webapp config appsettings set --resource-group $RG --name $APPNAME --settings WEBSITES_ENABLE_APP_SERVICE_STORAGE=true
+   # is manual restart needed, or is it auto-restarted when config is changed?
+   az_app_restart
+
 }
 
 az_app_stage ()
