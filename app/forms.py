@@ -6,7 +6,7 @@ class IndexForm(FlaskForm):
 
     networks = [
         ('BioGRID','BioGRID'),
-        ('GIANT','GIANT'),
+        ('GIANT-TN','GIANT-TN'),
         ('STRING','STRING'),
         ('STRING-EXP','STRING-EXP')
     ]
