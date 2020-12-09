@@ -100,7 +100,7 @@ def get_negatives(pos_genes_in_net, net_type, GSC):
     return negative_genes
 
 
-def run_SL(pos_genes_in_net, negative_genes, net_genes, net_type, features, CV):
+def run_SL(pos_genes_in_net, negative_genes, net_genes, net_type, features):
     pos_inds = [np.where(net_genes == agene)[0][0] for agene in pos_genes_in_net]
     neg_inds = [np.where(net_genes == agene)[0][0] for agene in negative_genes]
     data = load_npyfile('data', features_=features, net_type_=net_type)
@@ -114,23 +114,23 @@ def run_SL(pos_genes_in_net, negative_genes, net_genes, net_type, features, CV):
     mdl_weights = np.squeeze(clf.coef_)
     probs = clf.predict_proba(data)[:, 1]
 
-    avgps = []
-    n_folds = 5
-    if CV == True:  # add something here if number of positives is less than the folds
-        if len(pos_genes_in_net) < n_folds:
-            pass
-        else:
-            skf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=None)
-            for trn_inds, tst_inds in skf.split(Xdata, ydata):
-                clf_cv = LogisticRegression(max_iter=10000, solver='lbfgs', penalty='l2', C=1.0)
-                clf_cv.fit(Xdata[trn_inds], ydata[trn_inds])
-                probs_cv = clf_cv.predict_proba(Xdata[tst_inds])[:, 1]
-                avgp = average_precision_score(ydata[tst_inds], probs_cv)
-                num_tst_pos = np.sum(ydata[tst_inds])
-                prior = num_tst_pos / Xdata[tst_inds].shape[0]
-                log2_prior = np.log2(avgp / prior)
-                avgps.append(log2_prior)
-    return mdl_weights, probs, avgps
+    if len(pos_genes_in_net) < 20:
+        avgp = 'Not enough positive genes'
+    else:
+        avgps = []
+        n_folds = 5
+        skf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=None)
+        for trn_inds, tst_inds in skf.split(Xdata, ydata):
+            clf_cv = LogisticRegression(max_iter=10000, solver='lbfgs', penalty='l2', C=1.0)
+            clf_cv.fit(Xdata[trn_inds], ydata[trn_inds])
+            probs_cv = clf_cv.predict_proba(Xdata[tst_inds])[:, 1]
+            avgp = average_precision_score(ydata[tst_inds], probs_cv)
+            num_tst_pos = np.sum(ydata[tst_inds])
+            prior = num_tst_pos / Xdata[tst_inds].shape[0]
+            log2_prior = np.log2(avgp / prior)
+            avgps.append(log2_prior)
+        avgp = np.median(avgps)
+    return mdl_weights, probs, avgp
 
 
 def make_prob_df(net_genes,probs,pos_genes_in_net,negative_genes):
@@ -214,8 +214,9 @@ def make_small_edgelist(df_probs, net_type, Entrez_to_Symbol):
             syms_tmp = 'N/A'
         isolated_genes_sym.append(syms_tmp)
 
-    #THE FOLLOWING LINES ARE ADDITIONAL TO THE ORIGINAL
-    #GENE PLEXUS BACKEND
+    return df_edge, isolated_genes, df_edge_sym, isolated_genes_sym
+
+def make_graph(df_edge, df_probs):
     df_edge.fillna(0)
     df_edge.columns = ['source', 'target', 'weight']
     nodes = df_probs[0:max_num_genes]
