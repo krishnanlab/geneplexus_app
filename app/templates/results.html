@@ -27,6 +27,13 @@
                     <li class="navbar-item active">
                         <a class="nav-link"  href="{{ url_for('about') }}">About</a>
                     </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Jobs </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                                <li><a class="dropdown-item" href="#">job #1</a></li>
+                                <li><a class="dropdown-item" href="#">job #2</a></li>
+                            </ul>
+                    </li>
                 </ul>
             </div>
           </div>
@@ -35,9 +42,14 @@
             <div class="border border-dark">
                 <div class="box_padding">
                     <div class="row">
-                        <div class="col-xs-4 text-left col-sm-4">
+                        <div class="col-2 d-flex">
+                            <a class="btn btn-secondary border dark" href="{{ url_for('index') }}" role="button">Re-run Analysis</a>
+                        </div>
+                        <div class="col-4">
                             <b>Model Generation took: {{( tic1 )}} seconds</b><br>
                         </div>
+                    </div>
+                    <div class="row">
                         <div class="col-xs-2 text-left col-sm-2">
                             <b>Parameters:</b>
                         </div>
@@ -51,7 +63,7 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-xs-6 col-sm-6"></div>
+                        <div class="col-xs-2 col-sm-2"></div>
                         <div class="col-xs-6 col-sm-6">
                             <label>Cross Validation:&nbsp</label>{{( avgps )}}<br>
                         </div>
@@ -74,6 +86,9 @@
                     <li class="nav-item">
                         <a href="#netgraph" class="nav-link text-dark" data-toggle="tab">Network graph</a>
                     </li>
+                    <li class="nav-item">
+                        <a href="#validation" class="nav-link text-dark" data-toggle="tab">Validation Data</a>
+                    </li>
                 </ul>
 
                   <!-- Tab panes -->
@@ -94,8 +109,35 @@
                         <svg width="1080" height="600" id="graph"></svg>
                         <canvas hidden width="1080" height="600" id="canvas"></canvas>
                     </div>
-
-                </div>
+                    <div class="tab-pane fade" id="validation">
+                        <div class="table_container">
+                            <div class="border border-dark">
+                                <div class="box_padding">
+                                    <b>File Summary</b><br>
+                                    <div class="row">
+                                        <div class="col-xs-6 text-left col-sm-6">
+                                            {{( table_info[0] )}}<br>
+                                            {{( table_info[1] )}}
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-xs-6 text-left col-sm-6">
+                                            {{( table_info[2] )}}<br>
+                                            {{( table_info[3] )}}<br>
+                                            {{( table_info[4] )}}<br>
+                                        </div>
+                                        <div class="col-xs-6 text-left col-sm-6">
+                                            {{( table_info[5] )}}<br>
+                                            {{( table_info[6] )}}<br>
+                                            {{( table_info[7] )}}<br>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {{ validate_table|safe }}
+                            </div>
+                        </div>
+                    </div>
                 <div class="fill_container">
                     <div id="divLoading">
                         <div id="loading"><img src="{{ url_for('static', filename='loader.gif') }}"></div>

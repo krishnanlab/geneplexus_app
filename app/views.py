@@ -43,29 +43,37 @@ def run_model():
         # run all the components of the model and pass to the results form
         convert_IDs, df_convert_out = models.intial_ID_convert(input_genes)
 
+        '''
         if request.form['submit_button'] == 'Validate File':
             app.logger.info('validate button')
 
-            df_convert_out, table_info = models.make_validation_df(df_convert_out)
             return render_template("validation.html", form=form, table_info=table_info,
                                            validate_table=df_convert_out.to_html(index=False, classes='table table-striped table-bordered" id = "validatetable'))
-
-        elif request.form['submit_button'] == 'Run Model':
+        '''
+        if request.form['submit_button'] == 'Run Model':
             app.logger.info('running model, jobname %s', jobname)
 
             tic = time.time()
+            df_convert_out, table_info = models.make_validation_df(df_convert_out)
+            df_convert_out_subset, table_info_subset = models.alter_validation_df(df_convert_out,table_info,net_type)
             graph, df_probs, df_GO, df_dis, avgps = models.run_model(convert_IDs, net_type, GSC, features)
             tic1 = "{:.2f}".format(time.time() - tic)
 
             app.logger.info('model complete, rendering template')
-            models.make_template(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis, graph)
+            models.make_template(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis, df_convert_out_subset, table_info_subset, graph)
 
             session.clear()
 
-            return render_template("results.html", tic1=tic1, form=form, graph=graph, avgps=avgps,
-                                   probs_table=df_probs.to_html(index=False, classes='table table-striped table-bordered" id = "probstable'),
-                                   go_table=df_GO.to_html(index=False, classes='table table-striped table-bordered nowrap" style="width: 100%;" id = "gotable'),
-                                   dis_table=df_dis.to_html(index=False, classes='table table-striped table-bordered" id = "distable'))
+            return render_template("results.html", tic1=tic1, form=form, graph=graph, avgps=avgps, table_info=table_info_subset,
+                                   probs_table=df_probs.to_html(index=False,
+                                                                classes='table table-striped table-bordered" id = "probstable'),
+                                   go_table=df_GO.to_html(index=False,
+                                                          classes='table table-striped table-bordered nowrap" style="width: 100%;" id = "gotable'),
+                                   dis_table=df_dis.to_html(index=False,
+                                                            classes='table table-striped table-bordered" id = "distable'),
+                                   validate_table = df_convert_out_subset.to_html(index=False,
+                                                    classes='table table-striped table-bordered" id = "validatetable')
+                                   )
 
 
 
