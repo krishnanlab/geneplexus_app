@@ -7,10 +7,11 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import average_precision_score
 from scipy.spatial.distance import cosine
+# 
 from app import app
 from jinja2 import Environment, FileSystemLoader
 import os
-from config import ProdConfig, DevConfig
+# from config import ProdConfig, DevConfig
 
 '''
 # FROM FLASK Configuration documentation.  Seems unnecessarily complicated.
@@ -242,30 +243,30 @@ def make_graph(df_edge, df_probs):
 
     return graph
 
-def run_model(convert_IDs, net_type, GSC, features):
+def run_model(convert_IDs, net_type, GSC, features, logger = app.logger):
 
-    app.logger.info('1. get_genese_in_network')
+    logger.info('1. get_genese_in_network')
     pos_genes_in_net, genes_not_in_net, net_genes = get_genes_in_network(convert_IDs,
                                                                                 net_type)  # genes_not_in_net could be an output file
-    app.logger.info('2. get_negatives')
+    logger.info('2. get_negatives')
     negative_genes = get_negatives(pos_genes_in_net, net_type, GSC)
 
-    app.logger.info('3. run_SL... features=%s, features')
+    logger.info('3. run_SL... features=%s, features')
     mdl_weights, probs, avgps = run_SL(pos_genes_in_net, negative_genes, net_genes, net_type, features)
 
-    app.logger.info('4. get_negatives...')
+    logger.info('4. get_negatives...')
     negative_genes = get_negatives(pos_genes_in_net, net_type, GSC)
 
-    app.logger.info('5. make_prob_df...')
+    logger.info('5. make_prob_df...')
     df_probs, Entrez_to_Symbol = make_prob_df(net_genes, probs, pos_genes_in_net, negative_genes)
 
-    app.logger.info('6. make_sim_dfs...')
+    logger.info('6. make_sim_dfs...')
     df_GO, df_dis, weights_dict_GO, weights_dict_Dis = make_sim_dfs(mdl_weights, GSC, net_type,
                                                                            features)  # both of these dfs will be displaed on the webserver
-    app.logger.info('7. make_small_edgelist...')
+    logger.info('7. make_small_edgelist...')
     df_edge, isolated_genes, df_edge_sym, isolated_genes_sym = make_small_edgelist(df_probs, net_type,
                                                                                           Entrez_to_Symbol)
-    app.logger.info('8. make_graph...')
+    logger.info('8. make_graph...')
     graph = make_graph(df_edge, df_probs)
 
     return graph, df_probs, df_GO, df_dis, avgps
