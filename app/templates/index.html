@@ -19,12 +19,19 @@
                     <li class="navbar-item active">
                         <a class="nav-link"  href="{{ url_for('about') }}">About</a>
                     </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Jobs </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                                <li><a class="dropdown-item" href="#">job #1</a></li>
+                                <li><a class="dropdown-item" href="#">job #2</a></li>
+                            </ul>
+                    </li>
                 </ul>
             </div>
           </div>
         </header>
        <div class="sidenav">
-            <form id="model-form" action="{{ url_for('index') }}" method="POST", enctype="multipart/form-data">
+            <form id="model-form" action="{{ url_for('validate') }}" method="POST", enctype="multipart/form-data">
                 <div class="item-content">
                    <span>
                        <br>
@@ -32,8 +39,8 @@
                            <label>
                                1. Upload File of Genes
                            </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                                  data-content="Upload a file of Gene Ids.  File can a be delimited by
-                                  comma, tab or a newline"><i class="fas fa-question-circle"></i></a>
+                                  data-content="Upload a file of Gene Ids.  File must delimited by
+                                  a newline (i.e. each gene is on a separate line"><i class="fas fa-question-circle"></i></a>
                            <div>
                                 <div class="box_padding">
                                     <input class=" btn btn-sm"
@@ -41,6 +48,13 @@
                                            name="input_genes"
                                            accept="txt/csv"
                                            />
+                                </div>
+                           </div>
+                           <label>Or</label>
+                           <div class="box_padding">
+                                <div class="form-group">
+                                  <label for="enterGenes">Enter / Paste Genes</label>
+                                  <textarea class="form-control rounded-0" id="enterGenes" rows="10"></textarea>
                                 </div>
                            </div>
                            <br>
@@ -71,7 +85,7 @@
 
             <div class="fill_container">
                 <div id="divLoading">
-                    <div id="loading"><img src="{{ url_for('static', filename='loader.gif') }}"></div>
+                    <div id="loading" class="fa-5x"><i class="fas fa-spinner fa-spin"></i></div>
                 </div>
             </div>
         </div>

@@ -6,64 +6,33 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.6.4/css/buttons.bootstrap4.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.6/css/responsive.dataTables.min.css">
-    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='main.css') }}">
-    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='graph.css') }}">
-    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='d3-tip.css') }}">
+    <style>{{ main_css }}</style>
+    <style>{{ graph_css }}</style>
+    <style>{{ d3_tip_css }}</style>
     <title>GenePlexus</title>
     <script>
         var dataset = {{ graph | safe }}
-        console.log(dataset)
     </script>
 </head>
     <body>
-       <header>
-          <div class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
-            <a class="navbar-brand" href="#">Krishnan Lab GenePlexus</a>
-            <div class="collapse navbar-collapse" id="navbarCollapse">
-                <ul class="navbar-nav mr-auto">
-                    <li class="navbar-item active">
-                        <a class="nav-link" href="{{ url_for('index') }}">Home</a>
-                    </li>
-                    <li class="navbar-item active">
-                        <a class="nav-link"  href="{{ url_for('about') }}">About</a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Jobs </a>
-                            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                                <li><a class="dropdown-item" href="#">job #1</a></li>
-                                <li><a class="dropdown-item" href="#">job #2</a></li>
-                            </ul>
-                    </li>
-                </ul>
-            </div>
-          </div>
-        </header>
-        <div class="container">
+       <div class="container">
             <div class="border border-dark">
                 <div class="box_padding">
                     <div class="row">
-                        <div class="col-2 d-flex">
-                            <a class="btn btn-secondary border dark" href="{{ url_for('index') }}" role="button">Re-run Analysis</a>
-                        </div>
-                        <div class="col-4">
-                            <b>Model Generation took: {{( tic1 )}} seconds</b><br>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-xs-2 text-left col-sm-2">
+                        <div class="col-xs-3 text-left col-sm-3">
                             <b>Parameters:</b>
                         </div>
                         <div class="col-xs-3 text-left col-sm-3">
-                            <label>Job Name:&nbsp</label>{{( request.form['job'] )}}<br>
-                            <label>Network:&nbsp</label>{{( request.form['network'] )}}<br>
+                            <label>Job Name:&nbsp</label>{{( job )}}<br>
+                            <label>Network:&nbsp</label>{{( network )}}<br>
                         </div>
                         <div class="col-xs-3 text-left col-sm-3">
-                            <label>Features:&nbsp</label>{{( request.form['features'] )}}<br>
-                            <label>Negative Class:&nbsp</label>{{( request.form['negativeclass'] )}}<br>
+                            <label>Features:&nbsp</label>{{( features )}}<br>
+                            <label>Negative Class:&nbsp</label>{{( negativeclass )}}<br>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-xs-2 col-sm-2"></div>
+                        <div class="col-xs-3 col-sm-3"></div>
                         <div class="col-xs-6 col-sm-6">
                             <label>Cross Validation:&nbsp</label>{{( avgps )}}<br>
                         </div>
@@ -105,7 +74,6 @@
                         {{ dis_table|safe }}
                     </div>
                     <div class="tab-pane fade" id="netgraph">
-
                         <svg width="1080" height="600" id="graph"></svg>
                         <canvas hidden width="1080" height="600" id="canvas"></canvas>
                     </div>
@@ -138,10 +106,6 @@
                             </div>
                         </div>
                     </div>
-                <div class="fill_container">
-                    <div id="divLoading">
-                        <div id="loading"><img src="{{ url_for('static', filename='loader.gif') }}"></div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -162,9 +126,9 @@
         <script src="https://cdn.datatables.net/buttons/1.6.4/js/buttons.print.min.js"></script>
         <script src="https://d3js.org/d3.v4.min.js"></script>
         <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
-        <script src="{{url_for('static', filename='d3-v4-contextmenu.js')}}"></script>
-        <script src="{{url_for('static', filename='d3-tip.js')}}"></script>
-        <script src="{{url_for('static', filename='graph.js')}}"></script>
-        <script src="{{url_for('static', filename='datatable.js')}}"></script>
+         <script>{{ context_menu_js }}</script>
+         <script>{{ d3_tip_js }}</script>
+         <script>{{ graph_js }}</script>
+         <script>{{ datatable_js }}</script>
     </body>
 </html>

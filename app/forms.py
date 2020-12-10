@@ -1,9 +1,13 @@
 from flask_wtf import FlaskForm
 from wtforms.validators import DataRequired
-from wtforms import FileField, SelectField, BooleanField, StringField
+from wtforms import FileField, SelectField, StringField
 
 class IndexForm(FlaskForm):
+    pass
+    #genes = FileField('genes', validators=[DataRequired()])
 
+
+class ValidateForm(FlaskForm):
     networks = [
         ('BioGRID','BioGRID'),
         ('GIANT-TN','GIANT-TN'),
@@ -27,7 +31,3 @@ class IndexForm(FlaskForm):
     network = SelectField('network', choices=networks, default=None, validators=[DataRequired()])
     features = SelectField('features', choices=features, default=None, validators=[DataRequired()])
     negativeclass = SelectField('negativeclass', choices=negativeclass, default=None, validators=[DataRequired()])
-    crossvalidation = BooleanField('crossvalidation', default=False)
-
-class AboutForm(FlaskForm):
-    pass

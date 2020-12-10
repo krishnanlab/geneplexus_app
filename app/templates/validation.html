@@ -22,85 +22,95 @@
                     <li class="navbar-item active">
                         <a class="nav-link"  href="{{ url_for('about') }}">About</a>
                     </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Jobs </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                                <li><a class="dropdown-item" href="#">job #1</a></li>
+                                <li><a class="dropdown-item" href="#">job #2</a></li>
+                            </ul>
+                    </li>
                 </ul>
             </div>
           </div>
         </header>
        <div class="sidenav">
-            <form id="model-form" action="{{ url_for('index') }}" method="POST", enctype="multipart/form-data">
                 <div class="item-content">
                    <span>
                        <br>
-                       <fieldset class="border box_padding fieldset">
-                           <label>
-                               1. Upload File of Genes
-                           </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                                  data-content="Upload a file of Gene Ids.  File can a be delimited by
-                                  comma, tab or a newline"><i class="fas fa-question-circle"></i></a>
-                           <div>
-                                <div class="box_padding">
-                                    <input class=" btn btn-sm"
-                                           type="file"
-                                           name="input_genes"
-                                           accept="txt/csv"
-                                           />
+                       <form id="validate-form" action="{{ url_for('validate') }}" method="POST", enctype="multipart/form-data">
+                           <fieldset class="border box_padding fieldset">
+                               <label>
+                                   1. Upload File of Genes
+                               </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                                  data-content="Upload a file of Gene Ids.  File must delimited by
+                                  a newline (i.e. each gene is on a separate line"><i class="fas fa-question-circle"></i></a>
+                               <div>
+                                    <div class="box_padding">
+                                        <input class=" btn btn-sm"
+                                               type="file"
+                                               name="input_genes"
+                                               accept="txt/csv"
+                                               />
+                                    </div>
+                               </div>
+                               <br>
+                               <label>
+                                   2. Validate gene file
+                               </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                                      data-content="Before the model can be run, validate the gene file against all network
+                                       to ensure enough data for meaningful results"><i class="fas fa-question-circle"></i></a>
+                                <div class="col text-center">
+                                    <input type="submit" disabled name="submit_button" class="btn btn-sm border dark" value="Validate File" onclick="$('#divLoading').show();">
                                 </div>
-                           </div>
-                           <br>
-                           <label>
-                               2. Validate gene file
-                           </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                                  data-content="Before the model can be run, validate the gene file against all network
-                                   to ensure enough data for meaningful results"><i class="fas fa-question-circle"></i></a>
-                            <div class="col text-center">
-                                <input type="submit" disabled name="submit_button" class="btn btn-sm border dark" value="Validate File" onclick="$('#divLoading').show();">
-                            </div>
-                           <br>
-                           <label>
-                               3. Review Results
-                           </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                                  data-content="Review the validation results"><i class="fas fa-question-circle"></i></a>
-                       </fieldset>
+                               <br>
+                               <label>
+                                   3. Review Results
+                               </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                                      data-content="Review the validation results"><i class="fas fa-question-circle"></i></a>
+                           </fieldset>
+                       </form>
                        <br>
-                       <fieldset class="border box_padding fieldset">
-                           <label>
-                               4. Job Name
-                           </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                                  data-content="A job name must be supplied so that the output can be picked up after
-                                    the model has run."><i class="fas fa-question-circle"></i></a>
-                           <div>
-                            {{ form.job }}
-                           </div>
-                           <br>
-                           <label>
-                               5. Select a Network
-                           </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                                  data-content="Once a file has been validated, the additional options become available.
-                                  select a network to use"><i class="fas fa-question-circle"></i></a>
-                           <div>
-                            {{ form.network }}
-                           </div>
-                           <br>
-                           <label>
-                               6. Select feature
-                           </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                              data-content="Select the feature"><i class="fas fa-question-circle"></i></a>
-                           <div class="select">
-                                {{ form.features }}
-                            </div>
-                            <br>
-                           <label>
-                               7. Select a Negative Class
-                           </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                              data-content="Select the Negative Class"><i class="fas fa-question-circle"></i></a>
-                            <div class="select">
-                                {{ form.negativeclass }}
-                            </div>
-                            <br>
-                            <div>
-                                <input type="submit" name="submit_button" class="select" value="Run Model" onclick="$('#divLoading').show();">
-                            </div>
-                       </fieldset>
+                       <form id="model-form" action="{{ url_for('run_model') }}" method="POST", enctype="multipart/form-data">
+                           <fieldset class="border box_padding fieldset">
+                               <label>
+                                   4. Job Name
+                               </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                                      data-content="A job name must be supplied so that the output can be picked up after
+                                        the model has run."><i class="fas fa-question-circle"></i></a>
+                               <div>
+                                {{ form.job }}
+                               </div>
+                               <br>
+                               <label>
+                                   5. Select a Network
+                               </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                                      data-content="Once a file has been validated, the additional options become available.
+                                      select a network to use"><i class="fas fa-question-circle"></i></a>
+                               <div>
+                                {{ form.network }}
+                               </div>
+                               <br>
+                               <label>
+                                   6. Select feature
+                               </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                                  data-content="Select the feature"><i class="fas fa-question-circle"></i></a>
+                               <div class="select">
+                                    {{ form.features }}
+                                </div>
+                                <br>
+                               <label>
+                                   7. Select a Negative Class
+                               </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                                  data-content="Select the Negative Class"><i class="fas fa-question-circle"></i></a>
+                                <div class="select">
+                                    {{ form.negativeclass }}
+                                </div>
+                                <br>
+                                <div>
+                                    <input type="submit" name="submit_button" class="select" value="Run Model" onclick="$('#divLoading').show();">
+                                </div>
+                           </fieldset>
+                       </form>
                    </span>
                 </div>
             </form>
@@ -144,7 +154,7 @@
             {{ validate_table|safe }}
             <div class="fill_container">
                 <div id="divLoading">
-                    <div id="loading"><img src="{{ url_for('static', filename='loader.gif') }}"></div>
+                    <div id="loading" class="fa-5x"><i class="fas fa-spinner fa-spin"></i></div>
                 </div>
             </div>
         </div>
