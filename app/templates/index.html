@@ -24,7 +24,7 @@
           </div>
         </header>
        <div class="sidenav">
-            <form id="model-form" action="{{ url_for('index') }}" method="POST", enctype="multipart/form-data">
+            <form id="model-form" action="{{ url_for('validate') }}" method="POST", enctype="multipart/form-data">
                 <div class="item-content">
                    <span>
                        <br>
@@ -42,6 +42,10 @@
                                            accept="txt/csv"
                                            />
                                 </div>
+                           </div>
+                           <label>Or</label>
+                           <div class="box_padding">
+                                <input name="text">
                            </div>
                            <br>
                            <label>
@@ -71,7 +75,7 @@
 
             <div class="fill_container">
                 <div id="divLoading">
-                    <div id="loading"><img src="{{ url_for('static', filename='loader.gif') }}"></div>
+                    <div id="loading" class="fa-5x"><i class="fas fa-spinner fa-spin"></i></div>
                 </div>
             </div>
         </div>

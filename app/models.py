@@ -8,6 +8,8 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import average_precision_score
 from scipy.spatial.distance import cosine
 from app import app
+from jinja2 import Environment, FileSystemLoader
+import os
 from config import ProdConfig, DevConfig
 
 '''
@@ -229,6 +231,93 @@ def make_graph(df_edge, df_probs):
 
     return graph
 
+def run_model(convert_IDs, net_type, GSC, features):
+
+    app.logger.info('1. get_genese_in_network')
+    pos_genes_in_net, genes_not_in_net, net_genes = get_genes_in_network(convert_IDs,
+                                                                                net_type)  # genes_not_in_net could be an output file
+    app.logger.info('2. get_negatives')
+    negative_genes = get_negatives(pos_genes_in_net, net_type, GSC)
+
+    app.logger.info('3. run_SL... features=%s, features')
+    mdl_weights, probs, avgps = run_SL(pos_genes_in_net, negative_genes, net_genes, net_type, features)
+
+    app.logger.info('4. get_negatives...')
+    negative_genes = get_negatives(pos_genes_in_net, net_type, GSC)
+
+    app.logger.info('5. make_prob_df...')
+    df_probs, Entrez_to_Symbol = make_prob_df(net_genes, probs, pos_genes_in_net, negative_genes)
+
+    app.logger.info('6. make_sim_dfs...')
+    df_GO, df_dis, weights_dict_GO, weights_dict_Dis = make_sim_dfs(mdl_weights, GSC, net_type,
+                                                                           features)  # both of these dfs will be displaed on the webserver
+    app.logger.info('7. make_small_edgelist...')
+    df_edge, isolated_genes, df_edge_sym, isolated_genes_sym = make_small_edgelist(df_probs, net_type,
+                                                                                          Entrez_to_Symbol)
+    app.logger.info('8. make_graph...')
+    graph = make_graph(df_edge, df_probs)
+
+    return graph, df_probs, df_GO, df_dis, avgps
+
+
+def make_template(job, net_type, features, GSC, avgps, df_probs, df_GO, df_dis, graph):
+    # Render the Jinja template, filling fields as appropriate
+    # Find the module absolute path and locate templates
+    path_html = '.'.join((job, 'html'))
+
+    module_root = os.path.join(os.path.dirname(__file__), 'templates')
+    env = Environment(loader=FileSystemLoader(module_root))
+
+    # Find the absolute module path and the static files
+    context_menu_path = os.path.join(os.path.dirname(__file__), 'static', 'd3-v4-contextmenu.js')
+    with open(context_menu_path, 'r') as f:
+        context_menu_js = f.read()
+
+    tip_path = os.path.join(os.path.dirname(__file__), 'static', 'd3-tip.js')
+    with open(tip_path, 'r') as f:
+        d3_tip_js = f.read()
+
+    graph_path = os.path.join(os.path.dirname(__file__), 'static', 'graph.js')
+    with open(graph_path, 'r') as f:
+        graph_js = f.read()
+
+    datatable_path = os.path.join(os.path.dirname(__file__), 'static', 'datatable.js')
+    with open(datatable_path, 'r') as f:
+        datatable_js = f.read()
+
+    main_path = os.path.join(os.path.dirname(__file__), 'static', 'main.css')
+    with open(main_path, 'r') as f:
+        main_css = f.read()
+
+    graph_css_path = os.path.join(os.path.dirname(__file__), 'static', 'graph.css')
+    with open(graph_css_path, 'r') as f:
+        graph_css = f.read()
+
+    d3_tip_css_path = os.path.join(os.path.dirname(__file__), 'static', 'd3-tip.css')
+    with open(d3_tip_css_path, 'r') as f:
+        d3_tip_css = f.read()
+
+    template = env.get_template('result_base.html').render(
+        job=job,
+        network=net_type,
+        features=features,
+        negativeclass=GSC,
+        avgps=avgps,
+        context_menu_js=context_menu_js,
+        d3_tip_js=d3_tip_js,
+        graph_js=graph_js,
+        datatable_js=datatable_js,
+        main_css=main_css,
+        graph_css=graph_css,
+        d3_tip_css=d3_tip_css,
+        probs_table=df_probs.to_html(index=False, classes='table table-striped table-bordered" id = "probstable'),
+        go_table=df_GO.to_html(index=False,
+                               classes='table table-striped table-bordered nowrap" style="width: 100%;" id = "gotable'),
+        dis_table=df_dis.to_html(index=False, classes='table table-striped table-bordered" id = "distable'),
+        graph=graph)
+
+    with open(path_html, "wb") as outfile:
+        outfile.write(template.encode("utf-8"))
 
 #######################################################################################################################
 
