@@ -79,6 +79,17 @@ def make_validation_df(df_convert_out):
     return df_convert_out, table_info
 
 
+def alter_validation_df(df_convert_out,table_info,net_type):
+    df_convert_out_subset = df_convert_out[['Original_ID','ID_converted_to_Entrez','In_%s?'%net_type]]
+    table_info_subset = []
+    for idx, item in enumerate(table_info):
+        if idx in [0,1,2]:
+            table_info_subset.append(item)
+        elif net_type in item:
+            table_info_subset.append(item)
+    return df_convert_out_subset, table_info_subset
+
+
 def get_genes_in_network(convert_IDs, net_type):
     net_genes = load_txtfile('net_genes', net_type_=net_type)
     pos_genes_in_net = np.intersect1d(np.array(convert_IDs), net_genes)
@@ -260,7 +271,7 @@ def run_model(convert_IDs, net_type, GSC, features):
     return graph, df_probs, df_GO, df_dis, avgps
 
 
-def make_template(job, net_type, features, GSC, avgps, df_probs, df_GO, df_dis, graph):
+def make_template(job, net_type, features, GSC, avgps, df_probs, df_GO, df_dis, df_convert_out, table_info, graph):
     # Render the Jinja template, filling fields as appropriate
     # Find the module absolute path and locate templates
     path_html = '.'.join((job, 'html'))
@@ -310,10 +321,13 @@ def make_template(job, net_type, features, GSC, avgps, df_probs, df_GO, df_dis, 
         main_css=main_css,
         graph_css=graph_css,
         d3_tip_css=d3_tip_css,
+        table_info=table_info,
         probs_table=df_probs.to_html(index=False, classes='table table-striped table-bordered" id = "probstable'),
         go_table=df_GO.to_html(index=False,
                                classes='table table-striped table-bordered nowrap" style="width: 100%;" id = "gotable'),
         dis_table=df_dis.to_html(index=False, classes='table table-striped table-bordered" id = "distable'),
+        validate_table=df_convert_out.to_html(index=False,
+                                              classes='table table-striped table-bordered" id = "validatetable'),
         graph=graph)
 
     with open(path_html, "wb") as outfile:
