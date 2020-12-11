@@ -62,6 +62,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+
     # TODO handle arg errors
 
     #### run it
@@ -85,6 +86,8 @@ if __name__ == "__main__":
     #     net_type=args.net_type)
 
     # 2. run model 
+    # TODO : modify these functions to check for valid inputs and raise errors if not correct
+    #        input validation should be done in the method that uses the input, not here
     graph, df_probs, df_GO, df_dis, avgps = run_model(convert_IDs, net_type=args.net_type, features=args.features, GSC=args.GSC) #, data_path=args.data_path)
 
     # TODO : write all of these to disk if we want to change the presentation or review for debugging
