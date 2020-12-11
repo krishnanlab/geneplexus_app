@@ -8,6 +8,17 @@ body {
  * Centering the body content
  */
 
+input[type='file'] {
+  opacity:0
+}
+
+#button {
+    width: 210px;
+    height: 30px;
+    text-align: center;
+    background-color: lightgray;
+}
+
 table.dataframe.data {
     border-collapse: collapse;
 }
@@ -28,6 +39,10 @@ tr:hover {
 div.container {
     padding: 60px 15px 0;
     margin-left: 240px;
+    height: 100%;
+}
+
+div.table_container {
     height: 100%;
 }
 

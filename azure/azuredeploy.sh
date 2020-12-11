@@ -61,6 +61,9 @@ az_set_vars ()
     # but don't use flask app dev server for production!
     export PORT=8000
     export TAG=latest  # TODO => rename to AZDOCKERTAG
+
+    export AZSTORAGENAME="${APPNAME}storage"
+    export AZCONTAINERNAME="${APPNAME}files"
 }
 
 ### should check if $RG is a group and if not create it
@@ -368,20 +371,22 @@ az container create -g $RG --name $APPNAME \
 az_create_blob_storage ()
 {
 export AZSTORAGESKU="Premium_LRS"
-export AZSTORAGENAME="${APPNAME}bobstorage"
-export AZCONTAINERNAME="${APPNAME}files"
+export AZBLOBSTORAGENAME="${APPNAME}blobstorage"
+export AZCONTAINERNAME="${APPNAME}backend"
 
 az storage account create -g $RG --name $AZSTORAGENAME -l $AZLOCATION \
     --sku $AZSTORAGESKU --kind BlobStorage \
     --tags $AZTAGS
 }
 
+##############################
+##### CREATE FILE STORAGE
+
 az_create_file_storage ()
 {
 
 export AZSTORAGESKU="Premium_LRS"
-export AZSTORAGENAME="${APPNAME}storage"
-export AZSHARENAME="${APPNAME}files"
+
 # cheaper options 
 # SKU=Standard_LRS
 az storage account create -g $RG --name $AZSTORAGENAME -l $AZLOCATION \
@@ -412,6 +417,13 @@ az webapp config storage-account add --resource-group $RG \
     --account-name $AZSTORAGENAME --access-key $AZSTORAGEKEY \\
 }
  
+
+httpEndpoint=$(az storage account show \
+    --resource-group $resourceGroupName \
+    --name $storageAccountName \
+    --query "primaryEndpoints.file" | tr -d '"')
+smbPath=$(echo $httpEndpoint | cut -c7-$(expr length $httpEndpoint))
+fileHost=$(echo $smbPath | tr -d "/")
 # todo fix this (it doesn't work)
 # see https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-files
 az_copy_hpcc_to_files ()

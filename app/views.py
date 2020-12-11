@@ -1,11 +1,13 @@
 from werkzeug.exceptions import InternalServerError
 from flask import request, render_template, jsonify, session, redirect, url_for
-from app.forms import IndexForm, AboutForm
+from app.forms import IndexForm, ValidateForm
 from app import app, models
-import pickle
+import csv
 import time
 
-@app.route("/", methods=['GET','POST'])
+
+@app.route("/", methods=['GET'])
+@app.route("/index", methods=['GET'])
 def index():
     form = IndexForm()
 
@@ -13,89 +15,79 @@ def index():
 
         return render_template("index.html", form=form)
 
-    elif request.method == 'POST':
+
+@app.route("/run_model", methods=['GET', 'POST'])
+def run_model():
+    form = ValidateForm()
+    if request.method == 'POST':
         # 'genes' exists as a session variable, use that data for subsequent requests
         # if it doesn't, no data has been loaded yet so get the data from a selected file
         #
         # from flask import session
         # session.clear()
-
         if 'genes' in session:
-            input_genes_Entrez = session['genes']
+            input_genes= session['genes']
         else:
             f = request.files['input_genes'] # read in the file
             string = f.stream.read().decode("UTF8") # convert the FileStorage object to a string
             no_quotes = string.translate(str.maketrans({"'":None})) # remove any single quotes if they exist
-            input_genes_list = no_quotes.split(",") # turn into a list
-            input_genes_Entrez = [x.strip(' ') for x in input_genes_list] # remove any whitespace
-            session['genes'] = input_genes_Entrez
+            #input_genes_list = no_quotes.split(",") # turn into a list
+            input_genes_list = no_quotes.splitlines()  # turn into a list
+            input_genes = [x.strip(' ') for x in input_genes_list] # remove any whitespace
+            session['genes'] = input_genes
 
         # Assign variables to navbar input selections
         net_type = form.network.data
         features = form.features.data
         GSC = form.negativeclass.data
-        CV = form.crossvalidation.data
 
         jobname = form.job.data
 
-        tic = time.time()
-
-        # Make a new list that has the IDs converted to ENSG
-        # NOTE: This should be moved to the models file
-        
-        with open(app.config.get('DATA_PATH') + '/ID_conversion/Homo_sapiens_Entrez_to_ENSG_All-Mappings.pickle', 'rb') as handle:
-            convert_tmp = pickle.load(handle)
-
-        #with open('./app/data_backend/ID_conversion/Homo_sapiens_Entrez_to_ENSG_All-Mappings.pickle', 'rb') as handle:
-        #    convert_tmp = pickle.load(handle)
-
-        input_genes_ENSG = []
-        for agene in input_genes_Entrez:
-            if agene in convert_tmp:
-                input_genes_ENSG = input_genes_ENSG + convert_tmp[agene]
-
         # run all the components of the model and pass to the results form
-        convert_IDs, df_convert_out = models.intial_ID_convert(input_genes_ENSG)
+        convert_IDs, df_convert_out = models.intial_ID_convert(input_genes)
 
+        '''
         if request.form['submit_button'] == 'Validate File':
             app.logger.info('validate button')
 
-            df_convert_out, table_info = models.make_validation_df(df_convert_out)
             return render_template("validation.html", form=form, table_info=table_info,
                                            validate_table=df_convert_out.to_html(index=False, classes='table table-striped table-bordered" id = "validatetable'))
+        '''
+        if request.form['submit_button'] == 'Run Model':
+            app.logger.info('running model, jobname %s', jobname)
 
-        elif request.form['submit_button'] == 'Run Model':
+            tic = time.time()
+            df_convert_out, table_info = models.make_validation_df(df_convert_out)
+            df_convert_out_subset, table_info_subset = models.alter_validation_df(df_convert_out,table_info,net_type)
+            graph, df_probs, df_GO, df_dis, avgps = models.run_model(convert_IDs, net_type, GSC, features)
+            tic1 = "{:.2f}".format(time.time() - tic)
 
-            app.logger.info('running model, jobname %s', jobname )
-
-            app.logger.info('1. get_genese_in_network')
-            pos_genes_in_net, genes_not_in_net, net_genes = models.get_genes_in_network(convert_IDs,
-                                                                                        net_type)  # genes_not_in_net could be an output file
-            app.logger.info('2. get_negatives')                                                                            
-            negative_genes = models.get_negatives(pos_genes_in_net, net_type, GSC)
-
-            app.logger.info('3. run_SL... features=%s, CV=%s', features, CV)
-            mdl_weights, probs, avgps = models.run_SL(pos_genes_in_net, negative_genes, net_genes, net_type, features, CV)
-
-            app.logger.info('4. get_negatives...')
-            negative_genes = models.get_negatives(pos_genes_in_net, net_type, GSC)
-
-            app.logger.info('5. make_prob_df...')
-            df_probs, Entrez_to_Symbol = models.make_prob_df(net_genes, probs, pos_genes_in_net, negative_genes)
-
-            app.logger.info('6. make_sim_dfs...')
-            df_GO, df_dis, weights_dict_GO, weights_dict_Dis = models.make_sim_dfs(mdl_weights,GSC,net_type,features) # both of these dfs will be displaed on the webserver
-
-            app.logger.info('7. make_small_edgelist...')
-            graph = models.make_small_edgelist(df_probs, net_type, Entrez_to_Symbol)
-
-            tic1 = "{:.2f}".format(time.time()-tic)
             app.logger.info('model complete, rendering template')
-            return render_template("results.html", tic1=tic1, form=form, graph=graph,
-                                   probs_table=df_probs.to_html(index=False, classes='table table-striped table-bordered" id = "probstable'),
-                                   go_table=df_GO.to_html(index=False, classes='table table-striped table-bordered nowrap" style="width: 100%;" id = "gotable'),
-                                   dis_table=df_dis.to_html(index=False, classes='table table-striped table-bordered" id = "distable'))
 
+            # generate html that could be saved to a file for viewing later
+            # commented-out for now but will be used for the job-submission system
+            # results_html = models.make_template(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis, df_convert_out_subset, table_info_subset, graph)
+
+            return render_template("results.html", tic1=tic1, form=form, graph=graph, avgps=avgps, table_info=table_info_subset,
+                                   probs_table=df_probs.to_html(index=False,
+                                                                classes='table table-striped table-bordered" id = "probstable'),
+                                   go_table=df_GO.to_html(index=False,
+                                                          classes='table table-striped table-bordered nowrap" style="width: 100%;" id = "gotable'),
+                                   dis_table=df_dis.to_html(index=False,
+                                                            classes='table table-striped table-bordered" id = "distable'),
+                                   validate_table = df_convert_out_subset.to_html(index=False,
+                                                    classes='table table-striped table-bordered" id = "validatetable')
+                                   )
+
+
+@app.route("/upload", methods=['POST'])
+def upload():
+
+    session.clear()
+
+    file = request.files['formData'].filename
+
+    return redirect(url_for('index'))
 
 
 @app.route("/about", methods=['GET'])
@@ -104,6 +96,37 @@ def about():
     if request.method == 'GET':
 
         return render_template("about.html")
+
+
+@app.route("/validate", methods=['GET','POST'])
+def validate():
+    form = ValidateForm()
+
+    if request.method == 'GET':
+
+        return render_template("validation.html")
+
+    elif request.method == 'POST':
+        app.logger.info('validate button')
+        if 'genes' in session:
+            input_genes= session['genes']
+        else:
+            f = request.files['input_genes'] # read in the file
+            string = f.stream.read().decode("UTF8") # convert the FileStorage object to a string
+            no_quotes = string.translate(str.maketrans({"'":None})) # remove any single quotes if they exist
+            #input_genes_list = no_quotes.split(",") # turn into a list
+            input_genes_list = no_quotes.splitlines()  # turn into a list
+            input_genes = [x.strip(' ') for x in input_genes_list] # remove any whitespace
+            session['genes'] = input_genes
+
+
+        # run all the components of the model and pass to the results form
+        convert_IDs, df_convert_out = models.intial_ID_convert(input_genes)
+
+        df_convert_out, table_info = models.make_validation_df(df_convert_out)
+        return render_template("validation.html", form=form, table_info=table_info,
+                               validate_table=df_convert_out.to_html(index=False,
+                                                                     classes='table table-striped table-bordered" id = "validatetable'))
 
 
 @app.route("/results", methods=['GET','POST'])

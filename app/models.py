@@ -7,8 +7,11 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import average_precision_score
 from scipy.spatial.distance import cosine
+# 
 from app import app
-from config import ProdConfig, DevConfig
+from jinja2 import Environment, FileSystemLoader
+import os
+# from config import ProdConfig, DevConfig
 
 '''
 # FROM FLASK Configuration documentation.  Seems unnecessarily complicated.
@@ -77,6 +80,17 @@ def make_validation_df(df_convert_out):
     return df_convert_out, table_info
 
 
+def alter_validation_df(df_convert_out,table_info,net_type):
+    df_convert_out_subset = df_convert_out[['Original_ID','ID_converted_to_Entrez','In_%s?'%net_type]]
+    table_info_subset = []
+    for idx, item in enumerate(table_info):
+        if idx in [0,1,2]:
+            table_info_subset.append(item)
+        elif net_type in item:
+            table_info_subset.append(item)
+    return df_convert_out_subset, table_info_subset
+
+
 def get_genes_in_network(convert_IDs, net_type):
     net_genes = load_txtfile('net_genes', net_type_=net_type)
     pos_genes_in_net = np.intersect1d(np.array(convert_IDs), net_genes)
@@ -100,7 +114,7 @@ def get_negatives(pos_genes_in_net, net_type, GSC):
     return negative_genes
 
 
-def run_SL(pos_genes_in_net, negative_genes, net_genes, net_type, features, CV):
+def run_SL(pos_genes_in_net, negative_genes, net_genes, net_type, features):
     pos_inds = [np.where(net_genes == agene)[0][0] for agene in pos_genes_in_net]
     neg_inds = [np.where(net_genes == agene)[0][0] for agene in negative_genes]
     data = load_npyfile('data', features_=features, net_type_=net_type)
@@ -114,23 +128,23 @@ def run_SL(pos_genes_in_net, negative_genes, net_genes, net_type, features, CV):
     mdl_weights = np.squeeze(clf.coef_)
     probs = clf.predict_proba(data)[:, 1]
 
-    avgps = []
-    n_folds = 5
-    if CV == True:  # add something here if number of positives is less than the folds
-        if len(pos_genes_in_net) < n_folds:
-            pass
-        else:
-            skf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=None)
-            for trn_inds, tst_inds in skf.split(Xdata, ydata):
-                clf_cv = LogisticRegression(max_iter=10000, solver='lbfgs', penalty='l2', C=1.0)
-                clf_cv.fit(Xdata[trn_inds], ydata[trn_inds])
-                probs_cv = clf_cv.predict_proba(Xdata[tst_inds])[:, 1]
-                avgp = average_precision_score(ydata[tst_inds], probs_cv)
-                num_tst_pos = np.sum(ydata[tst_inds])
-                prior = num_tst_pos / Xdata[tst_inds].shape[0]
-                log2_prior = np.log2(avgp / prior)
-                avgps.append(log2_prior)
-    return mdl_weights, probs, avgps
+    if len(pos_genes_in_net) < 20:
+        avgp = 'Not enough positive genes'
+    else:
+        avgps = []
+        n_folds = 5
+        skf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=None)
+        for trn_inds, tst_inds in skf.split(Xdata, ydata):
+            clf_cv = LogisticRegression(max_iter=10000, solver='lbfgs', penalty='l2', C=1.0)
+            clf_cv.fit(Xdata[trn_inds], ydata[trn_inds])
+            probs_cv = clf_cv.predict_proba(Xdata[tst_inds])[:, 1]
+            avgp = average_precision_score(ydata[tst_inds], probs_cv)
+            num_tst_pos = np.sum(ydata[tst_inds])
+            prior = num_tst_pos / Xdata[tst_inds].shape[0]
+            log2_prior = np.log2(avgp / prior)
+            avgps.append(log2_prior)
+        avgp = np.median(avgps)
+    return mdl_weights, probs, avgp
 
 
 def make_prob_df(net_genes,probs,pos_genes_in_net,negative_genes):
@@ -214,8 +228,9 @@ def make_small_edgelist(df_probs, net_type, Entrez_to_Symbol):
             syms_tmp = 'N/A'
         isolated_genes_sym.append(syms_tmp)
 
-    #THE FOLLOWING LINES ARE ADDITIONAL TO THE ORIGINAL
-    #GENE PLEXUS BACKEND
+    return df_edge, isolated_genes, df_edge_sym, isolated_genes_sym
+
+def make_graph(df_edge, df_probs):
     df_edge.fillna(0)
     df_edge.columns = ['source', 'target', 'weight']
     nodes = df_probs[0:max_num_genes]
@@ -228,6 +243,96 @@ def make_small_edgelist(df_probs, net_type, Entrez_to_Symbol):
 
     return graph
 
+def run_model(convert_IDs, net_type, GSC, features, logger = app.logger):
+
+    logger.info('1. get_genese_in_network')
+    pos_genes_in_net, genes_not_in_net, net_genes = get_genes_in_network(convert_IDs,
+                                                                                net_type)  # genes_not_in_net could be an output file
+    logger.info('2. get_negatives')
+    negative_genes = get_negatives(pos_genes_in_net, net_type, GSC)
+
+    logger.info('3. run_SL... features=%s, features')
+    mdl_weights, probs, avgps = run_SL(pos_genes_in_net, negative_genes, net_genes, net_type, features)
+
+    logger.info('4. get_negatives...')
+    negative_genes = get_negatives(pos_genes_in_net, net_type, GSC)
+
+    logger.info('5. make_prob_df...')
+    df_probs, Entrez_to_Symbol = make_prob_df(net_genes, probs, pos_genes_in_net, negative_genes)
+
+    logger.info('6. make_sim_dfs...')
+    df_GO, df_dis, weights_dict_GO, weights_dict_Dis = make_sim_dfs(mdl_weights, GSC, net_type,
+                                                                           features)  # both of these dfs will be displaed on the webserver
+    logger.info('7. make_small_edgelist...')
+    df_edge, isolated_genes, df_edge_sym, isolated_genes_sym = make_small_edgelist(df_probs, net_type,
+                                                                                          Entrez_to_Symbol)
+    logger.info('8. make_graph...')
+    graph = make_graph(df_edge, df_probs)
+
+    return graph, df_probs, df_GO, df_dis, avgps
+
+
+def make_template(job, net_type, features, GSC, avgps, df_probs, df_GO, df_dis, df_convert_out, table_info, graph):
+    # Render the Jinja template, filling fields as appropriate
+    # return rendered HTML
+    # Find the module absolute path and locate templates
+    
+    module_root = os.path.join(os.path.dirname(__file__), 'templates')
+    env = Environment(loader=FileSystemLoader(module_root))
+
+    # Find the absolute module path and the static files
+    context_menu_path = os.path.join(os.path.dirname(__file__), 'static', 'd3-v4-contextmenu.js')
+    with open(context_menu_path, 'r') as f:
+        context_menu_js = f.read()
+
+    tip_path = os.path.join(os.path.dirname(__file__), 'static', 'd3-tip.js')
+    with open(tip_path, 'r') as f:
+        d3_tip_js = f.read()
+
+    graph_path = os.path.join(os.path.dirname(__file__), 'static', 'graph.js')
+    with open(graph_path, 'r') as f:
+        graph_js = f.read()
+
+    datatable_path = os.path.join(os.path.dirname(__file__), 'static', 'datatable.js')
+    with open(datatable_path, 'r') as f:
+        datatable_js = f.read()
+
+    main_path = os.path.join(os.path.dirname(__file__), 'static', 'main.css')
+    with open(main_path, 'r') as f:
+        main_css = f.read()
+
+    graph_css_path = os.path.join(os.path.dirname(__file__), 'static', 'graph.css')
+    with open(graph_css_path, 'r') as f:
+        graph_css = f.read()
+
+    d3_tip_css_path = os.path.join(os.path.dirname(__file__), 'static', 'd3-tip.css')
+    with open(d3_tip_css_path, 'r') as f:
+        d3_tip_css = f.read()
+
+    template = env.get_template('result_base.html').render(
+        job=job,
+        network=net_type,
+        features=features,
+        negativeclass=GSC,
+        avgps=avgps,
+        context_menu_js=context_menu_js,
+        d3_tip_js=d3_tip_js,
+        graph_js=graph_js,
+        datatable_js=datatable_js,
+        main_css=main_css,
+        graph_css=graph_css,
+        d3_tip_css=d3_tip_css,
+        table_info=table_info,
+        probs_table=df_probs.to_html(index=False, classes='table table-striped table-bordered" id = "probstable'),
+        go_table=df_GO.to_html(index=False,
+                               classes='table table-striped table-bordered nowrap" style="width: 100%;" id = "gotable'),
+        dis_table=df_dis.to_html(index=False, classes='table table-striped table-bordered" id = "distable'),
+        validate_table=df_convert_out.to_html(index=False,
+                                              classes='table table-striped table-bordered" id = "validatetable'),
+        graph=graph)
+    
+    # return utf-8 string
+    return(template)
 
 #######################################################################################################################
 
