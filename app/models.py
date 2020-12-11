@@ -274,9 +274,9 @@ def run_model(convert_IDs, net_type, GSC, features, logger = app.logger):
 
 def make_template(job, net_type, features, GSC, avgps, df_probs, df_GO, df_dis, df_convert_out, table_info, graph):
     # Render the Jinja template, filling fields as appropriate
+    # return rendered HTML
     # Find the module absolute path and locate templates
-    path_html = '.'.join((job, 'html'))
-
+    
     module_root = os.path.join(os.path.dirname(__file__), 'templates')
     env = Environment(loader=FileSystemLoader(module_root))
 
@@ -330,9 +330,9 @@ def make_template(job, net_type, features, GSC, avgps, df_probs, df_GO, df_dis, 
         validate_table=df_convert_out.to_html(index=False,
                                               classes='table table-striped table-bordered" id = "validatetable'),
         graph=graph)
-
-    with open(path_html, "wb") as outfile:
-        outfile.write(template.encode("utf-8"))
+    
+    # return utf-8 string
+    return(template.encode('utf-8'))
 
 #######################################################################################################################
 
