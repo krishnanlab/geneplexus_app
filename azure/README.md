@@ -74,18 +74,21 @@ notice the trailing dot
 
 ### Run
 
+The docker container requires using volume mounts to connect the host to the container.  The two essential paths are for the backend data (DATA_PATH) and input/output.   The input/output path is a folder for keeping job info: input gene file, and results files.  The container runs the pipeline only once, so only needs access to one job folder.  The calling environment mounts this input/output folder from a job folder (on the host computer or in a file share)
+
 Test run (on Linux/MacOS): 
 
 Requires a file for the environt variables to test with, see azure/dockerenv for example. 
 
-example env file to use in docker run command: 
+example env file to use in docker run command. Note the input/output folder is not set but embedded in GENE_FILE, OUTPUT_FILE, and the -v option (but perhaps it could be as a future development)
 
 ```
 FLASK_ENV=development
 FLASK_DEBUG=TRUE
 DATA_PATH=/home/dockeruser/data_backend
 GENE_FILE=/home/dockeruser/job/input_genes_newlines.txt
-GP_NET_TYPE=BioGrid
+OUTPUT_FILE=/home/dockeruser/job/results.html
+GP_NET_TYPE=BioGRID
 GP_FEATURES=Embedding
 GP_GSC=GO
 JOBNAME=docker_job
@@ -97,8 +100,9 @@ Note 1) these values are relative to the container, not your computer and 2) in 
 Using that env file in practice: 
 
 ```
-LOCAL_DATA_PATH=/Volumes/compbio/krishnanlab/projects/GenePlexus/repos/GenePlexusBackend/data_backend 
-docker run --env-file azure/dockerenv -v $LOCAL_DATA_PATH:/home/dockeruser/data_backend -v $(PWD):/home/dockeruser/job   geneplexus_backend:latest
+export JOBFOLDER=$(pwd)/testjob
+export LOCAL_DATA_PATH=/Volumes/compbio/krishnanlab/projects/GenePlexus/repos/GenePlexusBackend/data_backend 
+docker run --env-file azure/dockerenv -v $LOCAL_DATA_PATH:/home/dockeruser/data_backend -v $JOBFOLDER:/home/dockeruser/job   geneplexus_backend:latest
 ```
 
 And what should happen is that you have an html file with the name docker_job.html in the folder

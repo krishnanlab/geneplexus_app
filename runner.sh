@@ -18,7 +18,12 @@ if [ ! -d "$DATA_PATH" ]; then
 fi 
 
 if [ -z "$DATA_PATH" ]; then 
-    echo "DATA_PATH variable is not set, exiting"
+    echo "DATA_PATH variable must be set to location of backend data, exiting"
+    exit 1
+fi
+
+if [ -z "$OUTPUT_FILE" ]; then 
+    echo "OUTPUT_FILE variable must be set for writing output, exiting"
     exit 1
 fi
 
@@ -43,7 +48,7 @@ if [ -n "$JOBNAME" ]; then
 fi
 
 
-python runner.py $ARGS -d "$DATA_PATH" --cross_validation "$GENE_FILE"
+python runner.py $ARGS -d "$DATA_PATH" --cross_validation "$GENE_FILE" > "$OUTPUT_FILE"
 
 
 # function to show an example. this is not run when the sdcript is run
