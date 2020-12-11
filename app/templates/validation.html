@@ -45,12 +45,22 @@
                                   data-content="Upload a file of Gene Ids.  File must delimited by
                                   a newline (i.e. each gene is on a separate line"><i class="fas fa-question-circle"></i></a>
                                <div>
+                                    <span id='button' class="btn btn-sm">Select File</span>
+                                    <span id='val'></span>
                                     <div class="box_padding">
                                         <input class=" btn btn-sm"
                                                type="file"
+                                               title=" "
                                                name="input_genes"
                                                accept="txt/csv"
                                                />
+                                    </div>
+                               </div>
+                               <label>Or</label>
+                               <div class="box_padding">
+                                    <div class="form-group">
+                                      <label for="enterGenes">Enter / Paste Genes</label>
+                                      <textarea class="form-control rounded-0" id="enterGenes" rows="5"></textarea>
                                     </div>
                                </div>
                                <br>

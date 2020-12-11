@@ -5,13 +5,16 @@ from app import app, models
 import csv
 import time
 
+
 @app.route("/", methods=['GET'])
+@app.route("/index", methods=['GET'])
 def index():
     form = IndexForm()
 
     if request.method == 'GET':
 
         return render_template("index.html", form=form)
+
 
 @app.route("/run_model", methods=['GET', 'POST'])
 def run_model():
@@ -65,8 +68,6 @@ def run_model():
             # commented-out for now but will be used for the job-submission system
             # results_html = models.make_template(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis, df_convert_out_subset, table_info_subset, graph)
 
-            session.clear()
-
             return render_template("results.html", tic1=tic1, form=form, graph=graph, avgps=avgps, table_info=table_info_subset,
                                    probs_table=df_probs.to_html(index=False,
                                                                 classes='table table-striped table-bordered" id = "probstable'),
@@ -78,6 +79,15 @@ def run_model():
                                                     classes='table table-striped table-bordered" id = "validatetable')
                                    )
 
+
+@app.route("/upload", methods=['POST'])
+def upload():
+
+    session.clear()
+
+    file = request.files['formData'].filename
+
+    return redirect(url_for('index'))
 
 
 @app.route("/about", methods=['GET'])
