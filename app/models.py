@@ -332,7 +332,7 @@ def make_template(job, net_type, features, GSC, avgps, df_probs, df_GO, df_dis, 
         graph=graph)
     
     # return utf-8 string
-    return(template.encode('utf-8'))
+    return(template)
 
 #######################################################################################################################
 
