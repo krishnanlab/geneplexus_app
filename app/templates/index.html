@@ -42,9 +42,12 @@
                                   data-content="Upload a file of Gene Ids.  File must delimited by
                                   a newline (i.e. each gene is on a separate line"><i class="fas fa-question-circle"></i></a>
                            <div>
+                                <span id='button' class="btn btn-sm">Select File</span>
+                                <span id="val"></span>
                                 <div class="box_padding">
                                     <input class=" btn btn-sm"
                                            type="file"
+                                           title=" "
                                            name="input_genes"
                                            accept="txt/csv"
                                            />
@@ -54,7 +57,7 @@
                            <div class="box_padding">
                                 <div class="form-group">
                                   <label for="enterGenes">Enter / Paste Genes</label>
-                                  <textarea class="form-control rounded-0" id="enterGenes" rows="10"></textarea>
+                                  <textarea class="form-control rounded-0" id="enterGenes" rows="5"></textarea>
                                 </div>
                            </div>
                            <br>
@@ -64,7 +67,7 @@
                                   data-content="Before the model can be run, validate the gene file against all network
                                    to ensure enough data for meaningful results"><i class="fas fa-question-circle"></i></a>
                             <div class="col text-center">
-                                <input type="submit" disabled name="submit_button" class="btn btn-sm border dark" value="Validate File" onclick="$('#divLoading').show();">
+                                <input type="submit" disabled name="submit_button" class="btn btn-sm border dark" value="Validate File">
                             </div>
                            <br>
                            <label>
