@@ -76,6 +76,26 @@ notice the trailing dot
 
 Test run (on Linux/MacOS): 
 
+Requires a file for the environt variables to test with, see azure/dockerenv for example. 
+
+example env file to use in docker run command: 
+
+```
+FLASK_ENV=development
+FLASK_DEBUG=TRUE
+DATA_PATH=/home/dockeruser/data_backend
+GENE_FILE=/home/dockeruser/job/input_genes_newlines.txt
+GP_NET_TYPE=BioGrid
+GP_FEATURES=Embedding
+GP_GSC=GO
+JOBNAME=docker_job
+
+``` 
+
+Note 1) these values are relative to the container, not your computer and 2) in this file the values must not be enclosed by parenthesis (unlike for MacOS/Linux where this doesn't matter)
+
+Using that env file in practice: 
+
 ```
 LOCAL_DATA_PATH=/Volumes/compbio/krishnanlab/projects/GenePlexus/repos/GenePlexusBackend/data_backend 
 docker run --env-file azure/dockerenv -v $LOCAL_DATA_PATH:/home/dockeruser/data_backend -v $(PWD):/home/dockeruser/job   geneplexus_backend:latest
