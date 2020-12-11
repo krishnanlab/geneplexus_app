@@ -417,13 +417,20 @@ az webapp config storage-account add --resource-group $RG \
     --account-name $AZSTORAGENAME --access-key $AZSTORAGEKEY \\
 }
  
-
-httpEndpoint=$(az storage account show \
-    --resource-group $resourceGroupName \
-    --name $storageAccountName \
+az_storage_endpoint_info() {
+    httpEndpoint=$(az storage account show \
+    --resource-group $RG \
+    --name $AZSTORAGENAME \
     --query "primaryEndpoints.file" | tr -d '"')
-smbPath=$(echo $httpEndpoint | cut -c7-$(expr length $httpEndpoint))
-fileHost=$(echo $smbPath | tr -d "/")
+
+    smbPath=$(echo $httpEndpoint | cut -c7-$(expr length $httpEndpoint))
+    echo "$AZSTORAGENAME samba path = $smbPath"
+
+    fileHost=$(echo $smbPath | tr -d "/")
+    echo "$AZSTORAGENAME  filehost = $fileHost"
+
+
+}
 # todo fix this (it doesn't work)
 # see https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-files
 az_copy_hpcc_to_files ()
