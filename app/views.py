@@ -60,7 +60,10 @@ def run_model():
             tic1 = "{:.2f}".format(time.time() - tic)
 
             app.logger.info('model complete, rendering template')
-            models.make_template(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis, df_convert_out_subset, table_info_subset, graph)
+
+            # generate html that could be saved to a file for viewing later
+            # commented-out for now but will be used for the job-submission system
+            # results_html = models.make_template(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis, df_convert_out_subset, table_info_subset, graph)
 
             session.clear()
 
