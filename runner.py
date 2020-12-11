@@ -1,29 +1,15 @@
 #runner.py
 # run model code from command line, seperate from the Flask application
+# save the outputfiles, or as written currently, just save the HTML file putting together the results
 # TODO : incorporate this into the flask command line using click per Flask docs
 #        eg.  flask run; flask test; flask run_model <params>
 
-# from app import app
-# import config
-
-
+# import model code from the same module used by the flask application
 from app.models import intial_ID_convert, run_model, make_template, alter_validation_df, make_validation_df
 from app.models import file_loc, data_path, max_num_genes
 
-
-
-
 import argparse
 import os
-# from dotenv import load_dotenv
-
-# load_dotenv('.env')
-
-# app.config.from_object(config.DevConfig)
-# print('data path')
-# print(os.getenv('DATA_PATH'))
-# print("config")
-# print(app.config)
 
 def read_input_gene_file(filename):
     """ convert file to array of input gene ids
@@ -81,51 +67,33 @@ if __name__ == "__main__":
     #### run it
     print("running with ")
     print(args)
-    
-    input_genes = read_input_gene_file(filename=args.genefile)
-    
-    
-    # data_path is a global var used in models.py 
-    # normally set by app.config, see if we can override with CLI arg
+
+    # data_path and fileloc are global vars in models.py
+    # used by all methods that open files
+    # normally set by app.config, setting manually here from CLI arg
     data_path = args.data_path
     file_loc = 'local'
 
-    convert_IDs, df_convert_out = intial_ID_convert(input_genes)
-    print(convert_IDs)
 
+    # 1. read gene file and convert it
+    input_genes = read_input_gene_file(filename=args.genefile)
+    convert_IDs, df_convert_out = intial_ID_convert(input_genes)
     df_convert_out, table_info = make_validation_df(df_convert_out)
+    # this is in views.py, but not used by make_template()
     # df_convert_out_subset, table_info_subset = alter_validation_df(
     #     df_convert_out, table_info, 
     #     net_type=args.net_type)
 
-    
-
+    # 2. run model 
     graph, df_probs, df_GO, df_dis, avgps = run_model(convert_IDs, net_type=args.net_type, features=args.features, GSC=args.GSC) #, data_path=args.data_path)
 
-    # this writes an html file in current dir based on jobname
+    # TODO : write all of these to disk if we want to change the presentation or review for debugging
 
+    # 3. write an html file in current dir based on jobname
+    # TODO modify this method to specify a full path for writing out
+    #      OR simply return HTML and do not write file
     make_template(job=args.jobname,  net_type=args.net_type, features=args.features, GSC=args.GSC, 
                   avgps=avgps, df_probs=df_probs, df_GO=df_GO, df_dis=df_dis, 
                   df_convert_out=df_convert_out, table_info=table_info, graph=graph)
 
     # TODO check if the file was written
-
-
-
-
-
-
-    # NOTES
-    # the goal of this is to  
-    # 1) save html template that can be read by the application 
-    # 2) save files that could later be read in by the application to generate a view
-        #    return render_template("results.html", tic1=tic1, form=form, graph=graph, avgps=avgps, table_info=table_info_subset,
-        #                           probs_table=df_probs.to_html(index=False,
-        #                                                        classes='table table-striped table-bordered" id = "probstable'),
-        #                           go_table=df_GO.to_html(index=False,
-        #                                                  classes='table table-striped table-bordered nowrap" style="width: 100%;" id = "gotable'),
-        #                           dis_table=df_dis.to_html(index=False,
-        #                                                    classes='table table-striped table-bordered" id = "distable'),
-        #                           validate_table=df_convert_out_subset.to_html(index=False,
-        #                                                                        classes='table table-striped table-bordered" id = "validatetable')
-        #                           )
