@@ -1,0 +1,8 @@
+FLASK_ENV=development
+FLASK_DEBUG=TRUE
+DATA_PATH=/home/dockeruser/data_backend
+GENE_FILE=/home/dockeruser/job/input_genes_newlines.txt
+GP_NET_TYPE=BioGrid
+GP_FEATURES=Embedding
+GP_GSC=GO
+JOBNAME=docker_job

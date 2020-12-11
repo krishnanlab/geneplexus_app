@@ -57,3 +57,36 @@ docker rm geneplexus_container
 # re-build
 # re-run
 ```
+
+# Building the Backend Container
+
+There is a second docker container that is for running just the backend.  This uses the same codebase as the app, even though there 
+are files and python packages in the app that are unnecessary - it makes it easier to maintain one codebase.  
+
+The Dockerfile is `Dockerfile_backend`
+
+
+### build
+
+`docker build -t geneplexus_backend:latest -f Dockerfile_backend .`
+
+notice the trailing dot
+
+### Run
+
+Test run (on Linux/MacOS): 
+
+```
+LOCAL_DATA_PATH=/Volumes/compbio/krishnanlab/projects/GenePlexus/repos/GenePlexusBackend/data_backend 
+docker run --env-file azure/dockerenv -v $LOCAL_DATA_PATH:/home/dockeruser/data_backend -v $(PWD):/home/dockeruser/job   geneplexus_backend:latest
+```
+
+And what should happen is that you have an html file with the name docker_job.html in the folder
+
+### testing the image by logging in with bash
+
+
+```
+LOCAL_DATA_PATH=/Volumes/compbio/krishnanlab/projects/GenePlexus/repos/GenePlexusBackend/data_backend 
+docker run -it --env-file azure/dockerenv -v $LOCAL_DATA_PATH:/home/dockeruser/data_backend -v $(PWD):/home/dockeruser/job  --entrypoint=""  geneplexus_backend:latest bash
+```
