@@ -63,7 +63,8 @@ az_set_vars ()
     export TAG=latest  # TODO => rename to AZDOCKERTAG
 
     export AZSTORAGENAME="${APPNAME}storage"
-    export AZCONTAINERNAME="${APPNAME}files"
+    export AZCONTAINERNAME="${APPNAME}storagecontainer"
+    export AZSHARENAME="${APPNAME}files"
 }
 
 ### should check if $RG is a group and if not create it
@@ -397,7 +398,7 @@ export AZSTORAGEKEY=$(az storage account keys list -g $RG -n $AZSTORAGENAME --qu
 
 az storage share create --account-name  $AZSTORAGENAME --name $AZSHARENAME --account-key $AZSTORAGEKEY --enabled-protocol SMB 
 
-## to create the storage, the app needs an "identity"  
+## to access the storage, the app needs an "identity"  
 
 AZAPPIDENTITY=$(az webapp identity assign --resource-group $RG --name $APPNAME --query principalId --output tsv)
 
@@ -408,13 +409,6 @@ az webapp config storage-account add --resource-group $RG \
     --share-name $AZSHARENAME \
     --account-name $AZSTORAGENAME --access-key $AZSTORAGEKEY \
     --mount-path /mnt
-
-az webapp config storage-account add --resource-group $RG \
-    --name $APPNAME \
-    --custom-id $AZAPPIDENTITY \
-    --storage-type AzureFiles \
-    --share-name $AZSHARENAME \
-    --account-name $AZSTORAGENAME --access-key $AZSTORAGEKEY \\
 }
  
 az_storage_endpoint_info() {
@@ -431,7 +425,7 @@ az_storage_endpoint_info() {
 
 
 }
-# todo fix this (it doesn't work)
+# todo improve this
 # see https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-files
 az_copy_hpcc_to_files ()
 {

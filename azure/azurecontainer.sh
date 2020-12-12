@@ -2,51 +2,104 @@ source azure/azuredeploy.sh
 # set ACR, etc
 az_set_vars
 
-export AZCONTAINERNAME=${IMAGE}_backend
-export BACKEND_IMAGE=$AZCONTAINERNAME
+#TODO  use variable 'suffix' to genericize 'backend' here
+export AZDOCKERCONTAINERNAME=${IMAGE}-backend
+export BACKEND_IMAGE=$AZDOCKERCONTAINERNAME
 export AZBACKENDIMAGE_URL=$ACR.azurecr.io/$BACKEND_IMAGE:$TAG
+export DOCKERFILE="Dockerfile-backend"
 
 build_docker_backend ()
 {
-  az acr build -t $BACKEND_IMAGE:$TAG -r $ACR .
+  az acr build -t $BACKEND_IMAGE:$TAG -r $ACR --file $DOCKERFILE .
 }
 
-test_create_container ()
+get_storage_key()
 {
+  THIS_STORAGE_ACCOUNT=$1
+  STORAGE_KEY=$(az storage account keys list --resource-group $RG --account-name $THIS_STORAGE_ACCOUNT --query "[0].value" --output tsv)
+  echo $STORAGE_KEY
+}
+
+
+
+run_geneplexus_container ()
+{
+
 
 # DNS_NAME_LABEL=${APPNAME}-$RANDOM
 # echo "using $DNS_NAME_LABEL"
 
-CONTAINER_ENV_VARS=`paste -sd " " azure/dockerenv`
+# PARAMS: use param for jobname, input file name but otherwise this is geared for running the geneplexus backend docker container
+JOBNAME=${1:-testjob}
+GENE_FILE_NAME=${2:-input_genes.txt}
+
+
+SKEY=$(get_storage_key $AZSTORAGENAME)
+CONTAINER_MOUNT_PATH=/home/dockeruser/$AZSHARENAME
+
+# setting memory could be done depending on the size of the network
+$MEMORY_NEEDED=4.0
+
+# create local file to hold env vars
+# WORKDIR=$(mktemp -d "${TMPDIR:-/tmp/}$(basename $0).XXXXXXXXXXXX")
+# LOCAL_ENV_VARS_FILE=$WORKDIR/dockerenv
+# touch $LOCAL_ENV_VARS_FILE
+
+CONTAINER_ENV_VARS=""
+CONTAINER_ENV_VARS="$CONTAINER_ENV_VARS FLASK_ENV=development"
+CONTAINER_ENV_VARS="$CONTAINER_ENV_VARS FLASK_DEBUG=TRUE" 
+CONTAINER_ENV_VARS="$CONTAINER_ENV_VARS GP_NET_TYPE=BioGRID" 
+CONTAINER_ENV_VARS="$CONTAINER_ENV_VARS GP_FEATURES=Embedding" 
+CONTAINER_ENV_VARS="$CONTAINER_ENV_VARS GP_GSC=GO" 
+CONTAINER_ENV_VARS="$CONTAINER_ENV_VARS JOBNAME=${JOBNAME}"
+# add paths to env vars
+CONTAINER_ENV_VARS="$CONTAINER_ENV_VARS DATA_PATH=$CONTAINER_MOUNT_PATH/data_backend" 
+CONTAINER_ENV_VARS="$CONTAINER_ENV_VARS GENE_FILE=$CONTAINER_MOUNT_PATH/jobs/${JOBNAME}/input_genes.txt" 
+CONTAINER_ENV_VARS="$CONTAINER_ENV_VARS OUTPUT_FILE=$CONTAINER_MOUNT_PATH/jobs/${JOBNAME}/results.html" 
+
+echo "ENV VARS = $CONTAINER_ENV_VARS"
+
+AZ_ACR_PW=$(az acr credential show --name $ACR -g $RG  --output tsv  --query="passwords[0]|value")
+
+# ref https://docs.microsoft.com/en-us/cli/azure/container?view=azure-cli-latest#az_container_create
+
+echo "creating container instance ${AZDOCKERCONTAINERNAME}"
+echo "pulling from ${AZBACKENDIMAGE_URL}"
 az container create \
   --resource-group $RG \
-  --name $AZCONTAINERNAME \
-  --image $AZBACKENDIMAGE_URL \
-  --location $AZLOCATION
-  --os-type Linux
-  --restart-policy Never
-  --environment-variables $CONTAINER_ENV_VARS
+  --name ${AZDOCKERCONTAINERNAME} \
+  --image ${AZBACKENDIMAGE_URL} \
+  --registry-username $ACR \
+  --registry-password $AZ_ACR_PW \
+  --location $AZLOCATION \
+  --os-type Linux \
+  --memory $MEMORY_NEEDED
+  --restart-policy Never \
+  --environment-variables $CONTAINER_ENV_VARS \
+  --azure-file-volume-account-key $SKEY \
+  --azure-file-volume-account-name $AZSTORAGENAME \
+  --azure-file-volume-mount-path $CONTAINER_MOUNT_PATH \
+  --azure-file-volume-share-name $AZSHARENAME
+  --tags project=$PROJECT
 
-  # --azure-file-volume-account-key
-  # --azure-file-volume-account-name
-  # --azure-file-volume-mount-path
-  # --azure-file-volume-share-name
-#   --dns-name-label $DNS_NAME_LABEL \
+
+# this should create instance, pull the container, run the instance, which saves a file to $OUTPUT_FILE from the $CONTAINER_ENV_VARS list
+
 
 echo "container status"
 az container show \
   --resource-group $RG \
-  --name $AZCONTAINERNAME \
+  --name ${AZDOCKERCONTAINERNAME} \
   --query containers[0].instanceView.currentState.state
 
 az container logs \
   --resource-group $RG \
-  --name $AZCONTAINERNAME
+  --name ${AZDOCKERCONTAINERNAME}
 
 # I'm guessing on this one
 az container delete \
   --resource-group $RG \
-  --name $AZCONTAINERNAME \
+  --name ${AZDOCKERCONTAINERNAME} \
 
 # echo "getting container FQDN (may not be used for batch containers"
 # az container show \
@@ -142,3 +195,6 @@ az container show \
 
 # connecting to azure storage from a container
 # 1) use managed identities https://docs.microsoft.com/en-us/azure/container-instances/container-instances-managed-identity
+
+# triggering from azure function
+# https://docs.microsoft.com/en-us/azure/container-instances/container-instances-tutorial-azure-function-trigger

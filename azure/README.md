@@ -63,12 +63,12 @@ docker rm geneplexus_container
 There is a second docker container that is for running just the backend.  This uses the same codebase as the app, even though there 
 are files and python packages in the app that are unnecessary - it makes it easier to maintain one codebase.  
 
-The Dockerfile is `Dockerfile_backend`
+The Dockerfile is `Dockerfile-backend`
 
 
 ### build
 
-`docker build -t geneplexus_backend:latest -f Dockerfile_backend .`
+`docker build -t geneplexus_backend:latest -f Dockerfile-backend .`
 
 notice the trailing dot
 
@@ -114,3 +114,8 @@ And what should happen is that you have an html file with the name docker_job.ht
 LOCAL_DATA_PATH=/Volumes/compbio/krishnanlab/projects/GenePlexus/repos/GenePlexusBackend/data_backend 
 docker run -it --env-file azure/dockerenv -v $LOCAL_DATA_PATH:/home/dockeruser/data_backend -v $(PWD):/home/dockeruser/job  --entrypoint=""  geneplexus_backend:latest bash
 ```
+
+Using On Azure Container Instance
+
+With container instance it's possible to mount multiple shares (one for backend data, one for results) but here we are just using one for simplicity (otherwise we need to use ARM templates). 
+
