@@ -19,12 +19,8 @@
                     <li class="navbar-item active">
                         <a class="nav-link"  href="{{ url_for('about') }}">About</a>
                     </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Jobs </a>
-                            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                                <li><a class="dropdown-item" href="#">job #1</a></li>
-                                <li><a class="dropdown-item" href="#">job #2</a></li>
-                            </ul>
+                    <li class="navbar-item active">
+                        <a class="nav-link"  href="{{ url_for('jobs') }}">Jobs</a>
                     </li>
                 </ul>
             </div>
@@ -37,28 +33,32 @@
                        <br>
                        <fieldset class="border box_padding fieldset">
                            <label>
-                               1. Upload File of Genes
+                               1. Input Genes
                            </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                                  data-content="Upload a file of Gene Ids.  File must delimited by
-                                  a newline (i.e. each gene is on a separate line"><i class="fas fa-question-circle"></i></a>
+                                  data-content="Upload a file of Gene Ids or Enter/Paste them manually.
+                                  An input File must delimited by a newline
+                                  (i.e. each gene is on a separate line"><i class="fas fa-question-circle"></i></a>
                            <div>
-                                <span id='button' class="btn btn-sm">Select File</span>
-                                <span id="val"></span>
-                                <div class="box_padding">
-                                    <input class=" btn btn-sm"
-                                           type="file"
-                                           title=" "
-                                           name="input_genes"
-                                           accept="txt/csv"
-                                           />
-                                </div>
+                                <span id="geneButton" class="btn btn-sm">Input Genes from File</span>
+                                <span id="filename" class="text-center"></span>
+                                <input class="btn btn-sm btn-outline-primary py-0" style="font-size: 0.0em;"
+                                       type="file"
+                                       title=" "
+                                       name="input_genes"
+                                       accept="txt/csv"
+                                       />
                            </div>
                            <label>Or</label>
-                           <div class="box_padding">
-                                <div class="form-group">
-                                  <label for="enterGenes">Enter / Paste Genes</label>
-                                  <textarea class="form-control rounded-0" id="enterGenes" rows="5"></textarea>
-                                </div>
+                           <div class="button_padding">
+                               <!-- Button trigger modal -->
+                                <button type="button" id="geneBtn" class="btn btn-sm"  data-toggle="modal" data-target="#geneModal">
+                                  Enter / Paste Genes
+                                </button>
+                           </div>
+                           <div class="button_padding">
+                                <button type="button" id="geneClear" class="btn btn-sm"  onclick="clearInput()">
+                                  Clear Input
+                                </button>
                            </div>
                            <br>
                            <label>
@@ -66,7 +66,7 @@
                            </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
                                   data-content="Before the model can be run, validate the gene file against all network
                                    to ensure enough data for meaningful results"><i class="fas fa-question-circle"></i></a>
-                            <div class="col text-center">
+                            <div class="button_padding">
                                 <input type="submit" disabled name="submit_button" class="btn btn-sm border dark" value="Validate File">
                             </div>
                            <br>
@@ -91,6 +91,28 @@
                     <div id="loading" class="fa-5x"><i class="fas fa-spinner fa-spin"></i></div>
                 </div>
             </div>
+        </div>
+        <!-- Modal -->
+        <div class="modal fade" id="geneModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <form id="modal-form" method="POST", enctype="multipart/form-data"></form>
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Enter or Paste List of Genes</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                          <span aria-hidden="true">&times;</span>
+                        </button>
+                      </div>
+                      <div class="modal-body">
+                        <textarea class="form-control rounded-0" id="enterGenes" rows="25"></textarea>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" onclick="saveGenes()">Save Genes</button>
+                      </div>
+                </form>
+            </div>
+          </div>
         </div>
         <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>

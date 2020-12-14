@@ -271,7 +271,7 @@ def run_model(convert_IDs, net_type, GSC, features):
     return graph, df_probs, df_GO, df_dis, avgps
 
 
-def make_template(job, net_type, features, GSC, avgps, df_probs, df_GO, df_dis, df_convert_out, table_info, graph):
+def make_template(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis, df_convert_out, table_info, graph):
     # Render the Jinja template, filling fields as appropriate
     # return rendered HTML
     # Find the module absolute path and locate templates
@@ -309,7 +309,7 @@ def make_template(job, net_type, features, GSC, avgps, df_probs, df_GO, df_dis, 
         d3_tip_css = f.read()
 
     template = env.get_template('result_base.html').render(
-        job=job,
+        jobname=jobname,
         network=net_type,
         features=features,
         negativeclass=GSC,
