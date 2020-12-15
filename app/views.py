@@ -4,6 +4,7 @@ from app.forms import ValidateForm
 from app import app, models
 import uuid
 import time
+import os
 
 
 @app.route("/", methods=['GET'])
@@ -29,6 +30,25 @@ def about():
     if request.method == 'GET':
 
         return render_template("about.html")
+
+
+@app.route("/jobresults", methods=['GET'])
+def jobresults(jobname):
+    job_folder = app.config.get('JOB_PATH') + "/" + jobname
+    if os.path.exists(job_folder):
+        results_file = job_folder + "/results.html"
+        if os.path.exists(results_file):
+            with open(results_file) as f:
+                html = f.read()
+
+            return(html) # or in future, send this html to a template wrapper
+        
+        else:
+            return(f"results not found or not ready for {jobname}")
+
+    else:
+        return(f"no job found for {jobname}")
+
 
 @app.route("/results", methods=['GET','POST'])
 def results():

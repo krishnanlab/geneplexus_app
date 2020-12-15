@@ -24,6 +24,13 @@
 6.  **Download local data using the instructions under "Backend Data" below**
 
 7.  create a .env file
+    must have two entries: 
+
+```
+JOB_PATH=/path/to/job/files
+DATA_PATH=/path/to/backend/datafiles
+
+```
 
 8.  flask run    
     
