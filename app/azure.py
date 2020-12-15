@@ -6,7 +6,7 @@ from slugify import slugify
 
 def path_friendly_jobname(jobname):
     """ job name must be useable to create file paths, so remove unuesable or unicode characters"""
-    return(slufigy(jobname))
+    return(slugify(jobname))
 
 def create_input_file_name(jobname):
     return('input_genes.txt')
