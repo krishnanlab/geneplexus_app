@@ -1,6 +1,6 @@
 import requests
 import json
-import re
+import re, os
 from slugify import slugify
 
 
@@ -92,7 +92,8 @@ def launch_job(genes, job_config, app_config):
     jobname = path_friendly_jobname(job_config['jobname'])
     input_file_name = create_input_file_name(jobname)
     json_file_name = create_json_file_name(jobname)
-    local_job_folder = f"{app_config['JOB_PATH']}/jobs/{jobname}"
+    local_job_folder = f"{app_config['JOB_PATH']}/{jobname}"
+
 
     input_file_path = f"{local_job_folder}/{input_file_name}"
     json_file_path = f"{local_job_folder}/{json_file_name}"
@@ -100,9 +101,13 @@ def launch_job(genes, job_config, app_config):
     #TODO use these tidied-up file names in the job_config
     job_data = job_json(job_config, app_config)
     
+    # TODO wrap in try/catch
+    # create new folder and write files into it
+    if not os.path.isdir(local_job_folder):
+        os.mkdir(local_job_folder)
 
     with open(input_file_path, 'w') as f:
-        f.write(genes)
+        f.writelines("%s\n" % gene for gene in genes)
 
     with open(json_file_path, 'w') as f:
         f.write(job_data)
