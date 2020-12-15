@@ -22,12 +22,8 @@
                     <li class="navbar-item active">
                         <a class="nav-link"  href="{{ url_for('about') }}">About</a>
                     </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Jobs </a>
-                            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                                <li><a class="dropdown-item" href="#">job #1</a></li>
-                                <li><a class="dropdown-item" href="#">job #2</a></li>
-                            </ul>
+                    <li class="navbar-item active">
+                        <a class="nav-link"  href="{{ url_for('jobs') }}">Jobs</a>
                     </li>
                 </ul>
             </div>
@@ -38,46 +34,50 @@
                    <span>
                        <br>
                        <form id="validate-form" action="{{ url_for('validate') }}" method="POST", enctype="multipart/form-data">
-                           <fieldset class="border box_padding fieldset">
-                               <label>
-                                   1. Upload File of Genes
-                               </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                                  data-content="Upload a file of Gene Ids.  File must delimited by
-                                  a newline (i.e. each gene is on a separate line"><i class="fas fa-question-circle"></i></a>
-                               <div>
-                                    <span id='button' class="btn btn-sm">Select File</span>
-                                    <span id='val'></span>
-                                    <div class="box_padding">
-                                        <input class=" btn btn-sm"
-                                               type="file"
-                                               title=" "
-                                               name="input_genes"
-                                               accept="txt/csv"
-                                               />
-                                    </div>
-                               </div>
-                               <label>Or</label>
-                               <div class="box_padding">
-                                    <div class="form-group">
-                                      <label for="enterGenes">Enter / Paste Genes</label>
-                                      <textarea class="form-control rounded-0" id="enterGenes" rows="5"></textarea>
-                                    </div>
-                               </div>
-                               <br>
-                               <label>
-                                   2. Validate gene file
-                               </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                                      data-content="Before the model can be run, validate the gene file against all network
-                                       to ensure enough data for meaningful results"><i class="fas fa-question-circle"></i></a>
-                                <div class="col text-center">
-                                    <input type="submit" disabled name="submit_button" class="btn btn-sm border dark" value="Validate File" onclick="$('#divLoading').show();">
-                                </div>
-                               <br>
-                               <label>
-                                   3. Review Results
-                               </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                                      data-content="Review the validation results"><i class="fas fa-question-circle"></i></a>
-                           </fieldset>
+                       <fieldset class="border box_padding fieldset">
+                           <label>
+                               1. Input Genes
+                           </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                                  data-content="Upload a file of Gene Ids or Enter/Paste them manually.
+                                  An input File must delimited by a newline
+                                  (i.e. each gene is on a separate line"><i class="fas fa-question-circle"></i></a>
+                           <div>
+                                <span id="geneButton" class="btn btn-sm">Input Genes from File</span>
+                                <span id="filename" class="text-center"></span>
+                                <input class="btn btn-sm btn-outline-primary py-0" style="font-size: 0.0em;"
+                                       type="file"
+                                       title=" "
+                                       name="input_genes"
+                                       accept="txt/csv"
+                                       />
+                           </div>
+                           <label>Or</label>
+                           <div class="button_padding">
+                               <!-- Button trigger modal -->
+                                <button type="button" id="geneBtn" class="btn btn-sm"  data-toggle="modal" data-target="#geneModal">
+                                  Enter / Paste Genes
+                                </button>
+                           </div>
+                           <div class="button_padding">
+                                <button type="button" id="geneClear" class="btn btn-sm"  onclick="clearInput()">
+                                  Clear Input
+                                </button>
+                           </div>
+                           <br>
+                           <label>
+                               2. Validate gene file
+                           </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                                  data-content="Before the model can be run, validate the gene file against all network
+                                   to ensure enough data for meaningful results"><i class="fas fa-question-circle"></i></a>
+                            <div class="button_padding">
+                                <input type="submit" disabled name="submit_button" class="btn btn-sm border dark" value="Validate File">
+                            </div>
+                           <br>
+                           <label>
+                               3. Review Results
+                           </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                                  data-content="Review the validation results"><i class="fas fa-question-circle"></i></a>
+                       </fieldset>
                        </form>
                        <br>
                        <form id="model-form" action="{{ url_for('run_model') }}" method="POST", enctype="multipart/form-data">
@@ -86,9 +86,11 @@
                                    4. Job Name
                                </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
                                       data-content="A job name must be supplied so that the output can be picked up after
-                                        the model has run."><i class="fas fa-question-circle"></i></a>
+                                        the model has run.  Click the plus sign to append a hash to the job to enforce uniqueness">
+                                        <i class="fas fa-question-circle"></i></a>
                                <div>
-                                {{ form.job }}
+                                {{ form.job }}&nbsp
+                                <button type="button" class="addremove" onclick="appendHash()">+</button>
                                </div>
                                <br>
                                <label>
@@ -116,9 +118,14 @@
                                     {{ form.negativeclass }}
                                 </div>
                                 <br>
-                                <div>
-                                    <input type="submit" name="submit_button" class="select" value="Run Model" onclick="$('#divLoading').show();">
-                                </div>
+                               <div class="runButtons">
+                                   <div>
+                                        <input type="submit" name="submit_button" class="select" value="Run Model" onclick="$('#divLoading').show();">
+                                   </div>
+                                   <div>
+                                       <button type="button" class="select" value="Run Batch" onclick="runBatch()">Run Batch</button>
+                                   </div>
+                               </div>
                            </fieldset>
                        </form>
                    </span>

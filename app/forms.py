@@ -1,10 +1,10 @@
 from flask_wtf import FlaskForm
 from wtforms.validators import DataRequired
-from wtforms import FileField, SelectField, StringField
+from wtforms import FileField, SelectField, StringField, TextAreaField, SubmitField
 
-class IndexForm(FlaskForm):
-    pass
-    #genes = FileField('genes', validators=[DataRequired()])
+class ModalForm(FlaskForm):
+    genes = TextAreaField('genes')
+    submit = SubmitField('OK')
 
 
 class ValidateForm(FlaskForm):
