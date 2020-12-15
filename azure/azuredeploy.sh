@@ -402,15 +402,31 @@ az storage share create --account-name  $AZSTORAGENAME --name $AZSHARENAME --acc
 
 AZAPPIDENTITY=$(az webapp identity assign --resource-group $RG --name $APPNAME --query principalId --output tsv)
 
+# TODO send command to app service to create this mount folder
+MOUNTPATH=/home/site/$AZSHARENAME
+
+# NOTE to simply make a change to the path that is mounted, use 
+# az webapp config storage-account update -g $RG -n $APPNAME \
+#   --custom-id $AZAPPIDENTITY \
+#   --mount-path $MOUNTPATH
+# add a new mount
 az webapp config storage-account add --resource-group $RG \
     --name $APPNAME \
     --custom-id $AZAPPIDENTITY \
     --storage-type AzureFiles \
     --share-name $AZSHARENAME \
     --account-name $AZSTORAGENAME --access-key $AZSTORAGEKEY \
-    --mount-path /mnt
+    --mount-path $MOUNTPATH
 }
- 
+
+az_update_file_storage()
+{
+az webapp config storage-account update -g $RG -n $APPNAME \
+  --custom-id $AZAPPIDENTITY \
+  --mount-path $MOUNTPATH
+}
+
+
 az_storage_endpoint_info() {
     httpEndpoint=$(az storage account show \
     --resource-group $RG \
@@ -425,6 +441,7 @@ az_storage_endpoint_info() {
 
 
 }
+
 # todo improve this
 # see https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-files
 az_copy_hpcc_to_files ()
