@@ -86,6 +86,8 @@ def launch_job(genes, job_config, app_config):
          app_config["JOB_URL"] 
     """
 
+    #TODO error checking : are all needed values in app_config?
+
     # prep all the filenames and paths
     jobname = path_friendly_jobname(job_config['jobname'])
     input_file_name = create_input_file_name(jobname)
@@ -117,10 +119,8 @@ def launch_job(genes, job_config, app_config):
     return response
 
 
-def test_job():
-    from app import app 
-
-
+def test_job(test_jobname="test_job_99", input_file='input_genes.txt'):
+    from app import app
     # in calling function, Assign variables to navbar input selections
     # job_config['net_type']  # = request.form['network']
     # job_config['features']  # = request.form['feature']
@@ -131,8 +131,9 @@ def test_job():
     job_config['net_type'] = "BioGRID"
     job_config['features'] = "Embedding"
     job_config['GSC'] = "DisGeNet"
-    job_config['jobname'] = "test_job_99"
-    with open('../input_genes', 'r') as f: 
+    job_config['jobname'] = test_jobname
+    # there should be a sample input file checked into git
+    with open(input_file, 'r') as f:
         genes = f.read()
 
     print("launching")
