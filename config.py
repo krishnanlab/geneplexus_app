@@ -13,9 +13,9 @@ class BaseConfig(object):
     LOG_FILE = os.getenv('LOG_FILE', 'geneplexus_app.log')
     
     # secrets needed for launching batch jobs on azure
-    STORAGE_ACCOUNT_KEY = os.getenv('STORAGE_ACCOUNT_KEY')
-    CONTAINER_REGISTRY_PW = os.getenv('CONTAINER_REGISTRY_PW')
-    JOB_URL = os.getenv('JOB_URL')
+    STORAGE_ACCOUNT_KEY = os.getenv('STORAGE_ACCOUNT_KEY', '')
+    CONTAINER_REGISTRY_PW = os.getenv('CONTAINER_REGISTRY_PW', '')
+    JOB_URL = os.getenv('JOB_URL', '')
 
 class ProdConfig(BaseConfig):
     FLASK_ENV="production"
