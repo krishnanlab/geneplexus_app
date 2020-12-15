@@ -24,4 +24,10 @@ if not Path(logfile).exists():
 
 logging.basicConfig(filename=app.config.get('LOG_FILE'),level=logging.INFO)
 
+# job_folder configuration
+job_folder = Path(app.config.get('JOB_PATH'))
+if not job_folder.exists():
+    job_folder.mkdir()
+
+
 from app import views, models
