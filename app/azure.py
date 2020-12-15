@@ -92,7 +92,7 @@ def launch_job(genes, job_config, app_config):
     jobname = path_friendly_jobname(job_config['jobname'])
     input_file_name = create_input_file_name(jobname)
     json_file_name = create_json_file_name(jobname)
-    local_job_folder = f"{app_config['DATA_PATH']}/jobs/{jobname}"
+    local_job_folder = f"{app_config['JOB_PATH']}/jobs/{jobname}"
 
     input_file_path = f"{local_job_folder}/{input_file_name}"
     json_file_path = f"{local_job_folder}/{json_file_name}"
