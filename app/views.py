@@ -32,7 +32,7 @@ def about():
         return render_template("about.html")
 
 
-@app.route("/jobresults", methods=['GET'])
+@app.route("/jobs/<jobname>", methods=['GET'])
 def jobresults(jobname):
     job_folder = app.config.get('JOB_PATH') + "/" + jobname
     if os.path.exists(job_folder):
@@ -41,13 +41,19 @@ def jobresults(jobname):
             with open(results_file) as f:
                 html = f.read()
 
+            app.logger.info(f"retrieiving results for {jobname}")
+
             return(html) # or in future, send this html to a template wrapper
         
         else:
-            return(f"results not found or not ready for {jobname}")
+            app.logger.info(f"folder, but no results for '{jobname}'")
+            return(f"results not found or not ready for job name = '{jobname}'")
+            # TODO return(redirect('/jobs')) # but with custom message about job status
 
     else:
-        return(f"no job found for {jobname}")
+        app.logger.info(f"no folder for requested job '{jobname}'")
+        return(f"no job found for job name = '{jobname}'")
+        # TODO return(redirect('/jobs')) # but with error message no job found
 
 
 @app.route("/results", methods=['GET','POST'])
