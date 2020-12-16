@@ -28,7 +28,7 @@ def job_json(job_config, app_config):
     docker_image_config = {
         "imageName": "geneplexus-backend",
         "registry": {
-            "server": "krishnanlabgeneplexusacr.azurecr.io/geneplexus-backend:latest",
+            "server": "krishnanlabgeneplexusacr.azurecr.io",
             "username": "krishnanlabgeneplexusacr",
             "password": app_config["CONTAINER_REGISTRY_PW"]
         }
