@@ -83,8 +83,8 @@ def validate():
             no_quotes = string.translate(str.maketrans({"'": None}))
             #input_genes_list = no_quotes.split(",") # turn into a list
             input_genes_list = no_quotes.splitlines()  # turn into a list
-            input_genes = [x.strip(' ') for x in input_genes_list]  # remove any whitespace
-            session['genes'] = models.read_input_file(f)
+            # remove any whitespace
+            session['genes'] = [x.strip(' ') for x in input_genes_list]
 
         input_genes = session['genes']
 
