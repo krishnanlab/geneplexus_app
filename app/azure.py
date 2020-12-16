@@ -26,7 +26,7 @@ def create_json_file_name(jobname):
 def job_json(job_config, app_config):
 
     docker_image_config = {
-        "imageName": "geneplexus-backend",
+        "imageName": "krishnanlabgeneplexusacr.azurecr.io/geneplexus-backend:latest",
         "registry": {
             "server": "krishnanlabgeneplexusacr.azurecr.io",
             "username": "krishnanlabgeneplexusacr",
@@ -64,7 +64,7 @@ def job_json(job_config, app_config):
 
     job_data = {
         "aciName": "geneplexus-backend",
-        "location": "northcentralus",
+        "location": "centralus",
         "memoryInGB": 10,
         "cpu": 2,
         "volumeMount": volume_config,
