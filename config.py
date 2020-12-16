@@ -15,6 +15,7 @@ class BaseConfig(object):
     # secrets needed for launching batch jobs on azure
     STORAGE_ACCOUNT_KEY = os.getenv('STORAGE_ACCOUNT_KEY', '')
     CONTAINER_REGISTRY_PW = os.getenv('CONTAINER_REGISTRY_PW', '')
+    BASE_CONTAINER_PATH = os.getenv('BASE_CONTAINER_PATH', '')
     JOB_URL = os.getenv('JOB_URL', '')
 
 class ProdConfig(BaseConfig):

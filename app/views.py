@@ -1,3 +1,5 @@
+from app.azure import path_friendly_jobname, launch_job
+
 from werkzeug.exceptions import InternalServerError
 from flask import request, render_template, jsonify, session, redirect, url_for
 from app.forms import ValidateForm
@@ -41,17 +43,14 @@ def jobresults(jobname):
             with open(results_file) as f:
                 html = f.read()
 
-            app.logger.info(f"retrieiving results for {jobname}")
-
             return(html) # or in future, send this html to a template wrapper
         
         else:
-            app.logger.info(f"folder, but no results for '{jobname}'")
             return(f"results not found or not ready for job name = '{jobname}'")
             # TODO return(redirect('/jobs')) # but with custom message about job status
 
     else:
-        app.logger.info(f"no folder for requested job '{jobname}'")
+
         return(f"no job found for job name = '{jobname}'")
         # TODO return(redirect('/jobs')) # but with error message no job found
 
@@ -186,36 +185,27 @@ def uploadgenes():
     return jsonify(success=True, filename=file)
 
 
-@app.route("/runbatch", methods=['GET','POST'])
+@app.route("/runbatch", methods=['POST'])
 def runbatch():
+    """post-only route to submit job to the cloud (azure) """
+    job_config = {}
 
-    if request.method == 'POST':
-        # Assign variables to navbar input selections
-        net_type = request.form['network']
-        features = request.form['feature']
-        GSC = request.form['negativeclass']
-        jobname = request.form['jobname']
+    # Assign variables to dict to send to launcher
 
-        # run all the components of the model and pass to the results form
-        convert_IDs, df_convert_out = models.intial_ID_convert(session['genes'])
+    job_config['net_type']  = request.form['network']
+    job_config['features']  = request.form['feature']
+    job_config['GSC']   = request.form['negativeclass']
+    job_config['jobname'] = request.form['jobname']
 
-        app.logger.info('running model, jobname %s', jobname)
+    print("launching job with job config =")
+    print(job_config)
+    
+    response = launch_job(session['genes'], job_config, app.config)
+    print("response = ", response)
 
-        tic = time.time()
-        df_convert_out, table_info = models.make_validation_df(df_convert_out)
-        df_convert_out_subset, table_info_subset = models.alter_validation_df(df_convert_out, table_info, net_type)
-        graph, df_probs, df_GO, df_dis, avgps = models.run_model(convert_IDs, net_type, GSC, features)
-        tic1 = "{:.2f}".format(time.time() - tic)
+    session.clear()
 
-        app.logger.info('model complete, rendering template')
-
-        # generate html that could be saved to a file for viewing later
-        # commented-out for now but will be used for the job-submission system
-        results_html = models.make_template(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis, df_convert_out_subset, table_info_subset, graph)
-
-        session.clear()
-
-        return redirect('jobs')
+    return redirect('jobs')
 
 
 @app.errorhandler(InternalServerError)
