@@ -2,3 +2,8 @@ FLASK_ENV=development
 FLASK_DEBUG=TRUE
 DATA_PATH=/home/site/wwwroot/app/data_backend/
 JOB_PATH=/home/site/geneplexusfiles/jobs
+BASE_CONTAINER_PATH=/home/dockeruser/geneplexusfiles
+# update these post-deploy
+STORAGE_ACCOUNT_KEY=''
+CONTAINER_REGISTRY_PW=''
+JOB_URL=''
