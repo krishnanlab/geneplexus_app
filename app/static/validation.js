@@ -1,22 +1,29 @@
 $('[data-toggle="popover"]').popover();
 
-$('#geneButton').click(function(){
-   $("input[type='file']").trigger('click');
-})
+$(document).ready(function ()
+{
+    $('#geneButton').click(function(){
+    $("input[type='file']").trigger('click');
+    })
 
+    // when model form submitted, show spinner (both for local run and remote trigger)
+    $("#model-form").on("submit", function () {
+        $('#divLoading').show();
+    });
 
-$('input:file').change(
-    function(){
-        if ($(this).val()) {
-            $('#filename').text(this.value.replace(/C:\\fakepath\\/i, ''))
-            $('input:submit').attr('disabled',false);
-            $('#geneBtn').prop('disabled',true);
-            console.log()
-            var file = this.files[0];
-            uploadFile(file);
-    }
+    $('input:file').change(
+        function(){
+            if ($(this).val()) {
+                $('#filename').text(this.value.replace(/C:\\fakepath\\/i, ''))
+                $('input:submit').attr('disabled',false);
+                $('#geneBtn').prop('disabled',true);
+                console.log()
+                var file = this.files[0];
+                uploadFile(file);
+        }
+    });
+
 });
-
 function uploadFile(file){
     var formData = new FormData();
     formData.append('formData', file);
@@ -89,25 +96,25 @@ function appendHash(){
     event.preventDefault();
 };
 
+// run batch now works through same flask route as run local
+// function runBatch(){
+//     var jobname = $('#job').val();
+//     var nettype = $('#network').val();
+//     var features = $('#features').val();
+//     var GSC = $('#negativeclass').val();
 
-function runBatch(){
-    var jobname = $('#job').val();
-    var nettype = $('#network').val();
-    var features = $('#features').val();
-    var GSC = $('#negativeclass').val();
-
-    $.ajax({
-        data: {
-            jobname: jobname,
-            network: nettype,
-            feature: features,
-            negativeclass: GSC,
-        },
-      type: 'POST',
-      url: "/runbatch",
-      success: function(data){
-        console.log(data.success);
-      }
-    });
-    event.preventDefault();
-};
+//     $.ajax({
+//         data: {
+//             jobname: jobname,
+//             network: nettype,
+//             feature: features,
+//             negativeclass: GSC,
+//         },
+//       type: 'POST',
+//       url: "/runbatch",
+//       success: function(data){
+//         console.log(data.success);
+//       }
+//     });
+//     event.preventDefault();
+// };

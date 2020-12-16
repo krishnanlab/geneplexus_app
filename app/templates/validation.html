@@ -120,10 +120,12 @@
                                 <br>
                                <div class="runButtons">
                                    <div>
-                                        <input type="submit" name="submit_button" class="select" value="Run Model" onclick="$('#divLoading').show();">
+                                        {{ form.runlocal }}
+                                        <!-- <input id="run_model_button" type="submit" name="submit_button" class="select" value="Run Model" onclick="$('#divLoading').show();"> -->
                                    </div>
                                    <div>
-                                       <button type="button" class="select" value="Run Batch" onclick="runBatch()">Run Batch</button>
+                                        {{ form.runbatch }}
+                                       <!-- <button type="button" class="select" value="Run Batch" onclick="runBatch()">Run Batch</button> -->
                                    </div>
                                </div>
                            </fieldset>

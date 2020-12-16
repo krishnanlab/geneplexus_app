@@ -31,3 +31,6 @@ class ValidateForm(FlaskForm):
     network = SelectField('network', choices=networks, default=None, validators=[DataRequired()])
     features = SelectField('features', choices=features, default=None, validators=[DataRequired()])
     negativeclass = SelectField('negativeclass', choices=negativeclass, default=None, validators=[DataRequired()])
+
+    runbatch = SubmitField(label='Run batch')
+    runlocal = SubmitField(label='Run local')

@@ -75,17 +75,18 @@ def validate():
 
     elif request.method == 'POST':
         app.logger.info('validate button')
-        if 'genes' in session:
-            input_genes= session['genes']
-        else:
+        if not 'genes' in session:
             f = request.files['input_genes'] # read in the file
-            string = f.stream.read().decode("UTF8") # convert the FileStorage object to a string
-            no_quotes = string.translate(str.maketrans({"'":None})) # remove any single quotes if they exist
+            # convert the FileStorage object to a string
+            string = f.stream.read().decode("UTF8")
+            # remove any single quotes if they exist
+            no_quotes = string.translate(str.maketrans({"'": None}))
             #input_genes_list = no_quotes.split(",") # turn into a list
             input_genes_list = no_quotes.splitlines()  # turn into a list
-            input_genes = [x.strip(' ') for x in input_genes_list] # remove any whitespace
-            session['genes'] = input_genes
+            input_genes = [x.strip(' ') for x in input_genes_list]  # remove any whitespace
+            session['genes'] = models.read_input_file(f)
 
+        input_genes = session['genes']
 
         # run all the components of the model and pass to the results form
         convert_IDs, df_convert_out = models.intial_ID_convert(input_genes)
@@ -95,54 +96,84 @@ def validate():
                                validate_table=df_convert_out.to_html(index=False,
                                                                      classes='table table-striped table-bordered" id = "validatetable'))
 
-@app.route("/run_model", methods=['GET', 'POST'])
+@app.route("/run_model", methods=['POST'])
 def run_model():
+    """post-only route to run model locally or trigger cloud, depending on button """
     form = ValidateForm()
-    if request.method == 'POST':
-        # 'genes' exists as a session variable, use that data for subsequent requests
-        # if it doesn't, no data has been loaded yet so get the data from a selected file
+    # 'genes' exists as a session variable, use that data for subsequent requests
+    # if it doesn't, no data has been loaded yet so get the data from a selected file
+    if 'genes' in session:
+        input_genes = session['genes']
 
-        if 'genes' in session:
-            input_genes = session['genes']
+    # if genes are not in the session, 500 server error? read in genes?
+    # else:
+    #    f = request.files['input_genes']  # read in the file
+    #    input_genes = models.read_input_file(f)
 
-        # Assign variables to navbar input selections
-        net_type = form.network.data
-        features = form.features.data
-        GSC = form.negativeclass.data
+    
+    # Assign variables to navbar input selections
+    net_type = form.network.data
+    features = form.features.data
+    GSC = form.negativeclass.data
 
-        jobname = form.job.data
+    jobname = form.job.data
+
+    if form.runbatch.data :
+
+        # create dictionary for easy parameter passing
+        job_config = {}
+        job_config['net_type'] = net_type
+        job_config['features'] = features
+        job_config['GSC'] = GSC
+        job_config['jobname'] = jobname
+
+        print("launching job with job config =")
+        print(job_config)
+
+        response = launch_job(session['genes'], job_config, app.config)
+        print("response = ", response)
+
+        session.clear()
+
+        return redirect('jobs')
+
+    if form.runlocal.data : 
 
         # run all the components of the model and pass to the results form
         convert_IDs, df_convert_out = models.intial_ID_convert(input_genes)
 
-        if request.form['submit_button'] == 'Run Model':
-            app.logger.info('running model, jobname %s', jobname)
 
-            tic = time.time()
-            df_convert_out, table_info = models.make_validation_df(df_convert_out)
-            df_convert_out_subset, table_info_subset = models.alter_validation_df(df_convert_out,table_info,net_type)
-            graph, df_probs, df_GO, df_dis, avgps = models.run_model(convert_IDs, net_type, GSC, features)
-            tic1 = "{:.2f}".format(time.time() - tic)
+        # this runs the model on the spot
+        # note we should also create job folder, and save results there, too
+        app.logger.info('running model, jobname %s', jobname)
 
-            app.logger.info('model complete, rendering template')
+        tic = time.time()
+        df_convert_out, table_info = models.make_validation_df(df_convert_out)
+        df_convert_out_subset, table_info_subset = models.alter_validation_df(df_convert_out,table_info,net_type)
+        graph, df_probs, df_GO, df_dis, avgps = models.run_model(convert_IDs, net_type, GSC, features)
+        tic1 = "{:.2f}".format(time.time() - tic)
 
-            # generate html that could be saved to a file for viewing later
-            # commented-out for now but will be used for the job-submission system
-            # results_html = models.make_template(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis, df_convert_out_subset, table_info_subset, graph)
+        app.logger.info('model complete, rendering template')
 
-            session.clear()
+        # generate html that could be saved to a file for viewing later
+        # commented-out for now but will be used for the job-submission system
+        # TODO save these results as a file just like 
+        # results_html = models.make_template(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis, df_convert_out_subset, table_info_subset, graph)
 
-            return render_template("results.html", tic1=tic1, form=form, graph=graph, avgps=avgps, table_info=table_info_subset,
-                                   probs_table=df_probs.to_html(index=False,
-                                                                classes='table table-striped table-bordered" id = "probstable'),
-                                   go_table=df_GO.to_html(index=False,
-                                                          classes='table table-striped table-bordered nowrap" style="width: 100%;" id = "gotable'),
-                                   dis_table=df_dis.to_html(index=False,
-                                                            classes='table table-striped table-bordered" id = "distable'),
-                                   validate_table = df_convert_out_subset.to_html(index=False,
-                                                    classes='table table-striped table-bordered" id = "validatetable')
-                                   )
+        session.clear()
 
+        return render_template("results.html", tic1=tic1, form=form, graph=graph, avgps=avgps, table_info=table_info_subset,
+                                probs_table=df_probs.to_html(index=False,
+                                                            classes='table table-striped table-bordered" id = "probstable'),
+                                go_table=df_GO.to_html(index=False,
+                                                        classes='table table-striped table-bordered nowrap" style="width: 100%;" id = "gotable'),
+                                dis_table=df_dis.to_html(index=False,
+                                                        classes='table table-striped table-bordered" id = "distable'),
+                                validate_table = df_convert_out_subset.to_html(index=False,
+                                                classes='table table-striped table-bordered" id = "validatetable')
+                                )
+    # submit button value is neither possibility
+    return("invalid form data ")
 
 @app.route("/appendhash", methods=['GET','POST'])
 def appendhash():
@@ -184,28 +215,6 @@ def uploadgenes():
 
     return jsonify(success=True, filename=file)
 
-
-@app.route("/runbatch", methods=['POST'])
-def runbatch():
-    """post-only route to submit job to the cloud (azure) """
-    job_config = {}
-
-    # Assign variables to dict to send to launcher
-
-    job_config['net_type']  = request.form['network']
-    job_config['features']  = request.form['feature']
-    job_config['GSC']   = request.form['negativeclass']
-    job_config['jobname'] = request.form['jobname']
-
-    print("launching job with job config =")
-    print(job_config)
-    
-    response = launch_job(session['genes'], job_config, app.config)
-    print("response = ", response)
-
-    session.clear()
-
-    return redirect('jobs')
 
 
 @app.errorhandler(InternalServerError)
