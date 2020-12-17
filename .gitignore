@@ -13,3 +13,4 @@ __pycache
 
 # log files
 *.log
+/app/jobs/
