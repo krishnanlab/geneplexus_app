@@ -5,7 +5,7 @@ import os
 class BaseConfig(object):
     SECRET_KEY = os.getenv("SECRET_KEY", "topsecret")
     #FLASK_APP = os.getenv("FLASK_APP", "geneplexus_app")
-    MAX_NUM_GENES = 1000
+    MAX_NUM_GENES = 50
     # prefix for finding all backend data.   Must end with path separtor
     # currently POSIX only
     DATA_PATH = os.getenv('DATA_PATH','./app/data_backend') + "/" 

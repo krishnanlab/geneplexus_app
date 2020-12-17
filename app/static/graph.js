@@ -8,7 +8,7 @@ var g = svg.append('g')
     .attr("class", "everything");
 
 // define scale variable and range for node sizing
-var nodescale = d3.scaleLinear().domain([0, .1]).range([1, 10])
+var nodescale = d3.scaleLinear().domain([0, .3]).range([1, 10])
 
 
 var items = [
@@ -75,15 +75,11 @@ function initializeSimulation() {
 
 // values for all forces
 forceProperties = {
-    center: {
-        x: 0.4,
-        y: 0.4
-    },
     charge: {
         enabled: true,
-        strength: -1200,
+        strength: -1500,
         distanceMin: 1,
-        distanceMax: 2000
+        distanceMax: 150
     },
     collide: {
         enabled: true,
@@ -93,7 +89,7 @@ forceProperties = {
     },
     link: {
         enabled: true,
-        distance: 30,
+        distance: 100,
         iterations: 1
     }
 }
@@ -112,10 +108,6 @@ function initializeForces() {
 
 // apply new force properties
 function updateForces() {
-    // get each force by name and update the properties
-    simulation.force("center")
-        .x(width * forceProperties.center.x)
-        .y(height * forceProperties.center.y);
     simulation.force("charge")
         .strength(forceProperties.charge.strength * forceProperties.charge.enabled)
         .distanceMin(forceProperties.charge.distanceMin)
