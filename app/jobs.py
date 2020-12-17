@@ -27,10 +27,13 @@ def create_json_file_name(jobname):
 
 
 def job_json(job_config, app_config):
+    """build the data payload for the http trigger """ 
+    
 
-    # TODO remove all of this from this app
+    # TODO potentially remove all of this from this app
+
     docker_image_config = {
-        "imageName": "krishnanlabgeneplexusacr.azurecr.io/geneplexus-backend:latest",
+        "imageName": "krishnanlabgeneplexusacr.azurecr.io/geneplexus-backend:backend2",
         "registry": {
             "server": "krishnanlabgeneplexusacr.azurecr.io",
             "username": "krishnanlabgeneplexusacr",
@@ -63,7 +66,7 @@ def job_json(job_config, app_config):
         "GP_FEATURES": job_config['features'],
         "GP_GSC": job_config['GSC'],
         "JOBNAME": job_config['jobname'],
-        "DATA_PATH": f"{container_mount_path}/data_backend",
+        "DATA_PATH": f"{container_mount_path}/data_backend2",
         "GENE_FILE": f"{container_mount_path}/jobs/{job_config['jobname']}/{input_file_name}",
         "OUTPUT_FILE": f"{container_mount_path}/jobs/{job_config['jobname']}/{results_file_name}"
     }
