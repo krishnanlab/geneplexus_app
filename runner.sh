@@ -47,14 +47,23 @@ if [ -n "$JOBNAME" ]; then
     ARGS="$ARGS -j $JOBNAME"
 fi
 
+ERRFILE="$OUTPUT_FILE".err
 
-python runner.py $ARGS -d "$DATA_PATH" --cross_validation "$GENE_FILE" > "$OUTPUT_FILE"
+runngcmd="python runner.py $ARGS -d $DATA_PATH --cross_validation $GENE_FILE "
+echo "starting backend : $runningcmd" > $ERRFILE
+python runner.py $ARGS -d "$DATA_PATH" --cross_validation "$GENE_FILE" > "$OUTPUT_FILE" 2>> "$ERRFILE"
+if [ $? -eq 0 ]
+then
+  echo "Python exited successfully " >> $ERRFILE
+else
+  echo "Pythnon exit code $?" >> $ERRFILE
+fi
 
 
 # function to show an example. this is not run when the sdcript is run
 example_run ()
 {
-DATA_PATH=/Volumes/compbio/krishnanlab/projects/GenePlexus/repos/GenePlexusBackend/data_backend \
+DATA_PATH=/Volumes/compbio/krishnanlab/projects/GenePlexus/repos/GenePlexusBackend/data_backend2 \
 GENE_FILE="../input_genes_newlines.txt" \
 GP_NET_TYPE="BioGrid" GP_FEATURES="Embedding" GP_GSC="GO" JOBNAME="example_run" \
 python runner.py --net_type $GP_NET_TYPE --features $GP_FEATURES --GSC $GP_GSC -d "$DATA_PATH" -j "$JOBNAME" --cross_validation "$GENE_FILE"
