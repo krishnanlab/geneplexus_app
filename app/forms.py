@@ -7,6 +7,12 @@ class ModalForm(FlaskForm):
     submit = SubmitField('OK')
 
 
+class JobLookupForm(FlaskForm):
+    jobname = StringField('job', validators=[DataRequired()])
+    lookup = SubmitField(label='Lookup job')
+
+
+
 class ValidateForm(FlaskForm):
     networks = [
         ('BioGRID','BioGRID'),

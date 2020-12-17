@@ -1,8 +1,8 @@
 from app.jobs import path_friendly_jobname, launch_job, list_all_jobs, retrieve_results
 
 from werkzeug.exceptions import InternalServerError
-from flask import request, render_template, jsonify, session, redirect, url_for
-from app.forms import ValidateForm
+from flask import request, render_template, jsonify, session, redirect, url_for, flash
+from app.forms import ValidateForm, JobLookupForm
 from app import app, models
 import uuid
 import time
@@ -25,12 +25,20 @@ def about():
 
         return render_template("about.html")
 
-@app.route("/jobs/", methods=['GET'])
+
+@app.route("/jobs/", methods=['GET', 'POST'])
 def jobs():
-    
+    """ list jobs in session, show form, or show message from submit"""
+
+    form = JobLookupForm(request.form)
+    if request.method == 'POST' and form.lookup.data:
+            flash(f"Sorry, the jobname {form.jobname.data} was not found")
+
     job_list = list_all_jobs(app.config.get('JOB_PATH'))
     print("found", len(job_list), " jobs from ", app.config.get('JOB_PATH'))
-    return render_template("jobs.html", jobs = job_list)
+
+
+    return render_template("jobs.html", jobs = job_list, form=form)
 
 
 @app.route("/jobs/<jobname>", methods=['GET'])
@@ -128,6 +136,8 @@ def run_model():
         print("response = ", response)
 
         session.clear()
+
+        flash(f"Job {jobname} submitted!  When complete, your results will be available in the job output below")
 
         return redirect('jobs')
 

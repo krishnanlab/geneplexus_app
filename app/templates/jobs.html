@@ -1,15 +1,43 @@
 {% extends "base.html" %}
 
 {% block app_content %}
-    <div class="container">
-        <h2>Model Results</h2>
-        <p>computations submitted</p>
+<div class="sidenav">
+    <div class="item-content">
+        <h4>Job Lookup</h4>
+        <hr>
+        <form class="form" method="post">
+        {{ form.jobname(class="form-control", placeholder="job name") }}
+        <P>&nbsp;</P>
+        {{ form.lookup(class_="btn btn-primary")}}
+        </form>      
+    </div>
+</div>
+
+<div class="container">
+        
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-info" role="alert">
+                        <strong>{{ message }}</strong>
+                    </div>
+                    {% endfor %}
+            {% endif %}
+            {% endwith %}
+        
+     
+        <div class="card">
+            <div class="card-header">
+        <h4 >Jobs Submitted for this session</h4>
+        </div>
+        <div class="card-body">
+        {% if jobs %}
         <table class="table" id="jobtable">
-            <thead>
+            <!-- <thead>
                 <tr>
                 <th scope="col">Job Name</th>
                 </tr>
-            </thead>
+            </thead> -->
             <tbody>
                 {% for jobname in jobs %}
                 <tr>
@@ -18,5 +46,13 @@
                 {% endfor %}
             </tbody>
         </table>
+        {% else %}
+        <p>No recent jobs found</p>
+        {% endif %}
+        </div>
+        </div>
+
+
+    
     </div>
 {% endblock %}
