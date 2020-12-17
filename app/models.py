@@ -344,40 +344,30 @@ def make_template(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_d
 
 def load_txtfile(file_type, dtype_=str, net_type_=None, GSC_=None, target_set_=None):
     if file_type == 'net_genes':
-        if file_loc == 'local':
-            output_txt = np.loadtxt(f'{data_path}Node_Orders/{net_type_}_nodelist.txt', dtype=dtype_)
-        elif file_loc == 'cloud':
-            raise ValueError('cloud is not yet implemented')
+        output_txt = np.loadtxt(f'{data_path}Node_Orders/{net_type_}_nodelist.txt', dtype=dtype_)
+
     elif file_type == 'uni_genes':
-        if file_loc == 'local':
-            output_txt = np.loadtxt(f'{data_path}GSCs/{GSC_}_{net_type_}_universe.txt', dtype=dtype_)
-        elif file_loc == 'cloud':
-            raise ValueError('cloud is not yet implemented')
+        output_txt = np.loadtxt(f'{data_path}GSCs/{GSC_}_{net_type_}_universe.txt', dtype=dtype_)
+
     elif file_type == 'GSC_order':
-        if file_loc == 'local':
-            output_txt = np.loadtxt(f'{data_path}CorrectionMatrices/{target_set_}_{net_type_}_Orders.txt', dtype=dtype_)
-        elif file_loc == 'cloud':
-            raise ValueError('cloud is not yet implemented')
+        output_txt = np.loadtxt(f'{data_path}CorrectionMatrices/{target_set_}_{net_type_}_Orders.txt', dtype=dtype_)
+
     return output_txt
 
 
 def load_npyfile(file_type, features_=None, net_type_=None, GSC_=None, target_set_=None):
     if file_type == 'data':
-        if file_loc == 'local':
-            output_npy = np.load(f'{data_path}{features_}/{net_type_}_data.npy')
-        elif file_loc == 'cloud':
-            raise ValueError('cloud is not yet implemented')
+        output_npy = np.load(f'{data_path}{features_}/{net_type_}_data.npy')
+
     elif file_type == 'cor_mat':
-        if file_loc == 'local':
-            output_npy = np.load(f'{data_path}CorrectionMatrices/{GSC_}_{target_set_}_{net_type_}_{features_}_CorMat.npy')
-        elif file_loc == 'cloud':
-            raise ValueError('cloud is not yet implemented')
+        output_npy = np.load(f'{data_path}CorrectionMatrices/{GSC_}_{target_set_}_{net_type_}_{features_}_CorMat.npy')
+
     return output_npy
 
 
 def load_df(file_type, sep_='\t', header_=None, net_type_=None):
     if file_type == 'edgelist':
-        if file_loc == 'local':
+
             if net_type_ == 'BioGRID':
                 output_df = pd.read_csv(f'{data_path}Edgelists/{net_type_}.edg', sep=sep_, header=header_,
                                         names=['Node1', 'Node2'])
@@ -385,44 +375,29 @@ def load_df(file_type, sep_='\t', header_=None, net_type_=None):
             else:
                 output_df = pd.read_csv(f'{data_path}Edgelists/{net_type_}.edg', sep=sep_, header=header_,
                                         names=['Node1', 'Node2', 'Weight'])
-        elif file_loc == 'cloud':
-            raise ValueError('cloud is not yet implemented')
+
     return output_df
 
 
 def load_dict(file_type, anIDtype_=None, GSC_=None, net_type_=None, target_set_=None, features_=None):
     if file_type == 'to_Entrez':
-        if file_loc == 'local':
-            with open(f'{data_path}ID_conversion/Homo_sapiens_{anIDtype_}_to_Entrez_All-Mappings.pickle',
-                      'rb') as handle:
-                output_dict = pickle.load(handle)
-        elif file_loc == 'cloud':
-            raise ValueError('cloud is not yet implemented')
-    elif file_type == 'good_sets':
-        if file_loc == 'local':
-            with open(f'{data_path}GSCs/{GSC_}_{net_type_}_GoodSets.pickle', 'rb') as handle:
-                output_dict = pickle.load(handle)
-        elif file_loc == 'cloud':
-            raise ValueError('cloud is not yet implemented')
-    elif file_type == 'Entrez_to_Symbol':
-        if file_loc == 'local':
-            with open(f'{data_path}ID_conversion/Homo_sapiens_Entrez_to_Symbol_All-Mappings.pickle',
-                      'rb') as handle:
-                output_dict = pickle.load(handle)
-        elif file_loc == 'cloud':
-            raise ValueError('cloud is not yet implemented')
-    elif file_type == 'Entrez_to_Name':
-        if file_loc == 'local':
-            with open(f'{data_path}ID_conversion/Homo_sapiens__Entrez-to-Name__All-Mappings.pickle','rb') as handle:
-                output_dict = pickle.load(handle)
-        elif file_loc == 'cloud':
-            raise ValueError('cloud is not yet implemented')
-    elif file_type == 'weights':
-        if file_loc == 'local':
-            with open(f'{data_path}PreTrainedModels/{target_set_}_{net_type_}_{features_}_ModelWeights.pickle',
-                      'rb') as handle:
-                output_dict = pickle.load(handle)
-        elif file_loc == 'cloud':
-            raise ValueError('cloud is not yet implemented')
+        with open(f'{data_path}ID_conversion/Homo_sapiens__{anIDtype_}-to-Entrez__All-Mappings.pickle','rb') as handle:
+            output_dict = pickle.load(handle)
 
+    elif file_type == 'good_sets':
+        with open(f'{data_path}GSCs/{GSC_}_{net_type_}_GoodSets.pickle', 'rb') as handle:
+            output_dict = pickle.load(handle)
+
+    elif file_type == 'Entrez_to_Symbol':
+        with open(f'{data_path}ID_conversion/Homo_sapiens__Entrez-to-Symbol__All-Mappings.pickle','rb') as handle:
+            output_dict = pickle.load(handle)
+
+    elif file_type == 'Entrez_to_Name':
+        with open(f'{data_path}ID_conversion/Homo_sapiens__Entrez-to-Name__All-Mappings.pickle','rb') as handle:
+            output_dict = pickle.load(handle)
+
+    elif file_type == 'weights':
+        with open(f'{data_path}PreTrainedModels/{target_set_}_{net_type_}_{features_}_ModelWeights.pickle','rb') as handle:
+            output_dict = pickle.load(handle)
+ 
     return output_dict
