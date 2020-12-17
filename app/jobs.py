@@ -159,13 +159,34 @@ def list_all_jobs(job_path):
 
     return(joblist)    
 
+
+
+def retrieve_job_folder(jobname, app_config):
+    """ return the job folder, or empthy string if no job folder exists"""
+
+    jobname = path_friendly_jobname(jobname)
+    job_folder = os.path.join(app_config["JOB_PATH"], jobname)
+    if os.path.isdir(job_folder):
+        return(job_folder)
+    else:
+        return('')
+
+
 def results_file_path(jobname, app_config):
     """construct the path to the job (for local/mounted file storage)"""
     jobname = path_friendly_jobname(jobname)
-    job_folder = os.path.join(app_config["JOB_PATH"], jobname)
-    results_file_path = os.path.join(job_folder, create_results_file_name(jobname))
+    jf = retrieve_job_folder(jobname, app_config)
+    if jf:
+        return(os.path.join(jf, create_results_file_name(jobname)))
+    else:
+        return('')
 
-    return(results_file_path)
+
+def check_results(jobname, app_config):
+    """"  return T/F if there is a results file """
+    fp = results_file_path(jobname, app_config)
+    return( os.path.exists(fp) ) 
+
 
 def retrieve_results(jobname, app_config):
     """ retrieve the results file (html) for a given job"""
@@ -182,3 +203,22 @@ def retrieve_results(jobname, app_config):
 
     else:
         return ''    
+
+
+def retrieve_params(jobname, app_config):
+    """construct the path to the job (for local/mounted file storage)"""    
+    job_folder = retrieve_job_folder(jobname, app_config)
+    if job_folder:
+        params_file_path = os.path.join(job_folder, create_json_file_name(jobname))
+    else:
+        return('')
+
+    if os.path.exists(params_file_path):
+        with open(params_file_path) as f:
+            content = f.read()
+
+        params_vars = json.loads(content)
+
+        return(params_vars['envvars'])
+    else:
+        return('')

@@ -1,4 +1,4 @@
-from app.jobs import path_friendly_jobname, launch_job, list_all_jobs, retrieve_results
+from app.jobs import path_friendly_jobname, launch_job, list_all_jobs, retrieve_job_folder,check_results,retrieve_results
 
 from werkzeug.exceptions import InternalServerError
 from flask import request, render_template, jsonify, session, redirect, url_for, flash
@@ -31,8 +31,13 @@ def jobs():
     """ list jobs in session, show form, or show message from submit"""
 
     form = JobLookupForm(request.form)
+    jobname = form.jobname.data
+
     if request.method == 'POST' and form.lookup.data:
-            flash(f"Sorry, the jobname {form.jobname.data} was not found")
+            if retrieve_job_folder(jobname, app.config):
+                return(redirect(url_for('job',jobname=jobname)))
+            else:
+                flash(f"Sorry, the job '{jobname}'' was not found")
 
     job_list = list_all_jobs(app.config.get('JOB_PATH'))
 
@@ -52,7 +57,7 @@ def jobresults_content(jobname):
     if results_content:
         return(results_content) # or in future, send this html to a template wrapper        
     else:
-        return(f"results not found or not ready for job name = '{jobname}'")
+        return(f'<html><body><div class="container"><h3 style="padding-top:50px"> No results yet for the job "{jobname}"</h3></div></body><html>')
 
 
 @app.route("/results", methods=['GET','POST'])
@@ -94,7 +99,7 @@ def validate():
         df_convert_out, table_info = models.make_validation_df(df_convert_out)
         return render_template("validation.html", form=form, table_info=table_info,
                                validate_table=df_convert_out.to_html(index=False,
-                                                                     classes='table table-striped table-bordered" id = "validatetable'))
+                                                                     classes='stable-bordered" id = "validatetable'))
 
 @app.route("/run_model", methods=['POST'])
 def run_model():
