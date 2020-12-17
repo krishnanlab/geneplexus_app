@@ -53,7 +53,7 @@ def job_json(job_config, app_config):
     }
 
     container_mount_path = app_config['BASE_CONTAINER_PATH']
-
+    job_path=f"{container_mount_path}/jobs/"
     jobname = path_friendly_jobname(job_config['jobname'])
     
     input_file_name = create_input_file_name(jobname)
@@ -67,8 +67,10 @@ def job_json(job_config, app_config):
         "GP_GSC": job_config['GSC'],
         "JOBNAME": job_config['jobname'],
         "DATA_PATH": f"{container_mount_path}/data_backend2",
-        "GENE_FILE": f"{container_mount_path}/jobs/{job_config['jobname']}/{input_file_name}",
-        "OUTPUT_FILE": f"{container_mount_path}/jobs/{job_config['jobname']}/{results_file_name}"
+        "GENE_FILE": f"{job_path}/{job_config['jobname']}/{input_file_name}",
+        "OUTPUT_FILE": f"{job_path}/{job_config['jobname']}/{results_file_name}",
+        "JOB_PATH": job_path
+
     }
 
     job_data = {
