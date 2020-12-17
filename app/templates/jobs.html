@@ -26,16 +26,12 @@
             {% endwith %}
         
      
-        <div class="card">
-            <div class="card-header">
         <h4 >Jobs Submitted for this session</h4>
-        </div>
-        <div class="card-body">
         {% if jobs %}
-        <table class="table" id="jobtable">
+        <table class="table table-striped" id="jobstable">
             <!-- <thead>
                 <tr>
-                <th scope="col">Job Name</th>
+                <th >Job Name</th>
                 </tr>
             </thead> -->
             <tbody>
@@ -47,10 +43,8 @@
             </tbody>
         </table>
         {% else %}
-        <p>No recent jobs found</p>
+        <p>No recent jobs in session.  </p>
         {% endif %}
-        </div>
-        </div>
 
 
     

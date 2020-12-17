@@ -35,8 +35,6 @@ def jobs():
             flash(f"Sorry, the jobname {form.jobname.data} was not found")
 
     job_list = list_all_jobs(app.config.get('JOB_PATH'))
-    print("found", len(job_list), " jobs from ", app.config.get('JOB_PATH'))
-
 
     return render_template("jobs.html", jobs = job_list, form=form)
 

@@ -136,11 +136,16 @@ $(document).ready( function () {
         }
     });
 
-    $('#jobtable').DataTable({
+    $('#jobstable').DataTable({
         dom: '<"dom_wrapper fh-fixedHeader"Bf>tip',
-        pagingType: "full_numbers",
-        initComplete: function () {
-            $("#jobtable").show();
-        }
+        fixedHeader: true,
+        columnDefs: [
+            {
+                targets: [0],
+                className: "dt-left"
+            }
+        ],
+        pagingType: "full_numbers"
     });
+
 } );
