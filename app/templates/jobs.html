@@ -27,17 +27,25 @@
         
      
         <h4 >Jobs Submitted for this session</h4>
-        {% if jobs %}
-        <table class="table table-striped" id="jobstable">
-            <!-- <thead>
+        
+        {% if joblist %}
+        <hr>
+        <table class="table table-striped" id="jobs">
+            <thead>
                 <tr>
-                <th >Job Name</th>
+                <th>Job Name</th>
+                <th>Submitted</th>
+                <th>Has Results?</th>
+                <th>Parameters</th>
                 </tr>
-            </thead> -->
+            </thead>
             <tbody>
-                {% for jobname in jobs %}
+                {% for job in joblist %}
                 <tr>
-                    <td> <a href="{{url_for('job',jobname=jobname) }}">{{jobname}}</a></td>
+                    <td> <a href="{{url_for('job',jobname=job['jobname']) }}">{{job['jobname']}}</a></td>
+                    <td>{{job['submit_time']}}</td>
+                    <td>{{job['has_results']}}</td>
+                    <td></td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -45,8 +53,7 @@
         {% else %}
         <p>No recent jobs in session.  </p>
         {% endif %}
-
-
     
     </div>
+
 {% endblock %}

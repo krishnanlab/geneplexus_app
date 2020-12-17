@@ -137,15 +137,10 @@ $(document).ready( function () {
     });
 
     $('#jobstable').DataTable({
-        dom: '<"dom_wrapper fh-fixedHeader"Bf>tip',
-        fixedHeader: true,
-        columnDefs: [
-            {
-                targets: [0],
-                className: "dt-left"
-            }
-        ],
-        pagingType: "full_numbers"
+        pagingType: "full_numbers",
+        initComplete: function(){
+            $("#jobstable").show();
+        }
     });
 
 } );

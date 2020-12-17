@@ -1,4 +1,4 @@
-from app.jobs import path_friendly_jobname, launch_job, list_all_jobs, retrieve_job_folder,check_results,retrieve_results
+from app.jobs import path_friendly_jobname, launch_job, list_all_jobs, retrieve_job_folder,check_results, retrieve_results, retrieve_job_info,job_info_list
 
 from werkzeug.exceptions import InternalServerError
 from flask import request, render_template, jsonify, session, redirect, url_for, flash
@@ -39,9 +39,12 @@ def jobs():
             else:
                 flash(f"Sorry, the job '{jobname}'' was not found")
 
-    job_list = list_all_jobs(app.config.get('JOB_PATH'))
+    jobnames = list_all_jobs(app.config.get('JOB_PATH'))
+    joblist = job_info_list(jobnames, app.config)
 
-    return render_template("jobs.html", jobs = job_list, form=form)
+    return render_template("jobs.html", jobs = jobnames, 
+                            joblist = joblist, 
+                            form=form)
 
 
 @app.route("/jobs/<jobname>", methods=['GET'])

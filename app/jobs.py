@@ -2,7 +2,9 @@ import requests
 import json
 import re, os
 from slugify import slugify
-
+from pandas import DataFrame
+# import pandas as pd
+from datetime import datetime
 
 def path_friendly_jobname(jobname):
     """ job name must be useable to create file paths, so remove unuesable or unicode characters"""
@@ -187,6 +189,35 @@ def check_results(jobname, app_config):
     fp = results_file_path(jobname, app_config)
     return( os.path.exists(fp) ) 
 
+
+def retrieve_job_info(jobname, app_config):
+    """ return a dict of job info for jobs table (no results) """
+    jobname = path_friendly_jobname(jobname)
+
+    job_info = { 
+        'jobname': jobname, 
+        'is_job' : '',
+        'submit_time' : '',
+        'has_results' : '',
+        'params' : ''
+    }
+
+    jf = retrieve_job_folder(jobname, app_config)
+    if jf:
+        job_info['is_job'] = True
+        job_info['submit_time'] = datetime.fromtimestamp(os.path.getmtime(jf)).strftime("%Y-%m-%d %H:%M:%S")
+        job_info['has_results'] = check_results(jobname, app_config)
+        job_params = retrieve_params(jobname, app_config)
+        if job_params:
+            job_info['params'] = job_params['GP_NET_TYPE']
+
+    return(job_info)
+  
+def job_info_list(jobnames, app_config):
+    """for a list off jobnames, create a list of dict (for pandas magic)"""
+    jobinfolist = [retrieve_job_info(jobname, app_config) for jobname in jobnames]
+    return(jobinfolist)
+    
 
 def retrieve_results(jobname, app_config):
     """ retrieve the results file (html) for a given job"""
