@@ -2,7 +2,21 @@
 
 {% block app_content %}
     <div class="container">
-        <h1>This is the Jobs page</h1>
-        <!--https://geneplexusstorage.file.core.windows.net/geneplexusfiles/jobs/billspat-test-job/results.html-->
+        <h2>Model Results</h2>
+        <p>computations submitted</p>
+        <table class="table" id="jobtable">
+            <thead>
+                <tr>
+                <th scope="col">Job Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for jobname in jobs %}
+                <tr>
+                    <td> <a href="{{url_for('job',jobname=jobname) }}">{{jobname}}</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 {% endblock %}

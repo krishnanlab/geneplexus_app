@@ -6,6 +6,7 @@ from slugify import slugify
 
 def path_friendly_jobname(jobname):
     """ job name must be useable to create file paths, so remove unuesable or unicode characters"""
+    # this needs to be idempotent becuase we may call it on an already modified jobname to be safe
     return(slugify(jobname))
 
 def create_input_file_name(jobname):
@@ -25,6 +26,7 @@ def create_json_file_name(jobname):
 
 def job_json(job_config, app_config):
 
+    # TODO remove all of this from this app
     docker_image_config = {
         "imageName": "krishnanlabgeneplexusacr.azurecr.io/geneplexus-backend:latest",
         "registry": {
@@ -34,6 +36,7 @@ def job_json(job_config, app_config):
         }
     }
 
+    # TODO remove all of this from this app, leave elsewhere
     volume_config = {
         "name": "geneplexusfiles",
                 "mountPath": "/home/dockeruser/geneplexusfiles",
@@ -45,6 +48,7 @@ def job_json(job_config, app_config):
     }
 
     container_mount_path = app_config['BASE_CONTAINER_PATH']
+
     jobname = path_friendly_jobname(job_config['jobname'])
     
     input_file_name = create_input_file_name(jobname)
@@ -106,9 +110,11 @@ def launch_job(genes, job_config, app_config):
     if not os.path.isdir(local_job_folder):
         os.mkdir(local_job_folder)
 
+    # write gene file
     with open(input_file_path, 'w') as f:
         f.writelines("%s\n" % gene for gene in genes)
 
+    # write job params ( data sent to azure )
     with open(json_file_path, 'w') as f:
         f.write(job_data)
 
@@ -145,3 +151,34 @@ def test_job(test_jobname="test_job_99", input_file='input_genes.txt'):
     response = launch_job(genes, job_config, app.config)
     print("response = ", response)
 
+
+def list_all_jobs(job_path): 
+    """ given the path where jobs live, pull the list of all jobs """
+    with os.scandir(job_path) as jobdir:
+        joblist = [d.name for d in jobdir if d.is_dir() and not d.name.startswith('.')]
+
+    return(joblist)    
+
+def results_file_path(jobname, app_config):
+    """construct the path to the job (for local/mounted file storage)"""
+    jobname = path_friendly_jobname(jobname)
+    job_folder = os.path.join(app_config["JOB_PATH"], jobname)
+    results_file_path = os.path.join(job_folder, create_results_file_name(jobname))
+
+    return(results_file_path)
+
+def retrieve_results(jobname, app_config):
+    """ retrieve the results file (html) for a given job"""
+
+    fp = results_file_path(jobname, app_config)
+    
+    # look for the path and file and if it's there, read it in
+    if os.path.exists(fp):
+        # try
+        with open(fp) as f:
+            content = f.read()
+        
+        return content
+
+    else:
+        return ''    

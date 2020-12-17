@@ -135,4 +135,12 @@ $(document).ready( function () {
             $("#validatetable").show();
         }
     });
+
+    $('#jobtable').DataTable({
+        dom: '<"dom_wrapper fh-fixedHeader"Bf>tip',
+        pagingType: "full_numbers",
+        initComplete: function () {
+            $("#jobtable").show();
+        }
+    });
 } );

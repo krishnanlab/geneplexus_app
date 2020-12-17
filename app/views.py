@@ -1,4 +1,4 @@
-from app.azure import path_friendly_jobname, launch_job
+from app.jobs import path_friendly_jobname, launch_job, list_all_jobs, retrieve_results
 
 from werkzeug.exceptions import InternalServerError
 from flask import request, render_template, jsonify, session, redirect, url_for
@@ -18,14 +18,6 @@ def index():
         return render_template("index.html")
 
 
-@app.route("/jobs", methods=['GET'])
-def jobs():
-
-    if request.method == 'GET':
-
-        return render_template("jobs.html")
-
-
 @app.route("/about", methods=['GET'])
 def about():
 
@@ -33,26 +25,28 @@ def about():
 
         return render_template("about.html")
 
+@app.route("/jobs/", methods=['GET'])
+def jobs():
+    
+    job_list = list_all_jobs(app.config.get('JOB_PATH'))
+    print("found", len(job_list), " jobs from ", app.config.get('JOB_PATH'))
+    return render_template("jobs.html", jobs = job_list)
+
 
 @app.route("/jobs/<jobname>", methods=['GET'])
-def jobresults(jobname):
-    job_folder = app.config.get('JOB_PATH') + "/" + jobname
-    if os.path.exists(job_folder):
-        results_file = job_folder + "/results.html"
-        if os.path.exists(results_file):
-            with open(results_file) as f:
-                html = f.read()
+def job(jobname):
+    """ """
+    return render_template("jobresults.html", jobname = jobname)
 
-            return(html) # or in future, send this html to a template wrapper
-        
-        else:
-            return(f"results not found or not ready for job name = '{jobname}'")
-            # TODO return(redirect('/jobs')) # but with custom message about job status
 
+@app.route("/jobs/<jobname>/results")
+def jobresults_content(jobname):
+    """ read the results into memory and return """
+    results_content = retrieve_results(jobname, app.config)
+    if results_content:
+        return(results_content) # or in future, send this html to a template wrapper        
     else:
-
-        return(f"no job found for job name = '{jobname}'")
-        # TODO return(redirect('/jobs')) # but with error message no job found
+        return(f"results not found or not ready for job name = '{jobname}'")
 
 
 @app.route("/results", methods=['GET','POST'])
