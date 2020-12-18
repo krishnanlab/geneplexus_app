@@ -107,8 +107,11 @@ def validate():
         # run all the components of the model and pass to the results form
         convert_IDs, df_convert_out = models.intial_ID_convert(input_genes)
 
+        # assign a job name
+        jobname = str(uuid.uuid1())[0:8]
+
         df_convert_out, table_summary, input_count = models.make_validation_df(df_convert_out)
-        return render_template("validation.html", form=form, table_summary=table_summary,
+        return render_template("validation.html", form=form, table_summary=table_summary,jobname=jobname,
                                validate_table=df_convert_out.to_html(index=False,
                                classes='table table-striped table-bordered" id = "validatetable'))
 
@@ -195,12 +198,12 @@ def run_model():
     # submit button value is neither possibility
     return("invalid form data ")
 
-@app.route("/appendhash", methods=['GET','POST'])
-def appendhash():
+@app.route("/appendprefix", methods=['GET','POST'])
+def appendPrefix():
 
     job = request.form['jobname']
-    hash = str(uuid.uuid1())[0:8]
-    job_amended = '-'.join([job, hash])
+    prefix = request.form['prefix']
+    job_amended = '-'.join([prefix, job])
 
     return jsonify(success=True, jobname=job_amended)
 

@@ -70,7 +70,7 @@ function clearInput(){
         success: function(data) {
             console.log(data.success);
             $('input:submit').attr('disabled',true);
-            $('#filename').empty();
+            $('#filename').val("");
             $('#geneBtn').prop('disabled', false);
             $("#geneButton").css("pointer-events", "auto");
         }
@@ -79,14 +79,16 @@ function clearInput(){
 }
 
 
-function appendHash(){
+function appendPrefix(){
     var jobname = $('#job').val();
+    var prefix = $('#prefix').val();
     $.ajax({
         data: {
-            jobname: jobname
+            jobname: jobname,
+            prefix: prefix
         },
       type: 'POST',
-      url: "/appendhash",
+      url: "/appendprefix",
 
       success: function(data){
         console.log(data.success);
