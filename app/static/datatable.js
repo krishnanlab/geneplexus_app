@@ -31,6 +31,14 @@ $(document).ready( function () {
             {
                 targets: [ 4 ],
                 className: "dt-center"
+            },
+            {
+                targets: [ 5 ],
+                className: "dt-center"
+            }  ,
+            {
+                targets: [ 6 ],
+                className: "dt-right"
             }
         ],
         pagingType: "full_numbers",
@@ -81,6 +89,11 @@ $(document).ready( function () {
                 render: function (data, type, full) {
                     return parseFloat(data).toFixed(2);
                 }
+            },
+            {
+                targets: [3],
+                className: "dt-right all"
+
             }
         ],
         pagingType: "full_numbers",
@@ -117,6 +130,11 @@ $(document).ready( function () {
                 render: function (data, type, full) {
                     return parseFloat(data).toFixed(2);
                 }
+            },
+            {
+                targets: [3],
+                className: "dt-right all"
+
             }
         ],
         pagingType: "full_numbers",
