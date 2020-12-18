@@ -143,7 +143,7 @@ def run_model():
 
         session.clear()
 
-        flash(f"Job {jobname} submitted!  The completed job will be available on {url_for('job', jobname=jobname)}"
+        flash(f"Job {jobname} submitted!  The completed job will be available on {url_for('job', jobname=jobname)}")
 
         return redirect('jobs')
 
