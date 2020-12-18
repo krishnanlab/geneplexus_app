@@ -90,20 +90,20 @@
                                <label>
                                    3. Job Name
                                </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                                      data-content="The default job name is a unique identifier.  Optionally, a prefix can be added
-                                        by typing text into the box below and hitting the '+' sign">
+                                      data-content="The default job name is a unique identifier that will be assigned
+                                      once the model is run.  Optionally, a prefix can be added for easier identification
+                                       by typing text into the box below">
                                         <i class="fas fa-question-circle"></i></a>
                                <div>
-                                   {{ form.job(value=jobname) }}
-                                   <label for="prefix">(Optional) Add a prefix to the job</label>
-                                   <input type="text" id="prefix">
-                                <button type="button" class="addremove" onclick="appendPrefix()">+</button>
+                                   <label>(Optional) Add a prefix to the job</label>
+                                   {{ form.prefix }}
                                </div>
                                <br>
                                <label>
                                    4. Select Molecular Network
                                </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                                      data-content="Select the molecular network that will be used in training the model."></i></a>
+                                      data-content="Select the molecular network that will be used in training the model.">
+                               <i class="fas fa-question-circle"></i></a>
                                <div>
                                 {{ form.network }}
                                </div>
