@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    {% include 'googleanalytics.html' %}
     <meta charset="UTF-8">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css">
@@ -9,6 +10,8 @@
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='graph.css') }}">
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='d3-tip.css') }}">
     <title>GenePlexus</title>
+
+
 </head>
     <body>
        <header>
@@ -41,6 +44,10 @@
         {% block app_content %}
         {% endblock %}
         <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+        {% block scripts %}
+
+        {% endblock %}
+
         <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>

@@ -1,5 +1,6 @@
 FLASK_ENV=development
 FLASK_DEBUG=TRUE
+SERVER_NAME=geneplexus.azurewebsites.net
 DATA_PATH=/home/site/data_backend/
 JOB_PATH=/home/site/geneplexusfiles/jobs
 BASE_CONTAINER_PATH=/home/dockeruser/geneplexusfiles
