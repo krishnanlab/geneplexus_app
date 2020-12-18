@@ -1,0 +1,34 @@
+{
+    "aciName": "geneplexus-backend",
+    "location": "centralus",
+    "memoryInGB": 10,
+    "cpu": 2,
+    "volumeMount": {
+        "name": "geneplexusfiles",
+        "mountPath": "/home/dockeruser/geneplexusfiles",
+        "readOnly": false,
+        "shareName": "geneplexusfiles",
+        "shareReadOnly": false,
+        "storageAccountName": "geneplexusstorage",
+        "storageAccountKey": "key from environment"
+    },
+    "image": {
+        "imageName": "<imagename>",
+        "registry": {
+            "server": "<acrname>.azurecr.io/<imagename>:latest",
+            "username": "<acrname>",
+            "password": ""
+        }
+    },
+    "envvars": {
+        "FLASK_ENV": "development",
+        "FLASK_DEBUG": true,
+        "GP_NET_TYPE": "BioGRID",
+        "GP_FEATURES": "Embedding",
+        "GP_GSC": "DisGeNet",
+        "JOBNAME": "test_job_2",
+        "DATA_PATH": "/home/dockeruser/geneplexusfiles/data_backend",
+        "GENE_FILE": "/home/dockeruser/geneplexusfiles/jobs/<jobname>/input_genes.txt",
+        "OUTPUT_FILE": "/home/dockeruser/geneplexusfiles/jobs/<jobname>/results.html"
+    }
+}
