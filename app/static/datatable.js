@@ -75,7 +75,12 @@ $(document).ready( function () {
             },
             {
                 targets: [2],
-                className: "dt-right all"
+                className: "dt-right all",
+                defaultOrder: true,
+                sortOrder: 'desc',
+                render: function (data, type, full) {
+                    return parseFloat(data).toFixed(2);
+                }
             }
         ],
         pagingType: "full_numbers",
@@ -106,7 +111,12 @@ $(document).ready( function () {
             },
             {
                 targets: [2],
-                className: "dt-right"
+                className: "dt-right",
+                defaultOrder: true,
+                sortOrder: 'desc',
+                render: function (data, type, full) {
+                    return parseFloat(data).toFixed(2);
+                }
             }
         ],
         pagingType: "full_numbers",

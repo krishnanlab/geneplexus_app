@@ -26,6 +26,14 @@ def about():
         return render_template("about.html")
 
 
+@app.route("/help", methods=['GET'])
+def help():
+
+    if request.method == 'GET':
+
+        return render_template("help.html")
+
+
 @app.route("/jobs/", methods=['GET', 'POST'])
 def jobs():
     """ list jobs in session, show form, or show message from submit"""
@@ -102,7 +110,7 @@ def validate():
         df_convert_out, table_info = models.make_validation_df(df_convert_out)
         return render_template("validation.html", form=form, table_info=table_info,
                                validate_table=df_convert_out.to_html(index=False,
-                                                                     classes='stable-bordered" id = "validatetable'))
+                               classes='table table-striped table-bordered" id = "validatetable'))
 
 @app.route("/run_model", methods=['POST'])
 def run_model():

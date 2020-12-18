@@ -18,35 +18,33 @@
     <body>
        <header>
           <div class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
-            <a class="navbar-brand" href="#">Krishnan Lab GenePlexus</a>
+            <a class="navbar-brand" href="#">GenePlexus</a>
             <div class="collapse navbar-collapse" id="navbarCollapse">
                 <ul class="navbar-nav mr-auto">
                     <li class="navbar-item active">
                         <a class="nav-link" href="{{ url_for('index') }}">Home</a>
                     </li>
                     <li class="navbar-item active">
+                        <a class="nav-link"  href="{{ url_for('help') }}">Help</a>
+                    </li>
+                    <li class="navbar-item active">
                         <a class="nav-link"  href="{{ url_for('about') }}">About</a>
                     </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Jobs </a>
-                            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                                <li><a class="dropdown-item" href="#">job #1</a></li>
-                                <li><a class="dropdown-item" href="#">job #2</a></li>
-                            </ul>
+                    <li class="navbar-item active">
+                        <a class="nav-link"  href="{{ url_for('jobs') }}">Jobs</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav mr-auto">
+                    <li class="navbar-item active">
+                        <a class="nav-link"  href="https://www.thekrishnanlab.org/" target="_blank">Krishnan Lab</a>
                     </li>
                 </ul>
             </div>
           </div>
         </header>
         <div class="container">
-            <a class="btn btn-secondary border dark" href="{{ url_for('index') }}" role="button">Re-run Analysis</a>
             <div class="border border-dark">
                 <div class="box_padding">
-                    <div class="row">
-                        <div class="col-4">
-                            <b>Model Generation took: {{( tic1 )}} seconds</b><br>
-                        </div>
-                    </div>
                     <div class="row">
                         <div class="col-xs-2 text-left col-sm-2">
                             <b>Parameters:</b>
@@ -60,10 +58,15 @@
                             <label>Negative Class:&nbsp</label>{{( request.form['negativeclass'] )}}<br>
                         </div>
                     </div>
+                    <br>
                     <div class="row">
-                        <div class="col-xs-2 col-sm-2"></div>
-                        <div class="col-xs-6 col-sm-6">
-                            <label>Cross Validation:&nbsp</label>{{( avgps )}}<br>
+                        <div class="col-xs-12 col-sm-12">
+                            <label>The median value of the log2(auPRC/prior)
+                                for 5-fold cross validation is &nbsp</label>{{( avgps )}}<br>&nbsp
+                                </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                                  data-content="log2(auPRC/prior) reports the 2-fold change of the auPRC over the expected result.
+                                  For example a value of 1 is a model that performs twice as good as the expected result.">
+                           <i class="fas fa-question-circle"></i></a>
                         </div>
                     </div>
                 </div>
