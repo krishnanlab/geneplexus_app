@@ -41,11 +41,12 @@
                        <br>
                        <fieldset class="border box_padding fieldset">
                            <label>
-                               1. Input Genes
+                               1. Enter Input Genes
                            </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                                  data-content="Upload a file of Gene Ids or Enter/Paste them manually.
-                                  An input File must delimited by a newline
-                                  (i.e. each gene is on a separate line"><i class="fas fa-question-circle"></i></a>
+                                  data-content="Upload of file of Gene IDs or input them manually.
+                                  Acceptable Gene IDs are; Entrez, ENSG, Symbol, ENSP, ENST.
+                                  The format is delimited by newline (i.e. each gene is on a separate line)">
+                           <i class="fas fa-question-circle"></i></a>
                            <div>
                                 <span id="geneButton" class="btn btn-sm">Input Genes from File</span>
                                 <span id="filename" class="text-center"></span>
@@ -70,18 +71,14 @@
                            </div>
                            <br>
                            <label>
-                               2. Validate gene file
+                               2. Check if IDs are Valid
                            </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                                  data-content="Before the model can be run, validate the gene file against all network
-                                   to ensure enough data for meaningful results"><i class="fas fa-question-circle"></i></a>
+                                  data-content="All IDs will be converted to Entrez IDs to be used in the machine learning model.
+                                  The resulting spreadsheet shows how the input genes were converted and if they were in the molecular networks.">
+                           <i class="fas fa-question-circle"></i></a>
                             <div class="button_padding">
-                                <input type="submit" disabled name="submit_button" class="btn btn-sm border dark" value="Validate File">
+                                <input type="submit" disabled name="submit_button" class="btn btn-sm border dark" value="Check if IDs are Valid">
                             </div>
-                           <br>
-                           <label>
-                               3. Review Results
-                           </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                                  data-content="Review the validation results"><i class="fas fa-question-circle"></i></a>
                        </fieldset>
                    </span>
                 </div>

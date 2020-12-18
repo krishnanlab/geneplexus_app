@@ -44,11 +44,12 @@
                        <form id="validate-form" action="{{ url_for('validate') }}" method="POST", enctype="multipart/form-data">
                        <fieldset class="border box_padding fieldset">
                            <label>
-                               1. Input Genes
+                               1. Enter Input Genes
                            </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                                  data-content="Upload a file of Gene Ids or Enter/Paste them manually.
-                                  An input File must delimited by a newline
-                                  (i.e. each gene is on a separate line"><i class="fas fa-question-circle"></i></a>
+                                  data-content="Upload of file of Gene IDs or input them manually.
+                                  Acceptable Gene IDs are; Entrez, ENSG, Symbol, ENSP, ENST.
+                                  The format is delimited by newline (i.e. each gene is on a separate line)">
+                           <i class="fas fa-question-circle"></i></a>
                            <div>
                                 <span id="geneButton" class="btn btn-sm">Input Genes from File</span>
                                 <span id="filename" class="text-center"></span>
@@ -73,25 +74,21 @@
                            </div>
                            <br>
                            <label>
-                               2. Validate gene file
+                               2. Check if IDs are Valid
                            </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                                  data-content="Before the model can be run, validate the gene file against all network
-                                   to ensure enough data for meaningful results"><i class="fas fa-question-circle"></i></a>
+                                  data-content="All IDs will be converted to Entrez IDs to be used in the machine learning model.
+                                  The resulting spreadsheet shows how the input genes were converted and if they were in the molecular networks.">
+                           <i class="fas fa-question-circle"></i></a>
                             <div class="button_padding">
-                                <input type="submit" disabled name="submit_button" class="btn btn-sm border dark" value="Validate File">
+                                <input type="submit" disabled name="submit_button" class="btn btn-sm border dark" value="Check if IDs are Valid">
                             </div>
-                           <br>
-                           <label>
-                               3. Review Results
-                           </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                                  data-content="Review the validation results"><i class="fas fa-question-circle"></i></a>
                        </fieldset>
                        </form>
                        <br>
                        <form id="model-form" action="{{ url_for('run_model') }}" method="POST", enctype="multipart/form-data">
                            <fieldset class="border box_padding fieldset">
                                <label>
-                                   4. Job Name
+                                   3. Job Name
                                </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
                                       data-content="A job name must be supplied so that the output can be picked up after
                                         the model has run.  Click the plus sign to append a hash to the job to enforce uniqueness">
@@ -102,30 +99,38 @@
                                </div>
                                <br>
                                <label>
-                                   5. Select a Network
+                                   4. Select Molecular Network
                                </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                                      data-content="Once a file has been validated, the additional options become available.
-                                      select a network to use"><i class="fas fa-question-circle"></i></a>
+                                      data-content="Select the molecular network that will be used in training the model."></i></a>
                                <div>
                                 {{ form.network }}
                                </div>
                                <br>
                                <label>
-                                   6. Select feature
+                                   6. Select Feature Type
                                </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                                  data-content="Select the feature"><i class="fas fa-question-circle"></i></a>
+                                  data-content="Select how the connections of chosen network will be represented as features in the machine learning model.">
+                               <i class="fas fa-question-circle"></i></a>
                                <div class="select">
                                     {{ form.features }}
                                 </div>
                                 <br>
                                <label>
-                                   7. Select a Negative Class
+                                   7. Select Negative Gene Class
                                </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                                  data-content="Select the Negative Class"><i class="fas fa-question-circle"></i></a>
+                                  data-content="GenePlexus automatically selects a set of negative genes to be used in training the model.
+                                  The user can choose if this is based on genes annotated to other Gene Ontology term or DisGeNet terms">
+                               <i class="fas fa-question-circle"></i></a>
                                 <div class="select">
                                     {{ form.negativeclass }}
                                 </div>
                                 <br>
+                               <label>
+                                   8. Run Model
+                               </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                                  data-content="Hitting this button will spin up a virtual machine in the cloud and train the machine learning model.
+                                  The link to view the results will be available in the Job tab when completed.">
+                               <i class="fas fa-question-circle"></i></a>
                                <div class="runButtons">
                                    <div>
                                         {{ form.runlocal }}
