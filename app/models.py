@@ -144,7 +144,7 @@ def run_SL(pos_genes_in_net, negative_genes, net_genes, net_type, features):
             prior = num_tst_pos / Xdata[tst_inds].shape[0]
             log2_prior = np.log2(avgp / prior)
             avgps.append(log2_prior)
-        avgp = np.median(avgps)
+        avgp = '{0:.2f}'.format(np.median(avgps))
     return mdl_weights, probs, avgp
 
 
