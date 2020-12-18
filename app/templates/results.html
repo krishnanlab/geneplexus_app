@@ -12,7 +12,6 @@
     <title>GenePlexus</title>
     <script>
         var dataset = {{ graph | safe }}
-        console.log(dataset)
     </script>
 </head>
     <body>
@@ -95,14 +94,35 @@
                   <!-- Tab panes -->
                 <div class="tab-content">
                     <div role="tabpanel" class="tab-pane fade show active" id="predictions">
+                        <br>
+                        <p>The table below contains the prediction probability for all the genes in the selected network
+                            based on whether that belong in the class determined by the input gene list.
+                            The probabilities are bounded between 0 and 1. The Class-labels are; P - gene was
+                            considered in positive class while training, N- gene was considered in negative class
+                            while training and U - gene was not considered at all during training.</p>
+                        <br>
                         {{ probs_table|safe }}
                     </div>
 
                     <div class="tab-pane fade" id="sim_go">
+                        <br>
+                        <div>
+                            <P>The model weights of the model trained on the input gene file are compared to model weights
+                                from models trained on lists of genes associated with GO Biological Process.
+                                The similarity to these other models is reported as a z-score that takes into account the
+                                background of similarities between all models.</P>
+                        </div>
+                        <br>
                         {{ go_table|safe }}
                     </div>
 
                     <div class="tab-pane fade" id="sim_dis">
+                        <br>
+                        <P>The model weights of the model trained on the input gene file are compared to model weights
+                            from models trained on lists of genes associated with DisGeNet terms.
+                            The similarity to these other models is reported as a z-score that takes into account the
+                            background of similarities between all models.</P>
+                        <br>
                         {{ dis_table|safe }}
                     </div>
                     <div class="tab-pane fade" id="netgraph">
