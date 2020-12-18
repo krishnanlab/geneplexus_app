@@ -63,33 +63,27 @@ def intial_ID_convert(input_genes):
 
 
 def make_validation_df(df_convert_out):
-    table_info = []
+    table_summary = []
     num_converted_to_Entrez = df_convert_out[~(df_convert_out['ID_converted_to_Entrez']=='Could Not be mapped to Entrez')].shape[0]
-    table_info.append('The number of input genes is %i'%df_convert_out.shape[0])
-    table_info.append('The number of input genes that could be converted to Entrez is %i'%num_converted_to_Entrez)
+    input_count = df_convert_out.shape[0]
     converted_genes = df_convert_out['ID_converted_to_Entrez'].to_numpy()
     for anet in ['BioGRID','STRING','STRING-EXP','GIANT-TN']:
         net_genes = load_txtfile('net_genes',net_type_=anet)
-        table_info.append('The number of genes in %s is %i'%(anet,len(net_genes)))
         df_tmp = df_convert_out[df_convert_out['ID_converted_to_Entrez'].isin(net_genes)]
         pos_genes_in_net = np.intersect1d(converted_genes,net_genes)
-        table_info.append('The number of input genes in %s is %i'%(anet,df_tmp.shape[0]))
-        table_info.append('The number of unique positive genes in %s is %i'%(anet,len(pos_genes_in_net)))
+        table_row = {'Network': anet, 'NetworkGenes': len(net_genes), 'PositiveGenes': len(pos_genes_in_net)}
+        table_summary.append(dict(table_row))
         tmp_ins = np.full(len(converted_genes),'N',dtype=str)
         tmp_ins[df_tmp.index.to_numpy()] = 'Y'
         df_convert_out['In_%s?'%anet] = tmp_ins
-    return df_convert_out, table_info
+    return df_convert_out, table_summary, input_count
 
 
 def alter_validation_df(df_convert_out,table_info,net_type):
     df_convert_out_subset = df_convert_out[['Original_ID','ID_converted_to_Entrez','In_%s?'%net_type]]
-    table_info_subset = []
-    for idx, item in enumerate(table_info):
-        if idx in [0,1,2]:
-            table_info_subset.append(item)
-        elif net_type in item:
-            table_info_subset.append(item)
-    return df_convert_out_subset, table_info_subset
+    network = next((item for item in table_info if item['Network'] == net_type), None)
+    positive_genes = network.get("PositiveGenes")
+    return df_convert_out_subset, positive_genes
 
 
 def get_genes_in_network(convert_IDs, net_type):

@@ -150,37 +150,33 @@
         <div class="container">
             <div class="border border-dark">
                 <div class="box_padding">
-                    <b>File Summary</b><br>
-                    <div class="row">
-                        <div class="col-xs-6 text-left col-sm-6">
-                            {{( table_info[0] )}}<br>
-                            {{( table_info[1] )}}
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-xs-6 text-left col-sm-6">
-                            {{( table_info[2] )}}<br>
-                            {{( table_info[3] )}}<br>
-                            {{( table_info[4] )}}<br>
-                        </div>
-                        <div class="col-xs-6 text-left col-sm-6">
-                            {{( table_info[5] )}}<br>
-                            {{( table_info[6] )}}<br>
-                            {{( table_info[7] )}}<br>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-xs-6 text-left col-sm-6">
-                            {{( table_info[8] )}}<br>
-                            {{( table_info[9] )}}<br>
-                            {{( table_info[10] )}}<br>
-                        </div>
-                        <div class="col-xs-6 text-left col-sm-6">
-                            {{( table_info[11] )}}<br>
-                            {{( table_info[12] )}}<br>
-                            {{( table_info[13] )}}<br>
-                        </div>
-                    </div>
+                    <table style="width: 85%">
+                            <colgroup>
+                               <col span="1" style="width: 15%;">
+                               <col span="1" style="width: 37%;">
+                               <col span="1" style="width: 48%;">
+                            </colgroup>
+                        <thead>
+                            <tr>
+                                <th>Network</th>
+                                <th>Total Number of Genes in the Network</th>
+                                <th>Number of User Supplied Genes in the Network</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for dict_item in table_summary %}
+                            <tr>
+                                {% for key, value in dict_item.items() %}
+                                    {%- if key == 'Network' -%}
+                                        <td style="text-align: left; vertical-align: middle;">{{ value }}</td>
+                                    {%- else -%}
+                                        <td style="text-align: center; vertical-align: middle;">{{ value }}</td>
+                                    {%- endif -%}
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
             {{ validate_table|safe }}
