@@ -107,10 +107,11 @@ def validate():
         # run all the components of the model and pass to the results form
         convert_IDs, df_convert_out = models.intial_ID_convert(input_genes)
 
-        df_convert_out, table_info = models.make_validation_df(df_convert_out)
-        return render_template("validation.html", form=form, table_info=table_info,
+        df_convert_out, table_summary, input_count = models.make_validation_df(df_convert_out)
+        return render_template("validation.html", form=form, table_summary=table_summary,
                                validate_table=df_convert_out.to_html(index=False,
                                classes='table table-striped table-bordered" id = "validatetable'))
+
 
 @app.route("/run_model", methods=['POST'])
 def run_model():
@@ -166,8 +167,8 @@ def run_model():
         app.logger.info('running model, jobname %s', jobname)
 
         tic = time.time()
-        df_convert_out, table_info = models.make_validation_df(df_convert_out)
-        df_convert_out_subset, table_info_subset = models.alter_validation_df(df_convert_out,table_info,net_type)
+        df_convert_out, table_summary, input_count = models.make_validation_df(df_convert_out)
+        df_convert_out_subset, positive_genes = models.alter_validation_df(df_convert_out,table_summary,net_type)
         graph, df_probs, df_GO, df_dis, avgps = models.run_model(convert_IDs, net_type, GSC, features)
         tic1 = "{:.2f}".format(time.time() - tic)
 
@@ -180,7 +181,8 @@ def run_model():
 
         session.clear()
 
-        return render_template("results.html", tic1=tic1, form=form, graph=graph, avgps=avgps, table_info=table_info_subset,
+        return render_template("results.html", tic1=tic1, form=form, graph=graph, avgps=avgps, input_count=input_count,
+                                positive_genes=positive_genes,
                                 probs_table=df_probs.to_html(index=False,
                                                             classes='table table-striped table-bordered" id = "probstable'),
                                 go_table=df_GO.to_html(index=False,

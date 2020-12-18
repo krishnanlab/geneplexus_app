@@ -112,29 +112,11 @@
                     </div>
                     <div class="tab-pane fade" id="validation">
                         <div class="table_container">
-                            <div class="border border-dark">
-                                <div class="box_padding">
-                                    <b>File Summary</b><br>
-                                    <div class="row">
-                                        <div class="col-xs-6 text-left col-sm-6">
-                                            {{( table_info[0] )}}<br>
-                                            {{( table_info[1] )}}
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-xs-6 text-left col-sm-6">
-                                            {{( table_info[2] )}}<br>
-                                            {{( table_info[3] )}}<br>
-                                            {{( table_info[4] )}}<br>
-                                        </div>
-                                        <div class="col-xs-6 text-left col-sm-6">
-                                            {{( table_info[5] )}}<br>
-                                            {{( table_info[6] )}}<br>
-                                            {{( table_info[7] )}}<br>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <br>
+                            <p>The number of genes in the input file was {{ input_count }}.</p>
+                                <p>The number of those genes that were uniquely mapped to an Entrez ID
+                                    and were also in the network is {{positive_genes}}.</p>
+                            <br>
                             {{ validate_table|safe }}
                             </div>
                         </div>
