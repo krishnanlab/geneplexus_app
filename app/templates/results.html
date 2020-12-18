@@ -95,15 +95,15 @@
                 <div class="tab-content">
                     <div role="tabpanel" class="tab-pane fade show active" id="predictions">
                         <div class="table_container">
-                            <div class="tbox_padding">
+                            <div class="box_padding">
                                 <p>The table below contains the prediction probability for all the genes in the selected network
                                     based on whether that belong in the class determined by the input gene list.
                                     The probabilities are bounded between 0 and 1. The Class-labels are; P - gene was
                                     considered in positive class while training, N- gene was considered in negative class
                                     while training and U - gene was not considered at all during training.</p>
                             </div>
-                        </div>
                         {{ probs_table|safe }}
+                        </div>
                     </div>
 
                     <div class="tab-pane fade" id="sim_go">
@@ -114,8 +114,8 @@
                                     The similarity to these other models is reported as a z-score that takes into account the
                                     background of similarities between all models.</P>
                             </div>
-                        </div>
                         {{ go_table|safe }}
+                        </div>
                     </div>
 
                     <div class="tab-pane fade" id="sim_dis">
@@ -126,11 +126,16 @@
                                     The similarity to these other models is reported as a z-score that takes into account the
                                     background of similarities between all models.</P>
                             </div>
-                        </div>
                         {{ dis_table|safe }}
+                        </div>
                     </div>
                     <div class="tab-pane fade" id="netgraph">
-
+                        <div class="box_padding">
+                            <P>The model weights of the model trained on the input gene file are compared to model weights
+                                from models trained on lists of genes associated with DisGeNet terms.
+                                The similarity to these other models is reported as a z-score that takes into account the
+                                background of similarities between all models.</P>
+                        </div>
                         <svg width="1080" height="600" id="graph"></svg>
                         <canvas hidden width="1080" height="600" id="canvas"></canvas>
                     </div>
@@ -141,13 +146,8 @@
                                 The number of those genes that were uniquely mapped to an Entrez ID
                                         and were also in the network is {{positive_genes}}.</p>
                             </div>
-                        </div>
                         {{ validate_table|safe }}
-                    </div>
-                </div>
-                <div class="fill_container">
-                    <div id="divLoading">
-                        <div id="loading"><img src="{{ url_for('static', filename='loader.gif') }}"></div>
+                        </div>
                     </div>
                 </div>
             </div>
