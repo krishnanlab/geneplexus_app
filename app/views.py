@@ -107,11 +107,8 @@ def validate():
         # run all the components of the model and pass to the results form
         convert_IDs, df_convert_out = models.intial_ID_convert(input_genes)
 
-        # assign a job name
-        jobname = str(uuid.uuid1())[0:8]
-
         df_convert_out, table_summary, input_count = models.make_validation_df(df_convert_out)
-        return render_template("validation.html", form=form, table_summary=table_summary,jobname=jobname,
+        return render_template("validation.html", form=form, table_summary=table_summary,
                                validate_table=df_convert_out.to_html(index=False,
                                classes='table table-striped table-bordered" id = "validatetable'))
 
@@ -136,7 +133,17 @@ def run_model():
     features = form.features.data
     GSC = form.negativeclass.data
 
-    jobname = form.job.data
+    #jobname = form.job.data
+
+    # assign a job id
+    jobid = str(uuid.uuid1())[0:8]
+
+    # if the optional prefix has been added, concatenate
+    # the two fields together.  Otherwise the jobname is the jobid
+    if form.prefix.data != '':
+        jobname = f'{form.prefix.data}-{jobid}'
+    else:
+        jobname = jobid
 
     if form.runbatch.data :
 
@@ -146,6 +153,7 @@ def run_model():
         job_config['features'] = features
         job_config['GSC'] = GSC
         job_config['jobname'] = jobname
+        job_config['jobid'] = jobid
 
         print("launching job with job config =")
         print(job_config)
@@ -182,10 +190,18 @@ def run_model():
         # TODO save these results as a file just like 
         # results_html = models.make_template(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis, df_convert_out_subset, table_info_subset, graph)
 
+        # assign a job name
+        jobhash = str(uuid.uuid1())[0:8]
+
+        if form.prefix.data != '':
+            jobname = f'{form.prefix.data}-{jobhash}'
+        else:
+            jobname = jobhash
+
         session.clear()
 
-        return render_template("results.html", tic1=tic1, form=form, graph=graph, avgps=avgps, input_count=input_count,
-                                positive_genes=positive_genes,
+        return render_template("results.html", tic1=tic1, form=form, graph=graph, avgps=avgps, jobname=jobname,
+                               jobhas=jobhash, input_count=input_count, positive_genes=positive_genes,
                                 probs_table=df_probs.to_html(index=False,
                                                             classes='table table-striped table-bordered" id = "probstable'),
                                 go_table=df_GO.to_html(index=False,
@@ -197,15 +213,6 @@ def run_model():
                                 )
     # submit button value is neither possibility
     return("invalid form data ")
-
-@app.route("/appendprefix", methods=['GET','POST'])
-def appendPrefix():
-
-    job = request.form['jobname']
-    prefix = request.form['prefix']
-    job_amended = '-'.join([prefix, job])
-
-    return jsonify(success=True, jobname=job_amended)
 
 
 @app.route("/clearinput", methods=['GET','POST'])
