@@ -90,12 +90,14 @@
                                <label>
                                    3. Job Name
                                </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                                      data-content="A job name must be supplied so that the output can be picked up after
-                                        the model has run.  Click the plus sign to append a hash to the job to enforce uniqueness">
+                                      data-content="The default job name is a unique identifier.  Optionally, a prefix can be added
+                                        by typing text into the box below and hitting the '+' sign">
                                         <i class="fas fa-question-circle"></i></a>
                                <div>
-                                {{ form.job }}&nbsp
-                                <button type="button" class="addremove" onclick="appendHash()">+</button>
+                                   {{ form.job(value=jobname) }}
+                                   <label for="prefix">(Optional) Add a prefix to the job</label>
+                                   <input type="text" id="prefix">
+                                <button type="button" class="addremove" onclick="appendPrefix()">+</button>
                                </div>
                                <br>
                                <label>
