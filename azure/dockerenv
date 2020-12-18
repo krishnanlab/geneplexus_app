@@ -1,8 +1,10 @@
 FLASK_ENV=development
 FLASK_DEBUG=TRUE
-DATA_PATH=/home/dockeruser/data_backend
-GENE_FILE=/home/dockeruser/job/input_genes.txt
-OUTPUT_FILE=/home/dockeruser/job/results.html
+DATA_PATH=/home//site/geneplexusfiles/data_backend
+JOB_PATH=/home/site/geneplexusfiles/jobs
+# set by ENV vars
+GENE_FILE=
+OUTPUT_FILE=
 GP_NET_TYPE=BioGRID
 GP_FEATURES=Embedding
 GP_GSC=GO
