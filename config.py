@@ -12,6 +12,9 @@ class BaseConfig(object):
     JOB_PATH  = os.getenv('JOB_PATH', './app/jobs') + "/"
     LOG_FILE = os.getenv('LOG_FILE', 'geneplexus_app.log')
     
+    # backend container information
+    JOB_IMAGE_NAME = os.getenv('JOB_IMAGE_NAME','geneplexus-backend')
+    JOB_IMAGE_TAG  = os.getenv('JOB_IMAGE_TAG', 'latest')
     # secrets needed for launching batch jobs on azure
     STORAGE_ACCOUNT_KEY = os.getenv('STORAGE_ACCOUNT_KEY', '')
     CONTAINER_REGISTRY_PW = os.getenv('CONTAINER_REGISTRY_PW', '')

@@ -8,3 +8,5 @@ BASE_CONTAINER_PATH=/home/dockeruser/geneplexusfiles
 STORAGE_ACCOUNT_KEY=''
 CONTAINER_REGISTRY_PW=''
 JOB_URL=''
+JOB_IMAGE_NAME=geneplexus-backend
+JOB_IMAGE_TAG=latest
