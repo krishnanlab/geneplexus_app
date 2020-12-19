@@ -23,8 +23,8 @@ RUN wget --quiet     https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux
     -O ~/miniconda.sh && \
     /bin/bash ~/miniconda.sh -b -p ~/miniconda && \
     rm ~/miniconda.sh && \
-    ~/miniconda/bin/conda clean -tipsy
-ENV PATH="/home/dockeruser/miniconda/bin:${PATH}"
+    ~/miniconda/bin/conda clean -tipsy 
+ENV PATH="/home/dockeruser:/home/dockeruser/miniconda/bin:${PATH}"
 
 COPY requirements.txt .
 
@@ -48,8 +48,7 @@ COPY config.py .
 COPY .flaskenv .
 COPY runner.py .
 COPY runner.sh .
-# it's unclear if we need this, but you must run this on your local machine before building
-RUN chmod u+x ./runner.sh
+
 
 
 # default command when this image is run
@@ -58,6 +57,6 @@ RUN chmod u+x ./runner.sh
 # see runner.sh for those
 
 
-CMD ./runner.sh
+CMD cd /home/dockeruser && ./runner.sh
 
 ENTRYPOINT []
