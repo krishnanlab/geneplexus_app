@@ -2,6 +2,7 @@ app/data_backend
 /venv/
 __pycache__/
 .env
+.dockerenv
 
 *.py[cod]
 *$py.class

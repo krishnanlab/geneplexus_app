@@ -43,7 +43,7 @@ RUN conda install -y conda=${CONDA_VERSION} python=${PYTHON_VERSION} pip && \
 # copy application files into image
 
 COPY app app
-COPY azure/dockerenv .env
+COPY azure/.dockerenv .env
 COPY config.py .
 COPY .flaskenv .
 COPY runner.py .
