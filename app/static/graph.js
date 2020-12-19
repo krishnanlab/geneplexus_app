@@ -7,6 +7,17 @@ var svg = d3.select("svg"),
 var g = svg.append('g')
     .attr("class", "everything");
 
+/*
+var rect = graph.append('svg:rect')
+    .attr('width', w)
+    .attr('height', h)
+    .attr('fill', 'transparent')
+    .attr('opacity', 0.5)
+    .attr('stroke', 'transparent')
+    .attr('stroke-width', 1)
+    .attr("id", "zrect");
+*/
+
 // define scale variable and range for node sizing
 var nodescale = d3.scaleLinear().domain([0, .3]).range([1, 10])
 

@@ -52,6 +52,11 @@ div.container {
     height: 100%;
 }
 
+div.result_container {
+    padding: 60px 15px 0;
+    height: 100%;
+}
+
 div.table_container {
     height: 100%;
 }

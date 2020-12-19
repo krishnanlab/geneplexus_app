@@ -272,7 +272,7 @@ def run_model(convert_IDs, net_type, GSC, features, logger = app.logger):
     return graph, df_probs, df_GO, df_dis, avgps
 
 
-def make_template(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis, df_convert_out, table_info, graph):
+def make_template(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis, input_count, positive_genes, df_convert_out, graph):
     # Render the Jinja template, filling fields as appropriate
     # return rendered HTML
     # Find the module absolute path and locate templates
@@ -315,6 +315,8 @@ def make_template(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_d
         features=features,
         negativeclass=GSC,
         avgps=avgps,
+        input_count=input_count,
+        positive_genes=positive_genes,
         context_menu_js=context_menu_js,
         d3_tip_js=d3_tip_js,
         graph_js=graph_js,
@@ -322,7 +324,6 @@ def make_template(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_d
         main_css=main_css,
         graph_css=graph_css,
         d3_tip_css=d3_tip_css,
-        table_info=table_info,
         probs_table=df_probs.to_html(index=False, classes='table table-striped table-bordered" id = "probstable'),
         go_table=df_GO.to_html(index=False,
                                classes='table table-striped table-bordered nowrap" style="width: 100%;" id = "gotable'),

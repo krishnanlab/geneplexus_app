@@ -187,8 +187,12 @@ def run_model():
 
         # generate html that could be saved to a file for viewing later
         # commented-out for now but will be used for the job-submission system
-        # TODO save these results as a file just like 
-        # results_html = models.make_template(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis, df_convert_out_subset, table_info_subset, graph)
+        # save these results as a file just like
+        #results_html = models.make_template(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis,
+        #                                    input_count, positive_genes, df_convert_out, graph)
+
+        #with open("results.html", "wb") as outfile:
+        #    outfile.write(results_html.encode("utf-8"))
 
         # assign a job name
         jobhash = str(uuid.uuid1())[0:8]
@@ -201,7 +205,7 @@ def run_model():
         session.clear()
 
         return render_template("results.html", tic1=tic1, form=form, graph=graph, avgps=avgps, jobname=jobname,
-                               jobhas=jobhash, input_count=input_count, positive_genes=positive_genes,
+                               input_count=input_count, positive_genes=positive_genes,
                                 probs_table=df_probs.to_html(index=False,
                                                             classes='table table-striped table-bordered" id = "probstable'),
                                 go_table=df_GO.to_html(index=False,
