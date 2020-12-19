@@ -11,6 +11,8 @@ export DOCKERFILE="Dockerfile-backend"
 build_docker_backend ()
 {
   az acr build -t $BACKEND_IMAGE:$TAG -r $ACR --file $DOCKERFILE .
+  # then should update the application settings
+  # az webapp config appsettings set --resource-group $RG --name $APPNAME --settings JOB_IMAGE_NAME=$BACKEND_IMAGE JOB_IMAGE_TAG=$TAG
 }
 
 get_storage_key()
