@@ -47,9 +47,10 @@
                         <a href="{{url_for('job',jobname=job['jobname']) }}">{{job['jobname']}}</a>
                     </td>
                     <td>{{job['submit_time']}}</td>
-                    <td>{{'yes' if job['has_results']}}</td>
                     <td>n</td>
                     <td></td>
+                    <td>{{'yes' if job['has_results']}}</td>
+
                 </tr>
                 {% endfor %}
             </tbody>
