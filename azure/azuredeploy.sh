@@ -52,7 +52,7 @@ az_set_vars ()
 
     export PLAN=${PROJECT}_serviceplan
     export APPNAME=geneplexus
-    export AZLOCATION=northcentralus
+    export AZLOCATION=east
     export ENVFILE=azure/.azenv
     export AZTAGS="createdby=$USER" # project=$PROJECT" # this is not the right syntax to set multiple tags in one go
     export AZ_SERVICE_PLAN_SKU="P2v2"  # "S1"  # see https://azure.microsoft.com/en-us/pricing/details/app-service/linux/
