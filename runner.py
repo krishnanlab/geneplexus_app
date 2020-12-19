@@ -7,9 +7,13 @@
 # import model code from the same module used by the flask application
 from app.models import intial_ID_convert, run_model, make_template, alter_validation_df, make_validation_df
 from app.models import file_loc, data_path, max_num_genes
-
 import argparse, warnings
 import os
+
+# TODO use logging.  Note since we are importing from app, get logging from init py
+# from app import logging
+# set up in main  logger = logging.getlogger('modelrunner')
+
 
 def read_input_gene_file(filename):
     """ convert file to array of input gene ids
@@ -25,7 +29,7 @@ def read_input_gene_file(filename):
     return(input_genes)
 
 
-def run(gene_file, data_path, net_type='BioGRID', features='Embedding', GSC='GO', job="jobrunner"):
+def run(gene_file, data_path, net_type='BioGRID', features='Embedding', GSC='GO', jobname="jobrunner"):
     """run from input file to completion (HTML results) """
     
     # suppress unecessary warnings to avoid mixing them with html output
@@ -41,28 +45,27 @@ def run(gene_file, data_path, net_type='BioGRID', features='Embedding', GSC='GO'
     input_genes = read_input_gene_file(filename=gene_file)
     convert_IDs, df_convert_out = intial_ID_convert(input_genes)
 
+    # get 
     df_convert_out, table_summary, input_count = make_validation_df(df_convert_out)
-    # this is in views.py, but not used by make_template()
-    # df_convert_out_subset, table_info_subset = alter_validation_df(
-    #     df_convert_out, table_info,
-    #     net_type=args.net_type)
+    df_convert_out_subset, positive_genes = alter_validation_df(df_convert_out,table_summary,net_type)
 
+    
     # 2. run model
     # TODO : modify these functions to check for valid inputs and raise errors if not correct
     #        input validation should be done in the method that uses the input, not here
-    graph, df_probs, df_GO, df_dis, avgps = run_model( convert_IDs=convert_IDs, 
-                                                    net_type=net_type, 
-                                                    GSC=GSC, 
-                                                    features=features )
+    graph, df_probs, df_GO, df_dis, avgps = run_model(convert_IDs, 
+                                                    net_type, GSC, features)
+
 
     # TODO : write all of these to disk if we want to change the presentation or review for debugging
 
     # 3. generate html of results visualization
-    html = make_template(job, net_type, features, GSC, 
-                         avgps, df_probs, df_GO, df_dis, 
-                         df_convert_out, table_info, graph)
+    
+    results_html = make_template(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis,
+                                        input_count, positive_genes, df_convert_out, graph)
 
-    return(html)
+
+    return(results_html)
 
 
 if __name__ == "__main__":
