@@ -30,21 +30,25 @@
         
         {% if joblist %}
         <hr>
-        <table class="table table-striped" id="jobs">
+        <table class="table " id="jobstable">
             <thead>
-                <tr>
+                <tr >
                 <th>Job Name</th>
-                <th>Submitted</th>
-                <th>Has Results?</th>
+                <th>Submit Time</th>
+                <th>Number of genes</th>
                 <th>Parameters</th>
+                <th>Completed?</th>
                 </tr>
             </thead>
             <tbody>
                 {% for job in joblist %}
-                <tr>
-                    <td> <a href="{{url_for('job',jobname=job['jobname']) }}">{{job['jobname']}}</a></td>
+                <tr class="{{'table-success' if job['has_results'] }}">
+                    <td> 
+                        <a href="{{url_for('job',jobname=job['jobname'],_external=True) }}">{{job['jobname']}}</a>
+                    </td>
                     <td>{{job['submit_time']}}</td>
-                    <td>{{job['has_results']}}</td>
+                    <td>{{'yes' if job['has_results']}}</td>
+                    <td>n</td>
                     <td></td>
                 </tr>
                 {% endfor %}
@@ -56,4 +60,18 @@
     
     </div>
 
+{% endblock %}
+
+
+
+{% block scipts %}
+
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+
+<script>
+    $('#jobstable').DataTable({
+        pagingType: "full_numbers"
+    });
+</script>
 {% endblock %}
