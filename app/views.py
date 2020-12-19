@@ -188,11 +188,11 @@ def run_model():
         # generate html that could be saved to a file for viewing later
         # commented-out for now but will be used for the job-submission system
         # save these results as a file just like
-        results_html = models.make_template(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis,
-                                           input_count, positive_genes, df_convert_out, graph)
+        # results_html = models.make_template(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis,
+        #                                   input_count, positive_genes, df_convert_out, graph)
 
-        with open("results.html", "wb") as outfile:
-            outfile.write(results_html.encode("utf-8"))
+        #with open("results.html", "wb") as outfile:
+        #    outfile.write(results_html.encode("utf-8"))
 
         # assign a job name
         jobhash = str(uuid.uuid1())[0:8]
