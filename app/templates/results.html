@@ -128,18 +128,36 @@
                         {{ dis_table|safe }}
                         </div>
                     </div>
+
                     <div class="tab-pane fade" id="netgraph">
                         <div class="controls">
                             <div class="force">
-                                <p><label>Adjust number of nodes shown based on highest prediction</label></p>
-                              </div>
+                                <p style=margin:0><label>Network Interpretation:</label></p>
+                            </div>
                             <div class="force">
-                                <p><label>Sets link length</label></p>
-
-                              </div>
+                                <p style=margin:0>The graph shows the top 50 nodes based on highest prediction probability</p>
+                            </div>
+                            <div class="force">
+                                <p style=margin:0>Node size is based on the prediction probability</p>
+                            </div>
+                            <div class="force">
+                                <p style=margin:0>Node color is based on the Class-Label</p>
+                            </div>
+                            <div class="force">
+                                <p style=margin:0>Hover over a node for additional attributes</p>
+                            </div>
+                            <div class="force">
+                                <p style=margin:0>Zoom in or out using the mouse scroll wheel</p>
+                            </div>
+                            <div class="force">
+                                <p style=margin:0>Move graph around the screen by dragging with the left mouse button</p>
+                            </div>
+                            <div class="force">
+                                <p style=margin:0>Right-click on node to look up gene at NCBI</p>
+                            </div>
                         </div>
                         <svg width="1080" height="600" id="graph"></svg>
-                        <canvas hidden width="1080" height="600" id="canvas"></canvas>
+                        <canvas hidden width="1080" height="600"></canvas>
                     </div>
                     <div class="tab-pane fade" id="validation">
                         <div class="table_container">
