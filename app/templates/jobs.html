@@ -44,7 +44,7 @@
                 {% for job in joblist %}
                 <tr class="{{'table-success' if job['has_results'] }}">
                     <td> 
-                        <a href="{{url_for('job',jobname=job['jobname'],_external=True) }}">{{job['jobname']}}</a>
+                        <a href="{{url_for('job',jobname=job['jobname']) }}">{{job['jobname']}}</a>
                     </td>
                     <td>{{job['submit_time']}}</td>
                     <td>{{'yes' if job['has_results']}}</td>
