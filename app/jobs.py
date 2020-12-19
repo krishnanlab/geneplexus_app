@@ -211,9 +211,7 @@ def retrieve_job_info(jobname, app_config):
         job_info['is_job'] = True
         job_info['submit_time'] = datetime.fromtimestamp(os.path.getmtime(jf)).strftime("%Y-%m-%d %H:%M:%S")
         job_info['has_results'] = check_results(jobname, app_config)
-        job_params = retrieve_params(jobname, app_config)
-        if job_params:
-            job_info['params'] = job_params['GP_NET_TYPE']
+        job_info['params']= retrieve_job_params(jobname, app_config)
 
     return(job_info)
   
@@ -240,7 +238,7 @@ def retrieve_results(jobname, app_config):
         return ''    
 
 
-def retrieve_params(jobname, app_config):
+def retrieve_job_params(jobname, app_config):
     """construct the path to the job (for local/mounted file storage)"""    
     job_folder = retrieve_job_folder(jobname, app_config)
     if job_folder:

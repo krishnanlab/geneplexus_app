@@ -35,21 +35,23 @@
                 <tr >
                 <th>Job Name</th>
                 <th>Submit Time</th>
-                <th>Number of genes</th>
                 <th>Parameters</th>
                 <th>Completed?</th>
                 </tr>
             </thead>
             <tbody>
                 {% for job in joblist %}
+                
                 <tr class="{{'table-success' if job['has_results'] }}">
                     <td> 
                         <a href="{{url_for('job',jobname=job['jobname']) }}">{{job['jobname']}}</a>
                     </td>
                     <td>{{job['submit_time']}}</td>
-                    <td>n</td>
-                    <td></td>
-                    <td>{{'yes' if job['has_results']}}</td>
+                    <td>{% if job['params'] %}
+                        {{job['params']['GP_NET_TYPE']}}; {{job['params']['GP_FEATURES']}}; {{job['params']['GP_GSC']}}
+                        {% endif %}
+                    </td>
+                    <td>{{'yes' if job['has_results'] else 'not yet'}}</td>
 
                 </tr>
                 {% endfor %}
