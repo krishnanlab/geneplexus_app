@@ -140,6 +140,6 @@ if __name__ == "__main__":
 
 
     html = run(gene_file = args.gene_file, data_path=args.data_path, net_type=args.net_type,
-               features=args.features, GSC=args.GSC, job=args.jobname)
+               features=args.features, GSC=args.GSC, jobname=args.jobname)
 
     print(html)
