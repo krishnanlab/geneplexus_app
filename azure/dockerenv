@@ -9,5 +9,7 @@ GP_NET_TYPE=BioGRID
 GP_FEATURES=Embedding
 GP_GSC=GO
 JOBNAME=docker_job
+BASE_CONTAINER_PATH=/home/dockeruser/
 JOB_IMAGE_NAME=geneplexus-backend
 JOB_IMAGE_TAG=latest
+JOB_URL=
