@@ -6,6 +6,8 @@
 # TODO check for existence of each env var
 # TODO trap errors
 
+ERRFILE="$OUTPUT_FILE".err
+
 # required args
 if [ ! -f "$GENE_FILE" ]; then
     echo "gene file=$GENE_FILE was not found, exiting"
@@ -47,16 +49,16 @@ if [ -n "$JOBNAME" ]; then
     ARGS="$ARGS -j $JOBNAME"
 fi
 
-ERRFILE="$OUTPUT_FILE".err
 
-runngcmd="python runner.py $ARGS -d $DATA_PATH --cross_validation $GENE_FILE "
-echo "starting backend : $runningcmd" > $ERRFILE
+
+runcmd="python runner.py $ARGS -d $DATA_PATH --cross_validation $GENE_FILE "
+echo "STARTED: $ARGS" > $ERRFILE
 python runner.py $ARGS -d "$DATA_PATH" --cross_validation "$GENE_FILE" > "$OUTPUT_FILE" 2>> "$ERRFILE"
 if [ $? -eq 0 ]
 then
-  echo "Python exited successfully " >> $ERRFILE
+  echo "FINISH: SUCCESS " >> $ERRFILE
 else
-  echo "Pythnon exit code $?" >> $ERRFILE
+  echo "FINISH: ERROR exit code $?" >> $ERRFILE
 fi
 
 
