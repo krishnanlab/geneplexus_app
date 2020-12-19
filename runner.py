@@ -40,7 +40,8 @@ def run(gene_file, data_path, net_type='BioGRID', features='Embedding', GSC='GO'
     # 1. read gene file and convert it
     input_genes = read_input_gene_file(filename=gene_file)
     convert_IDs, df_convert_out = intial_ID_convert(input_genes)
-    df_convert_out, table_info = make_validation_df(df_convert_out)
+
+    df_convert_out, table_summary, input_count = models.make_validation_df(df_convert_out)
     # this is in views.py, but not used by make_template()
     # df_convert_out_subset, table_info_subset = alter_validation_df(
     #     df_convert_out, table_info,
