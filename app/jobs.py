@@ -29,7 +29,7 @@ def create_json_file_name(jobname):
 def job_json(job_config, app_config):
     """build the data payload for the http trigger """ 
     # TODO potentially remove all of this from this app
-
+    
     acrname="krishnanlabgeneplexusacr"
 
     docker_image_config = {
@@ -44,7 +44,7 @@ def job_json(job_config, app_config):
     # TODO remove all of this from this app, leave elsewhere
     volume_config = {
         "name": "geneplexusfiles",
-                "mountPath": "/home/dockeruser/geneplexusfiles",
+                "mountPath": app_config['BASE_CONTAINER_PATH'],
                 "readOnly": False,
                 "shareName": "geneplexusfiles",
                 "shareReadOnly": False,
@@ -52,8 +52,7 @@ def job_json(job_config, app_config):
                 "storageAccountKey": app_config["STORAGE_ACCOUNT_KEY"]
     }
 
-    container_mount_path = app_config['BASE_CONTAINER_PATH']
-    job_path=f"{container_mount_path}/jobs/"
+    job_path=f"{app_config['BASE_CONTAINER_PATH']}/jobs/"
     jobname = path_friendly_jobname(job_config['jobname'])
     
     input_file_name = create_input_file_name(jobname)
@@ -66,7 +65,7 @@ def job_json(job_config, app_config):
         "GP_FEATURES": job_config['features'],
         "GP_GSC": job_config['GSC'],
         "JOBNAME": job_config['jobname'],
-        "DATA_PATH": f"{container_mount_path}/data_backend2",
+        "DATA_PATH": f"{app_config['BASE_CONTAINER_PATH']}/data_backend2",
         "GENE_FILE": f"{job_path}/{job_config['jobname']}/{input_file_name}",
         "OUTPUT_FILE": f"{job_path}/{job_config['jobname']}/{results_file_name}",
         "JOB_PATH": job_path
