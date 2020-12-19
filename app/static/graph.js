@@ -1,22 +1,11 @@
 //Create SVG element
 var svg = d3.select("svg"),
-    width = +svg.node().getBoundingClientRect().width,
-    height = +svg.node().getBoundingClientRect().height
+    w = +svg.node().getBoundingClientRect().width,
+    h = +svg.node().getBoundingClientRect().height
 
 //////// g holds zoom, nodes and links
 var g = svg.append('g')
     .attr("class", "everything");
-
-/*
-var rect = graph.append('svg:rect')
-    .attr('width', w)
-    .attr('height', h)
-    .attr('fill', 'transparent')
-    .attr('opacity', 0.5)
-    .attr('stroke', 'transparent')
-    .attr('stroke-width', 1)
-    .attr("id", "zrect");
-*/
 
 // define scale variable and range for node sizing
 var nodescale = d3.scaleLinear().domain([0, .3]).range([1, 10])
@@ -86,6 +75,10 @@ function initializeSimulation() {
 
 // values for all forces
 forceProperties = {
+    center: {
+        x: 0,
+        y: 0
+    },
     charge: {
         enabled: true,
         strength: -1500,
