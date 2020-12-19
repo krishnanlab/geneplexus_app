@@ -49,7 +49,6 @@ COPY .flaskenv .
 COPY runner.py .
 COPY runner.sh .
 # it's unclear if we need this, but you must run this on your local machine before building
-chmod u+x ./runner.sh 
 RUN chmod u+x ./runner.sh
 
 
