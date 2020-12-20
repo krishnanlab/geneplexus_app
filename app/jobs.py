@@ -84,10 +84,13 @@ def job_json(job_config, app_config):
 
     }
 
+    # TODO get CPU and ram from job_config
+    # TODO alter jog config, increase ram depending on network size
+    #  
     job_data = {
         "aciName": "geneplexus-backend",
         "location": "centralus",
-        "memoryInGB": 10,
+        "memoryInGB": 16,
         "cpu": 2,
         "volumeMount": volume_config,
         "image": docker_image_config,
