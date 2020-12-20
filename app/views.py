@@ -56,7 +56,6 @@ def jobs():
     else:
         jobnames = []
         joblist = {}
-        flash(f"No recent jobs stored with this session")
 
     return render_template("jobs.html", jobs = jobnames, 
                             joblist = joblist, 
