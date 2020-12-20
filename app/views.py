@@ -47,7 +47,10 @@ def jobs():
             else:
                 flash(f"Sorry, the job '{jobname}'' was not found")
 
-    jobnames = list_all_jobs(app.config.get('JOB_PATH'))
+    if 'jobs' in session:
+        jobnames = session['jobs']
+     
+    # jobnames = list_all_jobs(app.config.get('JOB_PATH'))
     joblist = job_info_list(jobnames, app.config)
 
     return render_template("jobs.html", jobs = jobnames, 
@@ -145,6 +148,8 @@ def run_model():
     else:
         jobname = jobid
 
+    jobname = jobs.path_friendly_jobname(jobname)
+
     if form.runbatch.data :
 
         # create dictionary for easy parameter passing
@@ -161,9 +166,20 @@ def run_model():
         response = launch_job(session['genes'], job_config, app.config)
         print("response = ", response)
 
-        session.clear()
+        if 'jobs' in session:
+            session['jobs'] = session['jobs'].append(jobname)
+        else:
+            session['jobs'] = [jobname]
 
         flash(f"Job {jobname} submitted!  The completed job will be available on {url_for('job', jobname=jobname ,_external=True)}")
+
+
+        # remove the current genelist from session
+        # previously clear session with         # session.clear()
+        try:
+            session.pop('genes')
+        except KeyError:
+            pass
 
         return redirect('jobs')
 
@@ -202,7 +218,10 @@ def run_model():
         else:
             jobname = jobhash
 
-        session.clear()
+        try:
+            session.pop('genes')
+        except KeyError:
+            pass
 
         return render_template("results.html", tic1=tic1, form=form, graph=graph, avgps=avgps, jobname=jobname,
                                input_count=input_count, positive_genes=positive_genes,
@@ -230,7 +249,12 @@ def clearinput():
 @app.route("/postgenes", methods=['GET','POST'])
 def postgenes():
 
-    session.clear()
+    try:
+        session.pop('genes')
+    except KeyError:
+        pass
+
+
     genes = request.form['genes']
     no_quotes = genes.translate(str.maketrans({"'": None}))  # remove any single quotes if they exist
     # input_genes_list = no_quotes.split(",") # turn into a list
@@ -244,7 +268,12 @@ def postgenes():
 @app.route("/uploadgenes", methods=['POST'])
 def uploadgenes():
 
-    session.clear()
+    # remove genes from session
+    try:
+        session.pop('genes')
+    except KeyError:
+        pass
+
     file = request.files['formData'].filename
 
     return jsonify(success=True, filename=file)

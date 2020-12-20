@@ -216,6 +216,9 @@ def retrieve_job_info(jobname, app_config):
         job_info['has_results'] = check_results(jobname, app_config)
         job_info['params']= retrieve_job_params(jobname, app_config)
         job_info['status']=retrieve_job_status(jobname, app_config)
+    else:
+        job_info['is_job'] = False
+        job_info['status'] = 'NOT FOUND'
 
     return(job_info)
   
