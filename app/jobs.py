@@ -220,11 +220,11 @@ def job_info_list(jobnames, app_config):
     jobinfolist = [retrieve_job_info(jobname, app_config) for jobname in jobnames]
     return(jobinfolist)
     
-def retrieve_job_status(jobname, app_config, status_file_suffix = ".log"):
+def retrieve_job_status(jobname, app_config, status_file_suffix = ".log", default_status = "SUBMITTED"):
     """ read the log file created by the job runner in the same folder as the results"""
 
     fp = results_file_path(jobname, app_config) + status_file_suffix
-    last_line = "SUBMITED" # this is the default 
+    last_line = default_status # this is the default
     # TODO , if the submit time is a long time ago, change status to NO ANSWER or similar
 
     if os.path.exists(fp):
