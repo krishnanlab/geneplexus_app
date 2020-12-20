@@ -55,11 +55,12 @@ RUNCMD="runner.py $ARGS -d $DATA_PATH --cross_validation $GENE_FILE "
 echo $RUNCMD >>$LOGFILE
 echo "STARTED `date +'%d/%m/%Y %H:%M:%S'`" >>$LOGFILE
 python $RUNCMD > "$OUTPUT_FILE" 2>> "$LOGFILE"
-if [ $? -eq 0 ]
+PYTHON_EXITCODE=$?
+if [ $PYTHON_EXITCODE -eq 0 ]
 then
   echo "COMPLETED `date +'%d/%m/%Y %H:%M:%S'`" >>$LOGFILE
 else
-  echo "ERROR `date +'%d/%m/%Y %H:%M:%S'` exit code $?" >>$LOGFILE
+  echo "ERROR `date +'%d/%m/%Y %H:%M:%S'` exit code $PYTHON_EXITCODE" >>$LOGFILE
 fi
 
 
