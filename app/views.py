@@ -47,12 +47,14 @@ def jobs():
             else:
                 flash(f"Sorry, the job '{jobname}'' was not found")
 
+
     if 'jobs' in session:
         jobnames = session['jobs']
         # jobnames = list_all_jobs(app.config.get('JOB_PATH'))
         joblist = job_info_list(jobnames, app.config)
 
     else:
+        jobnames = []
         joblist = {}
         flash(f"No recent jobs stored with this session")
 
