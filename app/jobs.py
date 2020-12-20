@@ -229,7 +229,7 @@ def retrieve_job_status(jobname, app_config, status_file_suffix = ".log"):
 
     if os.path.exists(fp):
         # try
-        with open('filename.txt', 'r') as f:
+        with open(fp, 'r') as f:
             last_line = f.readlines()[-1]
     
     return(last_line)
