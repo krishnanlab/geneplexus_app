@@ -57,9 +57,9 @@ echo "STARTED `date +'%d/%m/%Y %H:%M:%S'`" >>$LOGFILE
 python $RUNCMD > "$OUTPUT_FILE" 2>> "$LOGFILE"
 if [ $? -eq 0 ]
 then
-  echo "FINISH `date +'%d/%m/%Y %H:%M:%S'`: SUCCESS " >>$LOGFILE
+  echo "COMPLETED `date +'%d/%m/%Y %H:%M:%S'`" >>$LOGFILE
 else
-  echo "FINISH `date +'%d/%m/%Y %H:%M:%S'`: ERROR exit code $?" >>$LOGFILE
+  echo "ERROR `date +'%d/%m/%Y %H:%M:%S'` exit code $?" >>$LOGFILE
 fi
 
 
