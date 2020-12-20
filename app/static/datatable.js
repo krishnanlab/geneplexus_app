@@ -164,11 +164,5 @@ $(document).ready( function () {
         }
     });
 
-    $('#jobstable').DataTable({
-        pagingType: "full_numbers",
-        initComplete: function(){
-            $("#jobstable").show();
-        }
-    });
 
 } );

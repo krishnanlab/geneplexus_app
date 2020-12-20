@@ -191,7 +191,8 @@ def results_file_path(jobname, app_config):
 def check_results(jobname, app_config):
     """"  return T/F if there is a results file """
     fp = results_file_path(jobname, app_config)
-    return( os.path.exists(fp) ) 
+    #  if results file exists and it's non-zero size, then true
+    return( os.path.exists(fp) and os.path.getsize(fp) > 0) 
 
 
 def retrieve_job_info(jobname, app_config):
