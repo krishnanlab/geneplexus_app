@@ -33,6 +33,10 @@ def help():
 
         return render_template("help.html")
 
+@app.route("/contact", methods=['GET'])
+def contact():
+    return render_template("contact.html")
+
 
 @app.route("/jobs/", methods=['GET', 'POST'])
 def jobs():
