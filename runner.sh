@@ -50,7 +50,11 @@ if [ -n "$JOBNAME" ]; then
 fi
 
 
-
+# get system stats in logfile
+echo "System Memory State " >> $LOGFILE
+vmstat -s -S M >>$LOGFILE
+# also send it to the error log?
+>&2 vmstat -s -S 
 RUNCMD="runner.py $ARGS -d $DATA_PATH --cross_validation $GENE_FILE "
 echo $RUNCMD >>$LOGFILE
 echo "STARTED `date +'%d/%m/%Y %H:%M:%S'`" >>$LOGFILE
