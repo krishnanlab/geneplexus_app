@@ -7,9 +7,20 @@ from pandas import DataFrame
 from datetime import datetime
 
 def path_friendly_jobname(jobname):
-    """ job name must be useable to create file paths, so remove unuesable or unicode characters"""
+    """ job name must be useable to create file paths and other cloud resources, so remove unuesable or unicode characters"""
+    #rules for conainters: The container name must contain no more than 63 characters and must match the regex '[a-z0-9]([-a-z0-9]*[a-z0-9])?' (e.g. 'my-name')."
     # this needs to be idempotent becuase we may call it on an already modified jobname to be safe
-    return(slugify(jobname))
+
+    # azure containers must have names matching regex '[a-z0-9]([-a-z0-9]*[a-z0-9])?' (e.g. 'my-name')."
+    # this is  more restrictive that file paths.  
+    # For slugify, the regex pattern is what to exclude, so it uses the negation operator ^
+    # do two passes - one for slugify's chaacter conversion, and one to make it cloud friendly
+    filefriendly_jobname = slugify(jobname.lower(), lowercase=True)
+    
+    cloud_container_exclude_pattern=r'[^a-z0-9]([^-a-z0-9]*[^a-z0-9])?'
+    cloudfriendly_jobname = slugify(filefriendly_jobname, separator='-', regex_pattern=cloud_container_exclude_pattern)
+
+    return(cloudfriendly_jobname)
 
 def create_input_file_name(jobname):
     return('input_genes.txt')
@@ -32,6 +43,12 @@ def job_json(job_config, app_config):
     
     acrname="krishnanlabgeneplexusacr"
 
+    job_path=f"{app_config['BASE_CONTAINER_PATH']}/jobs/"
+    jobname = path_friendly_jobname(job_config['jobname'])
+    
+    input_file_name = create_input_file_name(jobname)
+    results_file_name = create_results_file_name(jobname)
+
     docker_image_config = {
         "imageName": f"{acrname}.azurecr.io/{app_config['JOB_IMAGE_NAME']}:{app_config['JOB_IMAGE_TAG']}",
         "registry": {
@@ -52,12 +69,6 @@ def job_json(job_config, app_config):
                 "storageAccountKey": app_config["STORAGE_ACCOUNT_KEY"]
     }
 
-    job_path=f"{app_config['BASE_CONTAINER_PATH']}/jobs/"
-    jobname = path_friendly_jobname(job_config['jobname'])
-    
-    input_file_name = create_input_file_name(jobname)
-    results_file_name = create_results_file_name(jobname)
-
     envvars = {
         "FLASK_ENV": "development",
         "FLASK_DEBUG": True,
@@ -65,6 +76,7 @@ def job_json(job_config, app_config):
         "GP_FEATURES": job_config['features'],
         "GP_GSC": job_config['GSC'],
         "JOBNAME": job_config['jobname'],
+        "JOBID": job_config['jobid'],
         "DATA_PATH": f"{app_config['BASE_CONTAINER_PATH']}/data_backend2",
         "GENE_FILE": f"{job_path}/{job_config['jobname']}/{input_file_name}",
         "OUTPUT_FILE": f"{job_path}/{job_config['jobname']}/{results_file_name}",
@@ -100,6 +112,7 @@ def launch_job(genes, job_config, app_config):
 
     # prep all the filenames and paths
     jobname = path_friendly_jobname(job_config['jobname'])
+    # jobid = job_config['jobid']
     input_file_name = create_input_file_name(jobname)
     json_file_name = create_json_file_name(jobname)
     local_job_folder = f"{app_config['JOB_PATH']}/{jobname}"
@@ -120,9 +133,13 @@ def launch_job(genes, job_config, app_config):
     with open(input_file_path, 'w') as f:
         f.writelines("%s\n" % gene for gene in genes)
 
+    # only write the env vars from job data to storage
+    # otherwise we are writing cloud-specific info (keys, etc) to storage that we don't need for job status
+    # use this convoluted method json->dict->select one key->new dict->json
+    job_vars = json.dumps({'envvars':json.loads(job_data)['envvars']})
     # write job params ( data sent to azure )
     with open(json_file_path, 'w') as f:
-        f.write(job_data)
+        f.write(job_vars)
 
     jsonHeaders = {'Content-type': 'application/json', 'Accept': 'text/plain'}
 
@@ -136,26 +153,6 @@ def launch_job(genes, job_config, app_config):
     return response
 
 
-def test_job(test_jobname="test_job_99", input_file='input_genes.txt'):
-    from app import app
-    # in calling function, Assign variables to navbar input selections
-    # job_config['net_type']  # = request.form['network']
-    # job_config['features']  # = request.form['feature']
-    # job_config['GSC']  # = request.form['negativeclass']
-    # job_config['jobname'] #= request.form['jobname']
-
-    job_config = {}
-    job_config['net_type'] = "BioGRID"
-    job_config['features'] = "Embedding"
-    job_config['GSC'] = "DisGeNet"
-    job_config['jobname'] = test_jobname
-    # there should be a sample input file checked into git
-    with open(input_file, 'r') as f:
-        genes = f.read()
-
-    print("launching")
-    response = launch_job(genes, job_config, app.config)
-    print("response = ", response)
 
 
 def list_all_jobs(job_path): 
@@ -233,7 +230,7 @@ def retrieve_job_status(jobname, app_config, status_file_suffix = ".log"):
     if os.path.exists(fp):
         # try
         with open('filename.txt', 'r') as f:
-            last_line = f_read.readlines()[-1]
+            last_line = f.readlines()[-1]
     
     return(last_line)
 
@@ -272,3 +269,26 @@ def retrieve_job_params(jobname, app_config):
         return(params_vars['envvars'])
     else:
         return('')
+
+def test_job(test_jobname="A_test_job!-A99", input_file='input_genes.txt'):
+    from app import app
+    # in calling function, Assign variables to navbar input selections
+    # job_config['net_type']  # = request.form['network']
+    # job_config['features']  # = request.form['feature']
+    # job_config['GSC']  # = request.form['negativeclass']
+    # job_config['jobname'] #= request.form['jobname']
+
+    job_config = {}
+    job_config['net_type'] = "BioGRID"
+    job_config['features'] = "Embedding"
+    job_config['GSC'] = "DisGeNet"
+    job_config['jobname'] = test_jobname
+    job_config['jobid'] = "A99"
+    
+    # there should be a sample input file checked into git
+    with open(input_file, 'r') as f:
+        genes = f.read()
+
+    print("launching")
+    response = launch_job(genes, job_config, app.config)
+    print("response = ", response)
