@@ -148,7 +148,7 @@ def run_model():
     else:
         jobname = jobid
 
-    jobname = jobs.path_friendly_jobname(jobname)
+    jobname = path_friendly_jobname(jobname)
 
     if form.runbatch.data :
 
