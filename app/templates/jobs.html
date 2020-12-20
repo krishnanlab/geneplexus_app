@@ -37,6 +37,7 @@
                 <th>Submit Time</th>
                 <th>Parameters</th>
                 <th>Completed?</th>
+                <th>Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -52,7 +53,7 @@
                         {% endif %}
                     </td>
                     <td>{{'yes' if job['has_results'] else 'not yet'}}</td>
-
+                    <td>{{job['status']}}</td>
                 </tr>
                 {% endfor %}
             </tbody>

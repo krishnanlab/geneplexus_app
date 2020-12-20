@@ -6,7 +6,7 @@
 # TODO check for existence of each env var
 # TODO trap errors
 
-ERRFILE="$OUTPUT_FILE".err
+LOGFILE="$OUTPUT_FILE".log
 
 # required args
 if [ ! -f "$GENE_FILE" ]; then
@@ -51,25 +51,24 @@ fi
 
 
 
-runcmd="python runner.py $ARGS -d $DATA_PATH --cross_validation $GENE_FILE "
-echo "STARTED: $ARGS" > $ERRFILE
-python runner.py $ARGS -d "$DATA_PATH" --cross_validation "$GENE_FILE" > "$OUTPUT_FILE" 2>> "$ERRFILE"
+RUNCMD="runner.py $ARGS -d $DATA_PATH --cross_validation $GENE_FILE "
+echo $RUNCMD >>$LOGFILE
+echo "STARTED `date +'%d/%m/%Y %H:%M:%S'`" >>$LOGFILE
+python $RUNCMD > "$OUTPUT_FILE" 2>> "$LOGFILE"
 if [ $? -eq 0 ]
 then
-  echo "FINISH: SUCCESS " >> $ERRFILE
+  echo "FINISH `date +'%d/%m/%Y %H:%M:%S'`: SUCCESS " >>$LOGFILE
 else
-  echo "FINISH: ERROR exit code $?" >> $ERRFILE
+  echo "FINISH `date +'%d/%m/%Y %H:%M:%S'`: ERROR exit code $?" >>$LOGFILE
 fi
 
 
-# function to show an example. this is not run when the sdcript is run
+# function to show an example run on a laptop with HPCC mounted, and will output to the screen. Note this is not run when the script is run
 example_run ()
 {
-DATA_PATH=/Volumes/compbio/krishnanlab/projects/GenePlexus/repos/GenePlexusBackend/data_backend2 \
-GENE_FILE="../input_genes_newlines.txt" \
-GP_NET_TYPE="BioGrid" GP_FEATURES="Embedding" GP_GSC="GO" JOBNAME="example_run" \
-python runner.py --net_type $GP_NET_TYPE --features $GP_FEATURES --GSC $GP_GSC -d "$DATA_PATH" -j "$JOBNAME" --cross_validation "$GENE_FILE"
-
-
+    DATA_PATH=/Volumes/compbio/krishnanlab/projects/GenePlexus/repos/GenePlexusBackend/data_backend2 \
+    GENE_FILE="../input_genes_newlines.txt" \
+    GP_NET_TYPE="BioGrid" GP_FEATURES="Embedding" GP_GSC="GO" JOBNAME="example_run" \
+    python runner.py --net_type $GP_NET_TYPE --features $GP_FEATURES --GSC $GP_GSC -d "$DATA_PATH" -j "$JOBNAME" --cross_validation "$GENE_FILE"
 
 }

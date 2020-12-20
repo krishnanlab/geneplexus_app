@@ -198,12 +198,14 @@ def retrieve_job_info(jobname, app_config):
     """ return a dict of job info for jobs table (no results) """
     jobname = path_friendly_jobname(jobname)
 
+    # create default empty dict for consistent rows
     job_info = { 
         'jobname': jobname, 
         'is_job' : '',
         'submit_time' : '',
         'has_results' : '',
-        'params' : ''
+        'params' : '',
+        'status' : ''
     }
 
     jf = retrieve_job_folder(jobname, app_config)
@@ -212,14 +214,29 @@ def retrieve_job_info(jobname, app_config):
         job_info['submit_time'] = datetime.fromtimestamp(os.path.getmtime(jf)).strftime("%Y-%m-%d %H:%M:%S")
         job_info['has_results'] = check_results(jobname, app_config)
         job_info['params']= retrieve_job_params(jobname, app_config)
+        job_info['status']=retrieve_job_status(jobname, app_config)
 
     return(job_info)
   
 def job_info_list(jobnames, app_config):
-    """for a list off jobnames, create a list of dict (for pandas magic)"""
+    """for a list off jobnames, accumulate all the job_info"""
     jobinfolist = [retrieve_job_info(jobname, app_config) for jobname in jobnames]
     return(jobinfolist)
     
+def retrieve_job_status(jobname, app_config, status_file_suffix = ".log"):
+    """ read the log file created by the job runner in the same folder as the results"""
+
+    fp = results_file_path(jobname, app_config) + status_file_suffix
+    last_line = "SUBMITED" # this is the default 
+    # TODO , if the submit time is a long time ago, change status to NO ANSWER or similar
+
+    if os.path.exists(fp):
+        # try
+        with open('filename.txt', 'r') as f:
+            last_line = f_read.readlines()[-1]
+    
+    return(last_line)
+
 
 def retrieve_results(jobname, app_config):
     """ retrieve the results file (html) for a given job"""
