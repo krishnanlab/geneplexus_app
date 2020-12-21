@@ -172,7 +172,7 @@ def run_model():
         response = launch_job(session['genes'], job_config, app.config)
         print("response = ", response)
 
-        if 'jobs' in session:
+        if 'jobs' in session and session['jobs']:
             session['jobs'] = session['jobs'].append(jobname)
         else:
             session['jobs'] = [jobname]
