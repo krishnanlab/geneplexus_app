@@ -103,22 +103,12 @@
                                     {{ form.negativeclass }}
                                 </div>
                                 <br>
-                               <label>
-                                   7. Run Model
-                               </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                                  data-content="Hitting this button will spin up a virtual machine in the cloud and train the machine learning model.
-                                  The link to view the results will be available in the Job tab when completed.">
+  
+                                {{ form.runbatch(class_="btn btn-sm btn-primary") }} &nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                                  data-content="Hitting this button will launch a process in the cloud to train the machine learning model.
+                                  The link to view the results will be available in the Jobs tab when completed.">
                                <i class="fas fa-question-circle"></i></a>
-                               <div class="runButtons">
-                                   <div>
-                                        {{ form.runlocal }}
-                                        <!-- <input id="run_model_button" type="submit" name="submit_button" class="select" value="Run Model" onclick="$('#divLoading').show();"> -->
-                                   </div>
-                                   <div>
-                                        {{ form.runbatch }}
-                                       <!-- <button type="button" class="select" value="Run Batch" onclick="runBatch()">Run Batch</button> -->
-                                   </div>
-                               </div>
+                              
                            </fieldset>
                        </form>
                    </span>

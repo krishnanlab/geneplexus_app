@@ -38,5 +38,6 @@ class ValidateForm(FlaskForm):
     features = SelectField('features', choices=features, default=None, validators=[DataRequired()])
     negativeclass = SelectField('negativeclass', choices=negativeclass, default=None, validators=[DataRequired()])
 
-    runbatch = SubmitField(label='Run batch')
-    runlocal = SubmitField(label='Run local')
+    runbatch = SubmitField(label='Submit')
+    # run local was used to run the model on the webserver ,disabled for now
+    # runlocal = SubmitField(label='Run local')

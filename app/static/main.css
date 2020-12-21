@@ -12,9 +12,6 @@ input[type='file'] {
   opacity:0
 }
 
-.runButtons {
-    display: flex;
-}
 
 #geneButton {
     width: 250px;

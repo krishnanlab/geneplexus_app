@@ -11,9 +11,19 @@
         <h4>Job Lookup</h4>
         <hr>
         <form class="form" method="post">
-        {{ form.jobname(class="form-control", placeholder="job name") }}
+            <fieldset class="border box_padding fieldset">
+                <label>
+                Recall job results by name
+                </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                       data-content="Only jobs from this browser session are available in this list. Enter the job name (name only) to find a previous job (exact match)
+                       or copy and paste the job url in your browser.">
+                         <i class="fas fa-question-circle"></i></a>
+                <div>
+                
+        {{ form.jobname(class="form-control", placeholder="job name") }}</div>
         <P>&nbsp;</P>
-        {{ form.lookup(class_="btn btn-primary")}}
+        {{ form.lookup(class_="btn btn-sm btn-primary")}}
+        </fieldset>
         </form>      
     </div>
 </div>
@@ -79,8 +89,10 @@
 
 
 {% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
 
 <script>
+
 $(document).ready( function () {
     $('#jobstable').DataTable({
         "lengthChange": false,
