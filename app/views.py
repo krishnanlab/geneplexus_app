@@ -247,7 +247,10 @@ def run_model():
 @app.route("/clearinput", methods=['GET','POST'])
 def clearinput():
 
-    session.clear()
+    try:
+        session.pop('genes')
+    except KeyError:
+        pass
 
     return jsonify(success=True)
 
