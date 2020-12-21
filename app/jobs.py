@@ -224,7 +224,10 @@ def retrieve_job_info(jobname, app_config):
   
 def job_info_list(jobnames, app_config):
     """for a list off jobnames, accumulate all the job_info"""
-    jobinfolist = [retrieve_job_info(jobname, app_config) for jobname in jobnames]
+    jobinfolist = []
+    if jobnames:
+        jobinfolist = [retrieve_job_info(jobname, app_config) for jobname in jobnames]
+
     return(jobinfolist)
     
 def retrieve_job_status(jobname, app_config, status_file_suffix = ".log", default_status = "SUBMITTED"):
