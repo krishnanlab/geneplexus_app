@@ -27,8 +27,8 @@ class ValidateForm(FlaskForm):
     ]
 
     negativeclass = [
-        ('DisGeNet','DisGeNet'),
-        ('GO','GO'),
+        ('DisGeNet','Diseases (DisGeNet)'),
+        ('GO','Processes / pathways (GO)'),
     ]
 
     job = StringField('job', validators=[DataRequired()], render_kw={'readonly': True})
