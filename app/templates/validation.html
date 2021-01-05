@@ -119,6 +119,9 @@
         <div class="container">
             <div class="border border-dark">
                 <div class="box_padding">
+                    <h4>Summary</h4>
+                    <p>The table below shows how many of the input genes were converted to Entrez gene IDs and how many
+                        of them are present in the various molecular networks.</p>
                     <table style="width: 85%">
                             <colgroup>
                                <col span="1" style="width: 15%;">
@@ -128,8 +131,8 @@
                         <thead>
                             <tr>
                                 <th>Network</th>
-                                <th>Total Number of Genes in the Network</th>
-                                <th>Number of User Supplied Genes in the Network</th>
+                                <th style="text-align: right">Total Number of Genes in the Network</th>
+                                <th style="text-align: right">Number of User-Supplied Genes in the Network</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -139,7 +142,7 @@
                                     {%- if key == 'Network' -%}
                                         <td style="text-align: left; vertical-align: middle;">{{ value }}</td>
                                     {%- else -%}
-                                        <td style="text-align: center; vertical-align: middle;">{{ value }}</td>
+                                        <td style="text-align: right; vertical-align: middle;">{{ '{0:,}'.format(value | int) }}</td>
                                     {%- endif -%}
                                 {% endfor %}
                             </tr>
@@ -148,6 +151,11 @@
                     </table>
                 </div>
             </div>
+            <br class="mt-5">
+            <h4>Input genes</h4>
+            <p>The table below shows the input genes, their corresponding Entrez gene IDs, and if they are present
+                in the various molecular networks. Use this table to select a molecular network to train your model
+                (in the panel on the left).</p>
             {{ validate_table|safe }}
             <div class="fill_container">
                 <div id="divLoading">

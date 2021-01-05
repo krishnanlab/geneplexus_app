@@ -146,19 +146,18 @@ $(document).ready( function () {
 
     $('#validatetable').DataTable({
         dom: '<"dom_wrapper fh-fixedHeader"Bf>tip',
-        buttons: ['copy', 'excel', 'pdf' ],
-        fixedHeader: true,
         columnDefs: [
             {
                 targets: [0, 1],
                 className: "dt-left"
             },
             {
-                targets: [2],
-                className: "dt-right"
+                targets: [2, 3, 4, 5],
+                className: "dt-center"
             }
         ],
         pagingType: "full_numbers",
+        buttons: ['copy', 'excel', 'pdf' ],
         initComplete: function(){
             $("#validatetable").show();
         }

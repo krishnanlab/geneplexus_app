@@ -64,7 +64,7 @@ def intial_ID_convert(input_genes):
 
 def make_validation_df(df_convert_out):
     table_summary = []
-    num_converted_to_Entrez = df_convert_out[~(df_convert_out['ID_converted_to_Entrez']=='Could Not be mapped to Entrez')].shape[0]
+    #num_converted_to_Entrez = df_convert_out[~(df_convert_out['ID_converted_to_Entrez']=='Could Not be mapped to Entrez')].shape[0]
     input_count = df_convert_out.shape[0]
     converted_genes = df_convert_out['ID_converted_to_Entrez'].to_numpy()
     for anet in ['BioGRID','STRING','STRING-EXP','GIANT-TN']:
@@ -75,7 +75,10 @@ def make_validation_df(df_convert_out):
         table_summary.append(dict(table_row))
         tmp_ins = np.full(len(converted_genes),'N',dtype=str)
         tmp_ins[df_tmp.index.to_numpy()] = 'Y'
-        df_convert_out['In_%s?'%anet] = tmp_ins
+        df_convert_out['In %s?'%anet] = tmp_ins
+
+    df_convert_out = df_convert_out.rename(columns = {'Original_ID': 'Original ID', 'ID_converted_to_Entrez': 'Entrez ID'})
+
     return df_convert_out, table_summary, input_count
 
 
