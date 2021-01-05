@@ -1,5 +1,3 @@
-$('[data-toggle="popover"]').popover();
-
 $(document).ready(function ()
 {
     $('#geneButton').click(function(){

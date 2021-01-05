@@ -83,7 +83,7 @@ def make_validation_df(df_convert_out):
 
 
 def alter_validation_df(df_convert_out,table_info,net_type):
-    df_convert_out_subset = df_convert_out[['Original_ID','ID_converted_to_Entrez','In_%s?'%net_type]]
+    df_convert_out_subset = df_convert_out[['Original ID','Entrez ID','In %s?'%net_type]]
     network = next((item for item in table_info if item['Network'] == net_type), None)
     positive_genes = network.get("PositiveGenes")
     return df_convert_out_subset, positive_genes
@@ -275,7 +275,7 @@ def run_model(convert_IDs, net_type, GSC, features, logger = app.logger):
     return graph, df_probs, df_GO, df_dis, avgps
 
 
-def make_template(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis, input_count, positive_genes, df_convert_out, graph):
+def make_template(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis, input_count, positive_genes, df_convert_out_subset, graph):
     # Render the Jinja template, filling fields as appropriate
     # return rendered HTML
     # Find the module absolute path and locate templates
@@ -331,8 +331,8 @@ def make_template(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_d
         go_table=df_GO.to_html(index=False,
                                classes='table table-striped table-bordered nowrap" style="width: 100%;" id = "gotable'),
         dis_table=df_dis.to_html(index=False, classes='table table-striped table-bordered" id = "distable'),
-        validate_table=df_convert_out.to_html(index=False,
-                                              classes='table table-striped table-bordered" id = "validatetable'),
+        validate_results=df_convert_out_subset.to_html(index=False,
+                                              classes='table table-striped table-bordered" id = "validateresults'),
         graph=graph)
     
     # return utf-8 string

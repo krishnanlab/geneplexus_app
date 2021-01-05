@@ -17,7 +17,8 @@ $(document).ready( function () {
 
             },
             {
-                targets: [1, 2]
+                targets: [1, 2],
+                className: "dt-left"
             },
             {
                 targets: [ 3 ],
@@ -163,5 +164,23 @@ $(document).ready( function () {
         }
     });
 
+    $('#validateresults').DataTable({
+        dom: '<"dom_wrapper fh-fixedHeader"Bf>tip',
+        columnDefs: [
+            {
+                targets: [0, 1],
+                className: "dt-left"
+            },
+            {
+                targets: [2],
+                className: "dt-center"
+            }
+        ],
+        pagingType: "full_numbers",
+        buttons: ['copy', 'excel', 'pdf' ],
+        initComplete: function(){
+            $("#validateresults").show();
+        }
+    });
 
 } );

@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.6.4/css/buttons.bootstrap4.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.6/css/responsive.dataTables.min.css">
+    <script src="https://kit.fontawesome.com/e6f3faaa40.js" crossorigin="anonymous"></script>
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='main.css') }}">
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='graph.css') }}">
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='d3-tip.css') }}">
@@ -20,6 +21,7 @@
 
         </header>
        <div class="result_container">
+           <h4 style="padding: 5px">Prediction results</h4>
             <div class="border border-dark">
                 <div class="box_padding">
                     <div class="row">
@@ -27,27 +29,32 @@
                             <b>Parameters:</b>
                         </div>
                         <div class="col-xs-3 text-left col-sm-3">
-                            <label>Job Name:&nbsp</label>{{( jobname )}}<br>
-                            <label>Network:&nbsp</label>{{( request.form['network'] )}}<br>
+                            <label><b>Job Name:</b>&nbsp</label>{{( jobname )}}<br>
+                            <label><b>Network:</b>&nbsp</label>{{( request.form['network'] )}}<br>
                         </div>
                         <div class="col-xs-3 text-left col-sm-3">
-                            <label>Features:&nbsp</label>{{( request.form['features'] )}}<br>
-                            <label>Negative Class:&nbsp</label>{{( request.form['negativeclass'] )}}<br>
+                            <label><b>Features:</b>&nbsp</label>{{( request.form['features'] )}}<br>
+                            <label><b>Negative Class:</b>&nbsp</label>{{( request.form['negativeclass'] )}}<br>
                         </div>
                     </div>
                     <br>
                     <div class="row">
                         <div class="col-xs-12 col-sm-12">
                             <label>The median value of the log2(auPRC/prior)
-                                for 5-fold cross validation is &nbsp</label>{{( avgps )}}<br>&nbsp
-                                </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                                  data-content="log2(auPRC/prior) reports the 2-fold change of the auPRC over the expected result.
-                                  For example a value of 1 is a model that performs twice as good as the expected result.">
-                           <i class="fas fa-question-circle"></i></a>
+                                for 5-fold cross validation is &nbsp</label>{{( avgps )}}.
+                            </label>&nbsp
+                            <a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                                  data-content="If the number of genes in the positive class is greater than 20,
+                                  this metric reports the fold change of the area under the precision-recall curve
+                                  (auPRC) over the prior auPRC expected by random chance. For example, a value of 1
+                                  indicates that the model performs twice as good as a random ranking of genes.">
+                                <i class="fas fa-question-circle"></i>
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
+            <br class="mt-5">
             <div role="tabpanel">
                 <!-- Nav tabs -->
                 <ul class="nav nav-tabs" role="tablist">
@@ -55,13 +62,13 @@
                         <a href="#predictions" class="nav-link text-dark active" data-toggle="tab">Gene Predictions</a>
                     </li>
                     <li class="nav-item">
-                        <a href="#sim_go" class="nav-link text-dark" data-toggle="tab">Similarities to GO Biological Processes</a>
+                        <a href="#sim_go" class="nav-link text-dark" data-toggle="tab">Similarities to Biological Processes</a>
                     </li>
                     <li class="nav-item">
                         <a href="#sim_dis" class="nav-link text-dark" data-toggle="tab">Similarities to Disease</a>
                     </li>
                     <li class="nav-item">
-                        <a href="#netgraph" class="nav-link text-dark" data-toggle="tab">Network graph</a>
+                        <a href="#netgraph" class="nav-link text-dark" data-toggle="tab">Network Graph</a>
                     </li>
                     <li class="nav-item">
                         <a href="#validation" class="nav-link text-dark" data-toggle="tab">Validation Data</a>
@@ -73,11 +80,16 @@
                     <div role="tabpanel" class="tab-pane fade show active" id="predictions">
                         <div class="table_container">
                             <div class="box_padding">
-                                <p>The table below contains the prediction probability for all the genes in the selected network
-                                    based on whether that belong in the class determined by the input gene list.
-                                    The probabilities are bounded between 0 and 1. The Class-labels are; P - gene was
-                                    considered in positive class while training, N- gene was considered in negative class
-                                    while training and U - gene was not considered at all during training.</p>
+                                <p>The table below contains the prediction probability for all the genes in the
+                                    selected network indicating each gene’s functional similarity to the input genes.
+                                    The Probability of each gene is bounded between 0 and 1, and is displayed upto 2
+                                    decimal places for clarity. The Rank column indicates the rank of the gene when
+                                    sorted by the full probability value (up to several decimals). The Class-Labels are:
+                                    P – gene was considered in positive class during training,
+                                    N – gene was considered in negative class during training, and
+                                    U – gene was not considered at all during training.
+                                    Known/Novel indicates whether the gene was part of the input gene list
+                                    (therefore ‘Known’) or not (therefore ‘Novel’).</p>
                             </div>
                         {{ probs_table|safe }}
                         </div>
@@ -86,10 +98,10 @@
                     <div class="tab-pane fade" id="sim_go">
                         <div class="table_container">
                             <div class="box_padding">
-                                <P>The model weights of the model trained on the input gene file are compared to model weights
-                                    from models trained on lists of genes associated with GO Biological Process.
-                                    The similarity to these other models is reported as a z-score that takes into account the
-                                    background of similarities between all models.</P>
+                                <P>The table below shows the similarity of machine learning models trained on sets of
+                                    genes associated with Gene Ontology Biological Process terms to the custom model
+                                    trained on the input genes. See the Help page for more information about
+                                    the similarity measure.</P>
                             </div>
                         {{ go_table|safe }}
                         </div>
@@ -98,10 +110,10 @@
                     <div class="tab-pane fade" id="sim_dis">
                         <div class="table_container">
                             <div class="box_padding">
-                                <P>The model weights of the model trained on the input gene file are compared to model weights
-                                    from models trained on lists of genes associated with DisGeNet terms.
-                                    The similarity to these other models is reported as a z-score that takes into account the
-                                    background of similarities between all models.</P>
+                                <P>The table below shows the similarity of machine learning models trained on sets of
+                                    genes associated with diseases in the DisGeNET database to the custom model
+                                    trained on the input genes. See the Help page for more information about
+                                    the similarity measure.</P>
                             </div>
                         {{ dis_table|safe }}
                         </div>
@@ -144,7 +156,7 @@
                                 The number of those genes that were uniquely mapped to an Entrez ID
                                         and were also in the network is {{positive_genes}}.</p>
                             </div>
-                        {{ validate_table|safe }}
+                        {{ validate_results|safe }}
                         </div>
                     </div>
                 </div>
@@ -171,5 +183,8 @@
         <script src="{{url_for('static', filename='d3-tip.js')}}"></script>
         <script src="{{url_for('static', filename='graph.js')}}"></script>
         <script src="{{url_for('static', filename='datatable.js')}}"></script>
+        <script>
+            $('[data-toggle="popover"]').popover();
+        </script>
     </body>
 </html>

@@ -22,11 +22,13 @@
                        <fieldset class="border box_padding fieldset">
                            <label>
                                1. Enter Input Genes
-                           </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                           </label>&nbsp
+                           <a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
                                   data-content="Upload of file of Gene IDs or input them manually.
                                   Acceptable Gene IDs are; Entrez, ENSG, Symbol, ENSP, ENST.
                                   The format is delimited by newline (i.e. each gene is on a separate line)">
-                           <i class="fas fa-question-circle"></i></a>
+                               <i class="fas fa-question-circle"></i>
+                           </a>
                            <div>
                                 <span id="geneButton" class="btn btn-sm">Input Genes from File</span>
                                 <span id="filename" class="text-center"></span>
@@ -104,7 +106,7 @@
                                 </div>
                                 <br>
                                 
-                                {{ form.runbatch(class_="btn btn-sm btn-primary") }} 
+                                {{ form.runlocal(class_="btn btn-sm btn-primary") }}
                                 <br/>
                                 <a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
                                   data-content="Hitting this button will launch a process in the cloud to train the machine learning model.

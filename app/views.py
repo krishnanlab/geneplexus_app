@@ -210,11 +210,11 @@ def run_model():
         # generate html that could be saved to a file for viewing later
         # commented-out for now but will be used for the job-submission system
         # save these results as a file just like
-        # results_html = models.make_template(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis,
-        #                                   input_count, positive_genes, df_convert_out, graph)
+        results_html = models.make_template(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis,
+                                           input_count, positive_genes, df_convert_out_subset, graph)
 
-        #with open("results.html", "wb") as outfile:
-        #    outfile.write(results_html.encode("utf-8"))
+        with open("results.html", "wb") as outfile:
+            outfile.write(results_html.encode("utf-8"))
 
         # assign a job name
         jobhash = str(uuid.uuid1())[0:8]
@@ -237,8 +237,8 @@ def run_model():
                                                         classes='table table-striped table-bordered nowrap" style="width: 100%;" id = "gotable'),
                                 dis_table=df_dis.to_html(index=False,
                                                         classes='table table-striped table-bordered" id = "distable'),
-                                validate_table = df_convert_out_subset.to_html(index=False,
-                                                classes='table table-striped table-bordered" id = "validatetable')
+                                validate_results = df_convert_out_subset.to_html(index=False,
+                                                classes='table table-striped table-bordered" id = "validateresults')
                                 )
     # submit button value is neither possibility
     return("invalid form data ")
