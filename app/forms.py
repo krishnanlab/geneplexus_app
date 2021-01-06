@@ -40,4 +40,4 @@ class ValidateForm(FlaskForm):
 
     runbatch = SubmitField(label='Submit')
     # run local was used to run the model on the webserver ,disabled for now
-    runlocal = SubmitField(label='Run local')
+    # runlocal = SubmitField(label='Run local')
