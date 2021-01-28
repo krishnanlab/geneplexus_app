@@ -122,37 +122,57 @@ With container instance it's possible to mount multiple shares (one for backend 
 
 # Azure
 
+The application and job-running system currently runs on Azure cloud.   
 
-REQUIREMENTS
----
-  * an Azure account in which you can create objects
-  * bash.  This script was tested on MacOS.  If on linux, ignore the 'open' commands
-  * Azure CLI installed (I installed via Miniconda into a conda environment) (see 'using the az cli' below)
+## Architecture
+
+
+## Building the services in Azure
+
+Azure services can be created in many ways ( web 'portal', Python, Templates) but these instructions use the command line utility (CLI) `az` in the terminal.  The script `create_azure_services.sh` is a collection of bash functions for creating the services necessary for the geneplexus application and jobs to run
+
+### Requirements
+
+  * an Azure account and subscription in which you can create objects (e.g. with funding)
+  * bash.  This script was tested on MacOS.  If on linux, ignore the 'open' commands.  Not tested but it should work using the Windows Subsystem for Linix (WSL)
+  * Azure CLI installed
+    - Microsoft instructions for installation : https://docs.microsoft.com/en-us/cli/azure/install-azure-cli
+    - Note that it may be possible to use Anaconda for this instead to be able use environments. This worked in 2020
+      `conda install -c conda-forge azure-cli-core`
+    - after installation, test the install at the terminal with `az login`, and log-in.  If you can't log-in, these scripts won't work
+    - may need to add extensions `az extension add --name webapp`
   * It assumes your Azure CLI is configured and logged in 
-  * a project with a Dockerfile and a web app 
-  * a configuration file named .azenv in same format as the usual .env
+  * in the home directory of this project's folder (folder with the file `Dockerfile`)
+  * a configuration file named .azenv in same format as the usual .env in the azure folder
      - the .env file in your directory is not copied into the docker container
      - the .azenv file is for azure webapp 'appsettings' which translate to env vars in th container
-  * ensure the values in az_set_vars () function below are correct for this deployment
-OPTIONAL
-  * Docker installed
-  * an existing resource group. 
-using the az cli 
----
-install python  
-  on Mac Microsoft recommends homebrew
-  Anaconda also works 
-create an environment and install the az cli python library
-  I suggest create a different environment from your application environment
-  Azure is not in the requirements.txt because the app does not require it to run (only deploy)
-  conda create --name azure pip
-  conda activate azure
-  pip install azure
-  az login 
-USAGE
----
-this script is a collection of functions that run az commands using preset environment variables. 
+  * basic understanding and previous experience with Azure
+  * basic understanding of Docker
+  * decide on some names for your azure services  : a resource group name, and a project name.  These are set with env variables
 
-check and adjust the values in az_set_vars() function below
-- source this file 
-set env variables used through-out the functions
+### OPTIONAL
+  * Docker installed for your platform 
+  * an existing Azure resource group 
+
+### How-To
+
+tldr; 
+
+```bash
+source azure/create_azure_services.sh
+az_set_vars
+echo $RG
+
+```
+Start in the root dir of the project.  Open a bash terminal, open the environment or how you use the az command line,  and log-in to azure with   `az login`
+
+Review the functions in the script `azure/create_azure_services.sh` 
+
+In that script, the first function `az_set_vars()` is used to set environment variables.  check and adjust the values
+in the script for your needs.  Note you can override those. 
+ 
+source the file to load the functions into your process :  `source azure/create_azure_services.sh`
+
+set the base env variables used throughout the functions : `az_set_vars`
+
+
