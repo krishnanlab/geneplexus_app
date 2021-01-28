@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pickle
+import warnings
 from scipy.stats import hypergeom
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
@@ -8,23 +9,11 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import average_precision_score
 from scipy.spatial.distance import cosine
 from scipy.stats import rankdata
-# 
+# TODO can we remove dependency on app? convert module vars to params
 from app import app
 from jinja2 import Environment, FileSystemLoader
 import os
-# from config import ProdConfig, DevConfig
 
-'''
-# FROM FLASK Configuration documentation.  Seems unnecessarily complicated.
-if app.env == 'production':
-    app.config.from_object(ProdConfig)
-elif app.env == 'development':
-    app.config.from_object(DevConfig)
-
-file_loc = app.config["FILE_LOC"]
-data_path = app.config["DATA_PATH"]
-max_num_genes = app.config["MAX_NUM_GENES"]
-'''
 file_loc = app.config.get("FILE_LOC")
 data_path = app.config.get("DATA_PATH")
 max_num_genes = app.config.get("MAX_NUM_GENES")
@@ -276,8 +265,8 @@ def run_model(convert_IDs, net_type, GSC, features, logger = app.logger):
     return graph, df_probs, df_GO, df_dis, avgps
 
 
-def make_template(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis, input_count, positive_genes, df_convert_out_subset, graph):
-    # Render the Jinja template, filling fields as appropriate
+def make_results_html(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis, input_count, positive_genes, df_convert_out_subset, graph):
+    # Render the Jinja template, filling fields as appropriate, not relying on Flask app to be loaded
     # return rendered HTML
     # Find the module absolute path and locate templates
     
@@ -338,6 +327,41 @@ def make_template(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_d
     
     # return utf-8 string
     return(template)
+                            
+def run_and_render(input_genes,  
+                    net_type='BioGRID', features='Embedding', GSC='GO', 
+                    jobname="jobrunner", logger = app.logger):
+    """generate the output html from input genes to completion, eg combine.  
+    Params: 
+    input_genes : validated list of genes (as read from file) 
+    data_path : location on disk of backend data needed for model
+    net_type, features, GSC : model params
+    jobname : name of this 'run' to put into output html
+
+    """
+    # TODO add a check that the backend data is present in data_path
+
+    # suppress unecessary warnings generated in model code
+    #  to avoid putting them in stdout or stderr, which are used for logging
+    warnings.filterwarnings('ignore')
+    
+    # read gene file and convert it
+    convert_IDs, df_convert_out = intial_ID_convert(input_genes)
+
+    # prep and validate input, save validation for presentation
+    df_convert_out, table_summary, input_count = make_validation_df(df_convert_out)
+    df_convert_out_subset, positive_genes = alter_validation_df(df_convert_out,table_summary,net_type)
+    
+    # run model, assumes data_path global is set correctly
+    graph, df_probs, df_GO, df_dis, avgps = run_model(convert_IDs, net_type, GSC, features, logger)
+
+    # TODO : write all of these outputs to  disk etc if we want to re-render the results later (pickle?)
+
+    # generate html visualization/report
+    results_html = make_results_html(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis,
+                                        input_count, positive_genes, df_convert_out_subset, graph)
+    # return HTML file
+    return(results_html)
 
 #######################################################################################################################
 

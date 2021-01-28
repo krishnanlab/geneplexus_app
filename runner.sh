@@ -52,9 +52,9 @@ fi
 
 # get system stats in logfile
 echo "System Memory State " >> $LOGFILE
-vmstat -s -S M >>$LOGFILE
+# vmstat -s -S M >>$LOGFILE
 # also send it to the error log?
->&2 vmstat -s -S g
+# >&2 vmstat -s -S g
 RUNCMD="runner.py $ARGS -d $DATA_PATH --cross_validation $GENE_FILE "
 echo $RUNCMD >>$LOGFILE
 echo "STARTED `date +'%d/%m/%Y %H:%M:%S'`" >>$LOGFILE
@@ -68,12 +68,19 @@ else
 fi
 
 
-# function to show an example run on a laptop with HPCC mounted, and will output to the screen. Note this is not run when the script is run
-example_run ()
+# testing example
+# make sure to activate your python environment prior to running
+function testrun ()
 {
-    DATA_PATH=/Volumes/compbio/krishnanlab/projects/GenePlexus/repos/GenePlexusBackend/data_backend2 \
-    GENE_FILE="../input_genes_newlines.txt" \
-    GP_NET_TYPE="BioGrid" GP_FEATURES="Embedding" GP_GSC="GO" JOBNAME="example_run" \
-    python runner.py --net_type $GP_NET_TYPE --features $GP_FEATURES --GSC $GP_GSC -d "$DATA_PATH" -j "$JOBNAME" --cross_validation "$GENE_FILE"
-
+    # get data_path from your .env file
+   source .env
+    # change this to a gene file you have on your machine
+   export GENE_FILE="../input_genes_newlines.txt" 
+   export OUTPUT_FILE="../test_output.html"
+   GP_NET_TYPE="BioGrid" GP_FEATURES="Embedding" GP_GSC="GO" JOBNAME="example_run"  ./runner.sh 
+   # open $OUTPUT_FILE
 }
+    # # DATA_PATH=/Volumes/compbio/krishnanlab/projects/GenePlexus/repos/GenePlexusBackend/data_backend2 \
+
+    # python runner.py --net_type $GP_NET_TYPE --features $GP_FEATURES --GSC $GP_GSC -d "$DATA_PATH" -j "$JOBNAME" --cross_validation "$GENE_FILE"
+
