@@ -119,3 +119,40 @@ Using On Azure Container Instance
 
 With container instance it's possible to mount multiple shares (one for backend data, one for results) but here we are just using one for simplicity (otherwise we need to use ARM templates). 
 
+
+# Azure
+
+
+REQUIREMENTS
+---
+  * an Azure account in which you can create objects
+  * bash.  This script was tested on MacOS.  If on linux, ignore the 'open' commands
+  * Azure CLI installed (I installed via Miniconda into a conda environment) (see 'using the az cli' below)
+  * It assumes your Azure CLI is configured and logged in 
+  * a project with a Dockerfile and a web app 
+  * a configuration file named .azenv in same format as the usual .env
+     - the .env file in your directory is not copied into the docker container
+     - the .azenv file is for azure webapp 'appsettings' which translate to env vars in th container
+  * ensure the values in az_set_vars () function below are correct for this deployment
+OPTIONAL
+  * Docker installed
+  * an existing resource group. 
+using the az cli 
+---
+install python  
+  on Mac Microsoft recommends homebrew
+  Anaconda also works 
+create an environment and install the az cli python library
+  I suggest create a different environment from your application environment
+  Azure is not in the requirements.txt because the app does not require it to run (only deploy)
+  conda create --name azure pip
+  conda activate azure
+  pip install azure
+  az login 
+USAGE
+---
+this script is a collection of functions that run az commands using preset environment variables. 
+
+check and adjust the values in az_set_vars() function below
+- source this file 
+set env variables used through-out the functions
