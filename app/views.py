@@ -9,6 +9,7 @@ import uuid
 import numpy as np
 
 
+
 @app.route("/", methods=['GET'])
 @app.route("/index", methods=['GET'])
 def index():
@@ -137,7 +138,11 @@ def run_model():
     # 'genes' exists as a session variable, use that data for subsequent requests
     # if it doesn't, no data has been loaded yet so get the data from a selected file
     if 'genes' in session:
+        # save session data to variable
         input_genes = session['genes']
+        # remove the current genelist from session
+        session.pop('genes')
+        
 
     # if genes are not in the session, 500 server error? read in genes?
     # else:
@@ -187,74 +192,22 @@ def run_model():
 
         flash(f"Job {jobname} submitted!  The completed job will be available on {url_for('job', jobname=jobname ,_external=True)}")
 
-
-        # remove the current genelist from session
-        # previously clear session with         # session.clear()
-        try:
-            session.pop('genes')
-        except KeyError:
-            pass
-
         return redirect('jobs')
 
     if form.runlocal.data : 
-
-        # run all the components of the model and pass to the results form
-        convert_IDs, df_convert_out = models.intial_ID_convert(input_genes)
-
-
         # this runs the model on the spot
         # note we should also create job folder, and save results there, too
         app.logger.info('running model, jobname %s', jobname)
-
-        # tic = time.time()
-        df_convert_out, table_summary, input_count = models.make_validation_df(df_convert_out)
-        df_convert_out_subset, positive_genes = models.alter_validation_df(df_convert_out,table_summary,net_type)
-        graph, df_probs, df_GO, df_dis, avgps = models.run_model(convert_IDs, net_type, GSC, features)
-        # tic1 = "{:.2f}".format(time.time() - tic)
-
+        results_html = models.run_and_render(input_genes, net_type, features, GSC, jobname)
         app.logger.info('model complete, rendering template')
+        return(results_html)
 
-        # generate html that could be saved to a file for viewing later
-        # commented-out for now but will be used for the job-submission system
-        # save these results as a file just like
-        # results_html = models.make_template(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis,
-        #                                   input_count, positive_genes, df_convert_out_subset, graph)
-
-        #with open("results.html", "wb") as outfile:
-        #    outfile.write(results_html.encode("utf-8"))
-
-        # assign a job name
-        jobhash = str(uuid.uuid1())[0:8]
-
-        if form.prefix.data != '':
-            jobname = f'{form.prefix.data}-{jobhash}'
-        else:
-            jobname = jobhash
-
-        try:
-            session.pop('genes')
-        except KeyError:
-            pass
-
-        return render_template("results.html", form=form, graph=graph, avgps=avgps, jobname=jobname,
-                               input_count=input_count, positive_genes=positive_genes,
-                                probs_table=df_probs.to_html(index=False,
-                                                            classes='table table-striped table-bordered" id = "probstable'),
-                                go_table=df_GO.to_html(index=False,
-                                                        classes='table table-striped table-bordered nowrap" style="width: 100%;" id = "gotable'),
-                                dis_table=df_dis.to_html(index=False,
-                                                        classes='table table-striped table-bordered" id = "distable'),
-                                validate_results = df_convert_out_subset.to_html(index=False,
-                                                classes='table table-striped table-bordered" id = "validateresults')
-                                )
     # submit button value is neither possibility
     return("invalid form data ")
 
 
 @app.route("/clearinput", methods=['GET','POST'])
 def clearinput():
-
     try:
         session.pop('genes')
     except KeyError:
