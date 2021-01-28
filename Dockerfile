@@ -1,13 +1,23 @@
-# DockerFile for geneplexus application
-#
+# DockerFile for geneplexus Python/Flask application server
+# for running on Azure App Service.  Note that Docker is not required to run the 
+# Geneplexus Flask application for testing.  This is for deployment to Azure
 FROM python:3.9
+
+### CONFIG for this build
+# at build time, set this using the value to be used in the app, that's in the  azure/.azenv file
+# $ docker build --build-arg APP_DATA_FOLDER=$DATA_PATH
+
+ARG APP_DATA_FOLDER=/usr/local/share/data_backend
+# can override this to match where you have the data on your computer now, typically in the .env file
+# $ docker build --build-arg APP_DATA_SOURCE=$DATA_PATH
+ARG APP_DATA_SOURCE=app/backend_data
 
 ### ENVIRONMENT
 # match local and lang to what is on the MSU HPC as that's how the Pickle files were created
 ENV LC_ALL=en_US.UTF-8 \
 LANG=en_US.UTF-8 \
 LANGUAGE=en_US.UTF-8
-# standard lang, which may have issues wiht pickle (on local docker), or may be a red-herring!
+# standard lang, which may have issues with pickle (on local docker), or may be a red-herring!
 #ENV LANG=C.UTF-8 LC_ALL=C.UTF-8 
 
 # add /usr/local/bin to path as that's where we will put the startup script
@@ -17,12 +27,10 @@ HOME_SITE="/home/site/wwwroot" \
 PORT=8000 \
 SSH_PORT=2222
 
-ENV GUNICORN_CMD_ARGS="--bind=0.0.0.0  --timeout 36000  --log-file /home/site/err.log --workers=4 --threads=8 --worker-class=gthread"
-
 EXPOSE 8000 2222
 
 # install additional linux components for app service and ssh server
-# and install the libs and pandoc stuff that this application needs
+# and install the libs that this application needs
 # create default upload/download directories
 # these may not be used depending on ENV config
 # then do what's needed to make azure app service ssh work
@@ -35,12 +43,6 @@ RUN apt-get update \
     && echo 'root:Docker!' | chpasswd \
     && echo "MSU ADS DataScience Flask Application for Azure App Service" > /etc/motd \
     && echo "cd /home" >> /etc/bash.bashrc 
-
-
-    # && mkdir -p $HOME_SITE \
-    # && mkdir -p $HOME_SITE/instance && mkdir -p $HOME_SITE/instance/uploads && mkdir -p $HOME_SITE/instance/downloads
-
-
 
 COPY ./azure/sshd_config /etc/ssh/
 
@@ -55,26 +57,23 @@ COPY requirements.txt /var/local
 RUN pip install -r /var/local/requirements.txt \
     && pip install subprocess32 gunicorn
 
+# PROPOSED: copy app data into the container to simplify deployment (but not app code)
+# RUN mkdir $APP_DATA_FOLDER
+# COPY app/data_backend/Node_Orders $APP_DATA_FOLDER
+# COPY app/data_backend/ID_conversion $APP_DATA_FOLDER
+# ENV DATA_PATH=$APP_DATA_FOLDER
+# requires that DATA_PATH not be set in .azenv or .env 
 
-# WORKDIR $HOME_SITE
-# temporary copy the web application files into the container
-# for production app, comment these out and use git deployment
-# COPY app app
-# COPY azure/.azenv .env
-# COPY config.py .
+# NOTES for the app to run,require the FLASK_APP env var to be set
+# eg ENV FLASK_APP=app ; typically with the dot-env package
 
-# TODO test if we need this set here, or can set as web app config
-# ENV FLASK_APP=app
-# settings required by azure
-# and recommended on https://pythonspeed.com/articles/gunicorn-in-docker/
-# --worker-tmp-dir /dev/shm (add this is running Linux)
-
-
+# optional commands... the entry point below will auto-start the web server in the sh script
 # CMD ["flask", "run", "-p", "8000"]
 # CMD ["gunicorn",  "app:app"]
 
+# server start up and configuration
+# you may override these settings by setting GUNICORN_CMD_ARGS var in App service config
+ENV GUNICORN_CMD_ARGS="--bind=0.0.0.0  --timeout 36000  --log-file /home/site/err.log --workers=4 --threads=8 --worker-class=gthread"
 COPY azure/docker-startup.sh /usr/local/bin/startup.sh
-
-
 RUN chmod a+x /usr/local/bin/startup.sh
 ENTRYPOINT ["/usr/local/bin/startup.sh"]
