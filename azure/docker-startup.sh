@@ -9,16 +9,18 @@ set -e
 
 cat >/etc/motd <<asciiart 
      MSU Analytics and Data Services
+      ___           ___           ___
      /\__\         /\  \         /\__\     
     /::|  |       /::\  \       /:/  /     
    /:|:|  |      /:/\ \  \     /:/  /      
   /:/|:|__|__   _\:\~\ \  \   /:/  /  ___  
  /:/ |::::\__\ /\ \:\ \ \__\ /:/__/  /\__\ 
- \/__/~~/:/  / \:\ \:\ \/__/ \:\  \ /:/  / 
+ \/__/~ /:/  / \:\ \:\ \/__/ \:\  \ /:/  / 
        /:/  /   \:\ \:\__\    \:\  /:/  /  
       /:/  /     \:\/:/  /     \:\/:/  /   
      /:/  /       \::/  /       \::/  /    
      \/__/         \/__/         \/__/     
+
       ___           ___           ___      
      /\  \         /\  \         /\  \     
     /::\  \       /::\  \       /::\  \    
@@ -28,8 +30,9 @@ cat >/etc/motd <<asciiart
  \/__\:\/:/  / \:\  \ /:/  / \:\ \:\ \/__/ 
       \::/  /   \:\  /:/  /   \:\ \:\__\   
       /:/  /     \:\/:/  /     \:\/:/  /   
-     /:/  /       \::/__/       \::/  /    
-     \/__/         ~~            \/__/     
+     /:/  /       \;;/__/       \::/  /    
+     \/__/                       \/__/     
+
       Data Science Development Docker      
 asciiart
 
@@ -43,7 +46,7 @@ pip --version
 echo "Starting SSH ..."
 service ssh start
 
-# Get environment variables to show up in SSH session
+# Get environment variables to show up in SSH session, taken from Azure examples
 eval $(printenv | sed -n "s/^\([^=]\+\)=\(.*\)$/export \1=\2/p" | sed 's/"/\\\"/g' | sed '/=/s//="/' | sed 's/$/"/' >> /etc/profile)
 
 # note: this env variable moved to Dockerfile, so that it may be overriddend with -e param during docker run
