@@ -23,6 +23,8 @@ if not Path(logfile).exists():
     Path(logfile).touch()
 
 logging.basicConfig(filename=app.config.get('LOG_FILE'),level=logging.INFO)
+# TODO actually create a logger
+# logger = logging.getLogger('app')
 
 # job_folder configuration
 job_folder = Path(app.config.get('JOB_PATH'))
