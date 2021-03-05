@@ -34,6 +34,14 @@
                                        accept="txt/csv"
                                        />
                            </div>
+                           <div class="button_padding">
+                               <button type="button"
+                                       id="sampleBtn"
+                                       class="btn btn-sm"
+                                       onclick="window.location.href='/uploads/DOID-9562-STRING-Adjacency-DisGeNet-Symbols.txt'">
+                                  Download Sample Gene File
+                                </button>
+                           </div>
                            <label>Or</label>
                            <div class="button_padding">
                                <!-- Button trigger modal -->
@@ -69,6 +77,9 @@
             <p>GenePlexus works by training a machine learning model that captures the patterns of network connectivity of the user-defined genes in contrast to other genes in the network.  Based on this model Geneplexus will: 1) predict other genes in the network that are similar to the input genes based on their network connectivity, 2) enable users to interpret the custom trained machine-learning model by comparing it to pre-trained models for various biological processes and diseases, and 3) provide a visualization of the top predictions in the form a interactive network graph. All the results can be downloaded/exported in multiple convenient formats.</p>
             <p>Use the panel on the left to run GenePlexus on your own genes of interest!</p>
             <img class="img-fluid" src="{{ url_for('static',filename='geneplexus_summary.png')}}" style="border: 1px;">
+            <hr class="mt-5">
+            <h4>Video Tutorial</h4>
+            Watch the GenePlexus tutorial <a href="https://academic.oup.com/bioinformatics/article/36/11/3457/5780279">here</a>
             <hr class="mt-5">
             <h4>Example</h4>
             <p>You can visit
@@ -108,6 +119,7 @@
                           <span aria-hidden="true">&times;</span>
                         </button>
                       </div>
+                      <div style="padding-left:20px" onclick="sampleGenes()"><button>Click to load a Sample Gene Set</button></div>
                       <div class="modal-body">
                         <textarea class="form-control rounded-0" id="enterGenes" rows="25"></textarea>
                       </div>

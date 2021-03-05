@@ -39,6 +39,14 @@
                                        accept="txt/csv"
                                        />
                            </div>
+                           <div class="button_padding">
+                               <button type="button"
+                                       id="sampleBtn"
+                                       class="btn btn-sm"
+                                       onclick="window.location.href='/uploads/DOID-9562-STRING-Adjacency-DisGeNet-Symbols.txt'">
+                                  Download Sample Gene File
+                                </button>
+                           </div>
                            <label>Or</label>
                            <div class="button_padding">
                                <!-- Button trigger modal -->
@@ -158,12 +166,39 @@
             <p>The table below shows the input genes, their corresponding Entrez gene IDs, and if they are present
                 in the various molecular networks. Use this table to select a molecular network to train your model
                 (in the panel on the left).</p>
+            {% if pos < 5 %}
+                <p style="color:red;">One or more networks has less than 5 positive genes.
+                    Consider adding additional genes before running the model</p>
+            {% endif %}
             {{ validate_table|safe }}
             <div class="fill_container">
                 <div id="divLoading">
                     <div id="loading" class="fa-5x"><i class="fas fa-spinner fa-spin"></i></div>
                 </div>
             </div>
+        </div>
+        <!-- Modal -->
+        <div class="modal fade" id="geneModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <form id="modal-form" method="POST", enctype="multipart/form-data"></form>
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Enter or Paste List of Genes</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                          <span aria-hidden="true">&times;</span>
+                        </button>
+                      </div>
+                      <div style="padding-left:20px" onclick="sampleGenes()"><button>Click to load a Sample Gene Set</button></div>
+                      <div class="modal-body">
+                        <textarea class="form-control rounded-0" id="enterGenes" rows="25"></textarea>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" onclick="saveGenes()">Save Genes</button>
+                      </div>
+                </form>
+            </div>
+          </div>
         </div>
         <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>

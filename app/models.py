@@ -39,6 +39,7 @@ def intial_ID_convert(input_genes):
     all_convert_dict = {}
     for anIDtype in convert_types:
         convert_tmp = load_dict('to_Entrez', anIDtype_=anIDtype)
+        convert_tmp = {akey.upper():convert_tmp[akey] for akey in convert_tmp}
         all_convert_dict[anIDtype] = convert_tmp
 
     # make some place holder arrays

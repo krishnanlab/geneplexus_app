@@ -1,12 +1,12 @@
 from app.jobs import path_friendly_jobname, launch_job, list_all_jobs, retrieve_job_folder,check_results, retrieve_results, retrieve_job_info,job_info_list
 
 from werkzeug.exceptions import InternalServerError
-from flask import request, render_template, jsonify, session, redirect, url_for, flash
+from flask import request, render_template, jsonify, session, redirect, url_for, flash, send_file
 from app.forms import ValidateForm, JobLookupForm
 from app import app, models
-import uuid
-import time
 import os
+import uuid
+import numpy as np
 
 
 @app.route("/", methods=['GET'])
@@ -106,10 +106,10 @@ def validate():
             string = f.stream.read().decode("UTF8")
             # remove any single quotes if they exist
             no_quotes = string.translate(str.maketrans({"'": None}))
-            #input_genes_list = no_quotes.split(",") # turn into a list
             input_genes_list = no_quotes.splitlines()  # turn into a list
+            input_genes_upper = np.array([item.upper() for item in input_genes_list])
             # remove any whitespace
-            session['genes'] = [x.strip(' ') for x in input_genes_list]
+            session['genes'] = [x.strip(' ') for x in input_genes_upper]
 
         input_genes = session['genes']
 
@@ -117,9 +117,17 @@ def validate():
         convert_IDs, df_convert_out = models.intial_ID_convert(input_genes)
 
         df_convert_out, table_summary, input_count = models.make_validation_df(df_convert_out)
-        return render_template("validation.html", form=form, table_summary=table_summary,
+        pos = min([ sub['PositiveGenes'] for sub in table_summary ])
+        return render_template("validation.html", form=form, pos=pos, table_summary=table_summary,
                                validate_table=df_convert_out.to_html(index=False,
                                classes='table table-striped table-bordered" id = "validatetable'))
+
+@app.route('/uploads/<path:filename>', methods=['GET', 'POST'])
+def uploads(filename):
+    # Appending app path to upload folder path within app root folder
+    uploads = os.path.join(app.root_path, 'static', filename)
+    # Returning file from appended path
+    return send_file(uploads, as_attachment=True)
 
 
 @app.route("/run_model", methods=['POST'])
@@ -199,22 +207,22 @@ def run_model():
         # note we should also create job folder, and save results there, too
         app.logger.info('running model, jobname %s', jobname)
 
-        tic = time.time()
+        # tic = time.time()
         df_convert_out, table_summary, input_count = models.make_validation_df(df_convert_out)
         df_convert_out_subset, positive_genes = models.alter_validation_df(df_convert_out,table_summary,net_type)
         graph, df_probs, df_GO, df_dis, avgps = models.run_model(convert_IDs, net_type, GSC, features)
-        tic1 = "{:.2f}".format(time.time() - tic)
+        # tic1 = "{:.2f}".format(time.time() - tic)
 
         app.logger.info('model complete, rendering template')
 
         # generate html that could be saved to a file for viewing later
         # commented-out for now but will be used for the job-submission system
         # save these results as a file just like
-        results_html = models.make_template(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis,
-                                           input_count, positive_genes, df_convert_out_subset, graph)
+        # results_html = models.make_template(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis,
+        #                                   input_count, positive_genes, df_convert_out_subset, graph)
 
-        with open("results.html", "wb") as outfile:
-            outfile.write(results_html.encode("utf-8"))
+        #with open("results.html", "wb") as outfile:
+        #    outfile.write(results_html.encode("utf-8"))
 
         # assign a job name
         jobhash = str(uuid.uuid1())[0:8]
@@ -229,7 +237,7 @@ def run_model():
         except KeyError:
             pass
 
-        return render_template("results.html", tic1=tic1, form=form, graph=graph, avgps=avgps, jobname=jobname,
+        return render_template("results.html", form=form, graph=graph, avgps=avgps, jobname=jobname,
                                input_count=input_count, positive_genes=positive_genes,
                                 probs_table=df_probs.to_html(index=False,
                                                             classes='table table-striped table-bordered" id = "probstable'),
@@ -268,8 +276,8 @@ def postgenes():
     no_quotes = genes.translate(str.maketrans({"'": None}))  # remove any single quotes if they exist
     # input_genes_list = no_quotes.split(",") # turn into a list
     input_genes_list = no_quotes.splitlines()  # turn into a list
-    input_genes = [x.strip(' ') for x in input_genes_list]  # remove any whitespace
-    session['genes'] = input_genes
+    input_genes_upper = np.array([item.upper() for item in input_genes_list])
+    session['genes'] = [x.strip(' ') for x in input_genes_upper] # remove any whitespace
 
     return jsonify(success=True, filename=None)
 
