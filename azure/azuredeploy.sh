@@ -87,7 +87,6 @@ az_create_app_registry()
     # acrpw=`az acr credential show --name $ACR -g $RG  --output tsv  --query="passwords[0]|value"`
 
     # always build, assume running to rebuild
-    ## TODO remove existing Image in the ACR first?
     echo "using azure acr to build the files in this repository"
     az acr build -g $RG -t $IMAGE:$TAG -r $ACR .
 
@@ -95,23 +94,6 @@ az_create_app_registry()
     # echo "queue azue acr task that builds from a github repository."
     # echo "unless you have CI/CD/Git hooks configured, push to github first"
     # az acr task run -n build_$IMAGE -r $ACR -c <github url> -f Dockerfile
-
-    ###
-    # buildlocal)  or build --local
-    # alternative - use local docker, build locally, docker login and docker push  to Azure
-    # this requires a docker installation, built image, and good upstream bandwidth 
-    # build the image first with the build_biosci_docker() function below
-    #echo "DOCKER LOGIN AND PUSH IMAGE TO REGISTRY"
-    # for the Azure ACR, the username is the ACR name
-    #az acr credential show --name $ACR -g $RG  --output tsv  --query="passwords[0]|value" | \
-    #docker login $ACR.azurecr.io --username $ACR  --password-stdin 
-
-    # should check that login is successful  $@ or $?  
-    # not sure why you have to re-tag the image with the repo name in it?
-    # docker tag $IMAGE:$TAG $ACR.azurecr.io/$IMAGE:$TAG
-    # docker push $ACR.azurecr.io/$IMAGE:$TAG
-    # get some coffee, this will take a while
-    # then check it! 
 
     az acr repository list -n $ACR
     read -n1 -r -p "is the image $IMAGE on this list? Press n to exit script" key
@@ -125,7 +107,7 @@ az_create_app_registry()
 
 az_create_webapp ()
 {
-    echo "Make a web app"
+    echo "Make a web app using custom dockerfile"
     # requirements: working Dockerfile, created resource group and ACR in that group
     # also reads a local .azenv file
     # make an app,  and tell it about the registry
