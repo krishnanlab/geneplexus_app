@@ -75,7 +75,7 @@ az_set_vars ()
 
     export AZLOCATION=east # centralus may not have Container Instances needed 
     export ENVFILE=azure/.env
-    export AZTAGS="createdby=$USER project=$PROJECT" # to do t
+    export AZTAGS='"createdby='$USER'" "project='$PROJECT'"' # tag=value must be double quoted
     export AZ_SERVICE_PLAN_SKU="B2"  # "S1"  # see https://azure.microsoft.com/en-us/pricing/details/app-service/linux/
     # apps like gunicorn or DJango run on port 8000
     # if you are testing a flask app dev server, change this to 5000
