@@ -196,26 +196,12 @@ def run_model():
 
     if form.runlocal.data : 
         # this runs the model on the spot and simply returns the results as HTML file
-
         app.logger.info('running model, jobname %s', jobname)
-<<<<<<< HEAD
         results_html = models.run_and_render(input_genes, net_type, features, GSC, jobname)
         app.logger.info('model complete, rendering template')
         return(results_html)
 
-    # submit button value is neither possibility
-=======
-        tic0 = time.time()
-    
-        # run all the components of the model and render the results
-        results_html = models.run_and_render(input_genes, net_type, features, GSC, jobname)
-        
-        ticdelta = "{:.2f}".format(time.time() - tic0)
-        app.logger.info(f"model complete in {ticdelta}s")
-        return(results_html)
-
     # we reach here if the submit button value is neither possibility
->>>>>>> 916c280... remove commented out previous code
     return("invalid form data ")
 
 
