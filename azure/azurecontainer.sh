@@ -1,35 +1,33 @@
 source azure/azuredeploy.sh
-# set ACR, etc
-az_set_vars
+# set config params for azure deployment, many are used here. 
+az_set_vars  # AZDOCKERIMAGE, AZRG, AZCR, TAG, etc
 
 #TODO  use variable 'suffix' to genericize 'backend' here
-export AZDOCKERCONTAINERNAME=${IMAGE}-backend
+export AZDOCKERCONTAINERNAME=${IMAGE}-backend-$RANDOM
 export BACKEND_IMAGE=$AZDOCKERCONTAINERNAME
 export AZBACKENDIMAGE_URL=$ACR.azurecr.io/$BACKEND_IMAGE:$TAG
-export DOCKERFILE="Dockerfile-backend"
+export DOCKERFILE="Dockerfile-backend"  # the name of the file in this project
 
 build_docker_backend ()
 {
-  az acr build -t $BACKEND_IMAGE:$TAG -r $ACR --file $DOCKERFILE .
+  az acr build -t $BACKEND_IMAGE:$TAG -r $AZCR --file $DOCKERFILE .
   # then should update the application settings
-  # az webapp config appsettings set --resource-group $RG --name $APPNAME --settings JOB_IMAGE_NAME=$BACKEND_IMAGE JOB_IMAGE_TAG=$TAG
+  # az webapp config appsettings set --resource-group $AZRG --name $APPNAME --settings JOB_IMAGE_NAME=$BACKEND_IMAGE JOB_IMAGE_TAG=$TAG
 }
 
 get_storage_key()
 {
   THIS_STORAGE_ACCOUNT=$1
-  STORAGE_KEY=$(az storage account keys list --resource-group $RG --account-name $THIS_STORAGE_ACCOUNT --query "[0].value" --output tsv)
+  STORAGE_KEY=$(az storage account keys list --resource-group $AZRG --account-name $THIS_STORAGE_ACCOUNT --query "[0].value" --output tsv)
   echo $STORAGE_KEY
 }
 
 
-
+###### TEST RUN
+# manually set the env vars, provision and run an azure container instance
+# for the application, we use an az logic app to do this for us
 run_geneplexus_container ()
 {
-
-
-# DNS_NAME_LABEL=${APPNAME}-$RANDOM
-# echo "using $DNS_NAME_LABEL"
 
 # PARAMS: use param for jobname, input file name but otherwise this is geared for running the geneplexus backend docker container
 JOBNAME=${1:-testjob}
@@ -61,14 +59,14 @@ CONTAINER_ENV_VARS="$CONTAINER_ENV_VARS OUTPUT_FILE=$CONTAINER_MOUNT_PATH/jobs/$
 
 echo "ENV VARS = $CONTAINER_ENV_VARS"
 
-AZ_ACR_PW=$(az acr credential show --name $ACR -g $RG  --output tsv  --query="passwords[0]|value")
+AZ_ACR_PW=$(az acr credential show --name $ACR -g $AZRG  --output tsv  --query="passwords[0]|value")
 
 # ref https://docs.microsoft.com/en-us/cli/azure/container?view=azure-cli-latest#az_container_create
 
 echo "creating container instance ${AZDOCKERCONTAINERNAME}"
 echo "pulling from ${AZBACKENDIMAGE_URL}"
 az container create \
-  --resource-group $RG \
+  --resource-group $AZRG \
   --name ${AZDOCKERCONTAINERNAME} \
   --image ${AZBACKENDIMAGE_URL} \
   --registry-username $ACR \
@@ -90,22 +88,22 @@ az container create \
 
 echo "container status"
 az container show \
-  --resource-group $RG \
+  --resource-group $AZRG \
   --name ${AZDOCKERCONTAINERNAME} \
   --query containers[0].instanceView.currentState.state
 
 az container logs \
-  --resource-group $RG \
+  --resource-group $AZRG \
   --name ${AZDOCKERCONTAINERNAME}
 
 # I'm guessing on this one
 az container delete \
-  --resource-group $RG \
+  --resource-group $AZRG \
   --name ${AZDOCKERCONTAINERNAME} \
 
 # echo "getting container FQDN (may not be used for batch containers"
 # az container show \
-#   --resource-group $RG \
+#   --resource-group $AZRG \
 #   --name $AZCONTAINERNAME \
 #   --query "{FQDN:ipAddress.fqdn,ProvisioningState:provisioningState}" \
 #   --out table
@@ -119,7 +117,7 @@ az container delete \
 get_container_id ()
 {
   az container show \
-  --resource-group $RG \
+  --resource-group $AZRG \
   --name $1 \
   --query id \
   --output tsv
@@ -141,7 +139,7 @@ THIS_CONTAINER_MEMORY_METRICS=$(az monitor metrics list \
   --output table)
 
 THIS_CONTAINER_LOGS=$(az container logs \
-  --resource-group $RG \
+  --resource-group $AZRG \
   --name $AZCONTAINERNAM
 )
 
@@ -161,20 +159,20 @@ COSMOS_DB_NAME=aci-cosmos-db-$RANDOM
 echo "creating databbase for container  $COSMOS_DB_NAME"
 
 COSMOS_DB_ENDPOINT=$(az cosmosdb create \
-  --resource-group $RG \
+  --resource-group $AZRG \
   --name $COSMOS_DB_NAME \
   --query documentEndpoint \
   --output tsv)
 
 COSMOS_DB_MASTERKEY=$(az cosmosdb keys list \
-  --resource-group $RG \
+  --resource-group $AZRG \
   --name $COSMOS_DB_NAME \
   --query primaryMasterKey \
   --output tsv)
 
 echo "creating container $AZCONTAINERNAME"
 az container create \
-  --resource-group $RG \
+  --resource-group $AZRG \
   --name $AZCONTAINERNAME \
   --image microsoft/azure-vote-front:cosmosdb \
   --ip-address Public \
@@ -185,7 +183,7 @@ az container create \
 
 
 az container show \
-  --resource-group $RG \
+  --resource-group $AZRG \
   --name $AZCONTAINERNAME \
   --query ipAddress.ip \
   --output tsv
