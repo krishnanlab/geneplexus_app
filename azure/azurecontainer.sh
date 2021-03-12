@@ -3,7 +3,7 @@ source azure/azuredeploy.sh
 az_set_vars  # AZDOCKERIMAGE, AZRG, AZCR, TAG, etc
 
 #TODO  use variable 'suffix' to genericize 'backend' here
-export AZDOCKERCONTAINERNAME=${IMAGE}-backend-$RANDOM
+export AZDOCKERCONTAINERNAME=${AZDOCKERIMAGE}-backend-$RANDOM
 export BACKEND_IMAGE=$AZDOCKERCONTAINERNAME
 export AZBACKENDIMAGE_URL=$ACR.azurecr.io/$BACKEND_IMAGE:$TAG
 export DOCKERFILE="Dockerfile-backend"  # the name of the file in this project

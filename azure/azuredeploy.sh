@@ -44,6 +44,7 @@ az_set_vars ()
     # ==========
     # variables
     
+    export AZSUBID=$(az account show --query id --output tsv)
     export PROJECT=geneplexus
     export CLIENT=krishnanlab
     export PROJECTENV=dev  # one of dev, qa, prod per IT Services standard practice 
@@ -59,21 +60,18 @@ az_set_vars ()
 
 
     # if this is the production version, do no 
-    if [ "$PROJECTENV" == "prod" ]
-    then
-        export AZAPPNAME=${PROJECT}
-    else
+    #if [ "$PROJECTENV" == "prod" ]
+    #then
+    #    export AZAPPNAME=${PROJECT}
+    #else
         export AZAPPNAME=${PROJECT}${PROJECTENV}   # modify this if there are multiple/different apps per project
-    fi
+    #fi
 
-    export AZDOCKERIMAGE=$AZAPPNAME
+    export AZDOCKERIMAGE=$PROJECT
     export TAG=2021.03  # TODO => rename to AZDOCKERTAG
     
-    
     export AZPLAN=${PROJECT}-plan
-    export AZAPPNAME=$PROJECT
-
-    export AZLOCATION=east # centralus may not have Container Instances needed 
+    export AZLOCATION=centralus # centralus may not have Container Instances needed 
     export ENVFILE=azure/.env
     export AZTAGS='"createdby='$USER'" "project='$PROJECT'"' # tag=value must be double quoted
     export AZ_SERVICE_PLAN_SKU="B2"  # "S1"  # see https://azure.microsoft.com/en-us/pricing/details/app-service/linux/
@@ -83,12 +81,16 @@ az_set_vars ()
     export PORT=8000
     # DOCKER
 
-    export AZSTORAGENAME="$PROJECT-st-$PROJECTENV"
-    export AZCONTAINERNAME="${PROJECT}-stcontainer"
+    export AZSTORAGENAME="${PROJECT}${PROJECTENV}"
+    export AZCONTAINERNAME="${PROJECT}-container"
     export AZSHARENAME="${PROJECT}-files-$PROJECTENV"
 
 }
 
+
+#### everything
+# az_create_group
+# 
 ### should check if $AZRG is a group and if not create it
 # example group create
 az_create_group () 
@@ -139,7 +141,7 @@ az_create_app_registry()
 
 az_create_webapp ()
 {
-    echo "Make a web app using custom dockerfile"
+    echo "Make a web app  $AZAPPNAME  in group $AZRG using custom dockerfile $AZDOCKERIMAGE:$TAG"
     # requirements: working Dockerfile, created resource group and AZCR in that group
     # also reads a local .env file
     # make an app,  and tell it about the registry
@@ -174,6 +176,7 @@ az_create_webapp ()
 
     # note - setting the docker image from AZCR in this way fails the log-in
     # use the method below to send a password 
+    
     #  -i $AZCR.azurecr.io/$AZDOCKERIMAGE:$TAG 
     # this assumes there is a file with the name you set the variable $ENVFILE above 
     # that contains config values for flask to run in Azure
@@ -206,7 +209,8 @@ az_create_webapp ()
 }
 
 
-az_get_app_identity() {
+az_get_app_identity () 
+{
     az webapp identity show --resource-group $AZRG --name $AZAPPNAME --query principalId --output tsv
 
 }
@@ -214,7 +218,7 @@ az_get_app_identity() {
 
 az_git_setup ()
 {
-echo "your azure deployment user is:"
+echo "your azure deployment user is: AZGITUSERNAME" 
     
     AZREMOTENAME=azure
     AZGITREMOTE=https://AZGITUSERNAME@$AZAPPNAME.scm.azurewebsites.net/$AZAPPNAME.git
@@ -265,7 +269,7 @@ az_browse_webapp ()
 
 az_build_container ()
 {
-    echo "using azure $AZCR to build the files in this repository"
+    echo "building image $AZDOCKERIMAGE:$TAG in azure cr $AZCR using Dockerfile"
     az acr build -t $AZDOCKERIMAGE:$TAG -r $AZCR .
 }
 
@@ -471,23 +475,27 @@ az storage account create -g $AZRG --name $AZSTORAGENAME -l $AZLOCATION \
 
 export AZSTORAGEKEY=$(az storage account keys list -g $AZRG -n $AZSTORAGENAME --query [0].value -o tsv)
 
-az storage share create --account-name  $AZSTORAGENAME --name $AZSHARENAME --account-key $AZSTORAGEKEY --enabled-protocol SMB 
+az storage share create --account-name  $AZSTORAGENAME \
+    --name $AZSHARENAME --account-key $AZSTORAGEKEY
+#unrecognized arguments: --enabled-protocols SMB
 
 ## to access the storage, the app needs an "identity"  
-# move to az web app create
-# AZAPPIDENTITY=$(az webapp identity assign --resource-group $AZRG --name $AZAPPNAME --query principalId --output tsv)
+# see function az_get_app_identity()
 
 # TODO send command to app service to create this mount folder
+# TODO perhaps read from azure/.env for this path instead of manually sync'ing them
 MOUNTPATH=/home/site/$AZSHARENAME
 
 # NOTE to simply make a change to the path that is mounted, use 
 # az webapp config storage-account update -g $AZRG -n $AZAPPNAME \
 #   --custom-id $AZAPPIDENTITY \
 #   --mount-path $MOUNTPATH
+
 # add a new mount
+
 az webapp config storage-account add --resource-group $AZRG \
     --name $AZAPPNAME \
-    --custom-id $AZAPPIDENTITY \
+    --custom-id $(az_get_app_identity) \
     --storage-type AzureFiles \
     --share-name $AZSHARENAME \
     --account-name $AZSTORAGENAME --access-key $AZSTORAGEKEY \
@@ -516,6 +524,36 @@ az_storage_endpoint_info() {
     fileHost=$(echo $smbPath | tr -d "/")
     echo "$AZSTORAGENAME  filehost = $fileHost"
 
+
+}
+
+
+#############
+#  LOGIC APP 
+# integration between web app and backend container
+# THIS DOES NOT WORK using the envsubst method
+az_logic_app_create ()
+{
+    # assumes we are running in the project root dir
+    # and that the definition file is in the azure/ subdir
+    # this function is specific to this application and the file name embedded here
+    # and assumes there is this logic app definition file, that contains the env variables in it 
+    # with the extension ".bash"  (not sure why I picked that! it's a template template)
+    # that are defined above $AZRG etc.  
+    # a better solution is to use ARM template and a parameter file for all of these params (sub id, res group, etc)    
+      
+# TODO rather than use a template of a template for params, 
+# including them in the az deployment group create command in-lin from vars set here.  
+# there are only ~ 4 params
+envsubst < azure/az_logicapp_parameters.json.bash > azure/az_logicapp_parameters.json
+
+az deployment group create \
+  --name $PROJECT_logicapp_deployment \
+  --resource-group $AZRG \
+  --template-file azure/logicapp_template.json \
+  --parameters   @azure/logicapp_template_parameters.json
+
+# to do: add tags to parameters and to template 
 
 }
 
