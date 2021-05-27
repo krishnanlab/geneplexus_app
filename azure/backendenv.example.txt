@@ -1,0 +1,7 @@
+BASE_CONTAINER_PATH=/home/dockeruser/
+JOB_IMAGE_NAME=geneplexus-backend
+JOB_IMAGE_TAG=latest
+# this is just an example that must be replaced with info from the logic app
+JOB_URL='https://prod-02.northcentralus.logic.azure.com:443/workflows/<ID value here>/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=<SIG VALUE HERE>
+STORAGE_ACCOUNT_KEY='STORAGE ACCOUNT KEY CREATED IN azuredeploy.sh'
+CONTAINER_REGISTRY_PW='PW FOR CONTAINER REGISTRY created in azuredeploy.sh'
