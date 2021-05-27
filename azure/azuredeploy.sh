@@ -23,21 +23,63 @@
 #      - the exact file is set in the variable $ENVFILE
 #
 # OPTIONAL
-#   * Docker installed for local testing
+#   * Docker installed for local testing.  the commands here use the Azure Container Registry tasks for docker
 
 # GET STARTED 
 # ---
+# three methods : on Mac use HomeBrew, Use Anaconda, or use the azure Cloudshell
 # install python  
-#   on Mac Microsoft recommends homebrew
-#   Anaconda also works 
-# create an environment and install the az cli python library
-#   I suggest create a different environment from your application environment
+#   on Mac Microsoft recommends homebrew but that will install a _ton_ of packages
+#   including a new python install.   Even if you do az upgrade, this invokes homebrew
+#   Anaconda might work. I've gone back and forth.  Currently using homebrew because had an issue with ua  
+# using Anaconda:  create an environment and install the az cli python library
+#   strongly suggest create a different environment from your application environment
 #   Azure is not in the requirements.txt because the app does not require it to run (only deploy)
 #   conda create --name azure pip
 #   conda activate azure
 #   pip install azure
 #   az login 
 
+# using Azure cloudshell
+# ---
+# the Azure portal has a bash shell that has the az CLI pre-installed
+# see the Azure documentation on cloud shell for detailed
+# to use it with this script.
+# start the cloud shell
+# git clone <repo url> 
+# cd <repo folder>
+# create/edit the file azure/.env 
+# note since you aren't running the flask app itself here, can use 
+# use the instructions as you would if it were on your computer 
+
+
+
+#### IMPORTANT you must review the values in the az_set_vars() function below FIRST
+#    things to check:
+#    it assumes your computer userid $USER is the same as for azure 
+#    TAG = the docker container TAG 
+#    PROJECTENV (default is dev, but change to create a new set of azure services, e.g. qa, test, prod)
+
+#### Commands to create everything needed to run this script and create Azure services in Bash 
+# source azure/azuredeploy.sh
+# az_set_vars
+# # add variable overrides here! e.g use TAG=v35 for the docker container tag
+# az_create_group
+# az_create_app_registry
+# az_build_container
+# az_build_docker_backend
+# az_create_file_storage
+# HPCC_FOLDER=/mnt/ufs18/rs-027/compbio/krishnanlab/projects/GenePlexus/repos/GenePlexusBackend/data_backend2
+# az_copy_hpcc_to_files $HPCC_FOLDER
+# az_create_webapp
+# az_app_set_container
+# az_webapp_setconfig 
+# az_app_mount_file_storage
+
+# TODO (currently manual steps)
+# create API connection to Container instance for a controlling account
+# create logic_app that allows the app to create container instances
+# set the app config to the HPCC endpoint for this new logic app
 
 az_set_vars ()
 {
@@ -50,25 +92,22 @@ az_set_vars ()
     export PROJECTENV=dev  # one of dev, qa, prod per IT Services standard practice 
     export AZRG=$CLIENT-$PROJECT-$PROJECTENV 
 
-
-    
-
     # note from microsoft about A container registry names: 
     # Uppercase characters are detected in the registry name. When using its server url in docker commands, to avoid authentication errors, use all lowercase.    
     # NOTE from Azure: 'registry_name' must conform to the following pattern: '^[a-zA-Z0-9]*$'
     export AZCR=${CLIENT}cr  #  in future use a department-wide container registry for all projects
 
 
-    # if this is the production version, do no 
-    #if [ "$PROJECTENV" == "prod" ]
-    #then
-    #    export AZAPPNAME=${PROJECT}
-    #else
+    # if this is the production version, 
+    if [ "$PROJECTENV" == "prod" ]
+    then
+        export AZAPPNAME=${PROJECT}
+    else
         export AZAPPNAME=${PROJECT}${PROJECTENV}   # modify this if there are multiple/different apps per project
-    #fi
+    fi
 
     export AZDOCKERIMAGE=$PROJECT
-    export TAG=2021.03  # TODO => rename to AZDOCKERTAG
+    export TAG=2021.05  # TODO => rename to AZDOCKERTAG
     
     export AZPLAN=${PROJECT}-plan
     export AZLOCATION=centralus # centralus may not have Container Instances needed 
@@ -85,12 +124,13 @@ az_set_vars ()
     export AZCONTAINERNAME="${PROJECT}-container"
     export AZSHARENAME="${PROJECT}-files-$PROJECTENV"
 
+    export AZGITUSERNAME=$USER
+
 }
 
 
-#### everything
-# az_create_group
-# 
+
+
 ### should check if $AZRG is a group and if not create it
 # example group create
 az_create_group () 
@@ -208,20 +248,22 @@ az_create_webapp ()
 
 }
 
-
+# this is used to grant the application access to the az storage container
+# so that the azure files storage can be mounted on the app
 az_get_app_identity () 
 {
     az webapp identity show --resource-group $AZRG --name $AZAPPNAME --query principalId --output tsv
 
 }
 
-
+# this sets up your LOCAL git repository to be able to push to this
+# azure app service created above
 az_git_setup ()
 {
-echo "your azure deployment user is: AZGITUSERNAME" 
+echo "your azure deployment user is: $AZGITUSERNAME" 
     
     AZREMOTENAME=azure
-    AZGITREMOTE=https://AZGITUSERNAME@$AZAPPNAME.scm.azurewebsites.net/$AZAPPNAME.git
+    AZGITREMOTE=https://$AZGITUSERNAME@$AZAPPNAME.scm.azurewebsites.net/$AZAPPNAME.git
     # TODO test if the current azure remote is the same, then no need to delete and re-add
 
     # in this folders git comit, 
@@ -242,7 +284,8 @@ echo "your azure deployment user is: AZGITUSERNAME"
 }
 
 ## set application-level configuration using a env file from this repository
-
+# The app will use these settings (in app service configuration) over any .env file 
+# settings, because these settings are OS Env vars set when the container starts up
 az_webapp_setconfig ()
 {
     # read the file $ENVFILE, and convert to space delimited set of values
@@ -288,7 +331,29 @@ az_app_set_container ()
 }
 
 
-# WIP
+
+# builds the "backend" container, or the one that just runs the ML code in model.py on a container instance
+az_build_docker_backend ()
+{
+    export BACKEND_IMAGE=${AZDOCKERIMAGE}-backend
+    # TAG is set in azuredeploy.sh
+    export AZBACKENDIMAGE_URL=$ACR.azurecr.io/$BACKEND_IMAGE:$TAG  # needed for the logic app! 
+
+    export DOCKERFILE="Dockerfile-backend"  # the name of the file in this project
+    az acr build -t $BACKEND_IMAGE:$TAG -r $AZCR --file $DOCKERFILE .
+  # then should update the application settings - requires the web app to exist first, 
+  # but the webapp can't run jobs without the backend container
+    az webapp config appsettings set --resource-group $AZRG --name $AZAPPNAME --settings JOB_IMAGE_NAME=$BACKEND_IMAGE JOB_IMAGE_TAG=$TAG
+}
+
+
+# this is a work in progress and not used, saved here for experiments =
+# Azure App Service has a concept of "slots" so you can deploy updates
+# without disturbing your existing application
+# this is only necessary if you update the Dockerfile for the main app 
+# and is not needed to simply update the code - use Git deploy for that.  
+# not that Staging could be used for git deployment to test a codebase without stopping
+# the running production application (on the same App Service Plan)
 az_app_stage ()
 {
     az_build_container
@@ -312,7 +377,10 @@ az_app_stage ()
 
 }
 
-
+# WIP
+# this is used along with staging an app on app service
+# after staging in a slot and then testing that the code/container for that slot is working
+# 
 az_app_set_production_container () 
 {
         az webapp config container set --name $AZAPPNAME  \
@@ -479,20 +547,27 @@ az storage share create --account-name  $AZSTORAGENAME \
     --name $AZSHARENAME --account-key $AZSTORAGEKEY
 #unrecognized arguments: --enabled-protocols SMB
 
-## to access the storage, the app needs an "identity"  
-# see function az_get_app_identity()
 
 # TODO send command to app service to create this mount folder
 # TODO perhaps read from azure/.env for this path instead of manually sync'ing them
-MOUNTPATH=/home/site/$AZSHARENAME
+
+}
+
+# mounts the file storage onto the app as a network drive (SMB by default)
+az_app_mount_file_storage ()
+{
+    MOUNTPATH=/home/site/$AZSHARENAME
+
+## to access the storage, the app needs an "identity"  
+# see function az_get_app_identity()
 
 # NOTE to simply make a change to the path that is mounted, use 
 # az webapp config storage-account update -g $AZRG -n $AZAPPNAME \
 #   --custom-id $AZAPPIDENTITY \
 #   --mount-path $MOUNTPATH
 
-# add a new mount
 
+# add a new mount
 az webapp config storage-account add --resource-group $AZRG \
     --name $AZAPPNAME \
     --custom-id $(az_get_app_identity) \
@@ -502,9 +577,11 @@ az webapp config storage-account add --resource-group $AZRG \
     --mount-path $MOUNTPATH
 }
 
+
+
 ###### tell the app to use the file storage just created
 
-az_update_file_storage()
+az_update_file_storage ()
 {
 az webapp config storage-account update -g $AZRG -n $AZAPPNAME \
   --custom-id $AZAPPIDENTITY \
@@ -546,6 +623,7 @@ az_logic_app_create ()
 # including them in the az deployment group create command in-lin from vars set here.  
 # there are only ~ 4 params
 envsubst < azure/az_logicapp_parameters.json.bash > azure/az_logicapp_parameters.json
+
 
 az deployment group create \
   --name $PROJECT_logicapp_deployment \
@@ -704,3 +782,86 @@ else
 fi
 }
 
+# DRAFT
+# create the params needed for azcopy to work from HPCC
+# note you need generate a token with Azure, which requires you to know the IP address
+# of the HPCC system we are copying from, and getting that requires using SSH, which needs your NETID. 
+# in this draft, using $USER as proxy for netid but for everyone but me, that's probably not going to work
+# this also use ssh to log-in and run the command on hpcc but
+# this simply echos the command to run to copy and paste  
+# see https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-files
+# example successful az copy command: 
+#  azcopy copy /mnt/ufs18/rs-027/compbio/krishnanlab/projects/GenePlexus/repos/GenePlexusBackend/data_backend2 https://geneplexusdev.file.core.windows.net/geneplexus-files-dev/$AZSASTOKEN --recursive
+az_copy_hpcc_to_files ()
+{
+
+#     
+    SOURCEFOLDER=$1  # TODDO validate that this folder exists/is accessible from here 
+    SOURCEFOLDER="/mnt/ufs18/rs-027/compbio/krishnanlab/projects/GenePlexus/repos/GenePlexusBackend/data_backend2/"
+    # assumed values $AZSTORAGENAME $AZSHARENAME 
+
+    # this option needed to get a SAS token is for blob storage, doesn't work for Azure files
+    AZSTORAGEKEY=$(az storage account keys list -g $AZRG -n $AZSTORAGENAME --query [0].value -o tsv)
+
+    # this option is for azure files NOTE the identity is not used for azcopy
+    # the identity is used to grant access FROM the appservice TO the storage for when the storage is mounted
+    # I'm leaving this here for now but it's not relevant
+    # this assumes the identity was set
+    # TODO check if an identity is actually set, and if not, set one
+    # AZAPPIDENTITY=$(az webapp identity show --resource-group $AZRG --name $AZAPPNAME --query principalId --output tsv)
+    
+    # MacOS only.  zNrrf yo 
+
+    TOMORROW=$(date -v+1d  +%Y-%m-%dT%H:%MZ)
+    # this is a wider range than needed but right now includes their 4  ssh gateways and 
+    # maybe he GUI gateways like on-demand
+    HPCC_IP_RANGE="35.9.12.1-35.9.12.255"
+    
+    
+    # BLOB STORAGE 
+    # az storage container generate-sas \
+    # --auth-mode key
+    # --ip $HPCC_IP
+    # --account-name $AZSTORAGENAME \
+    # --name $AZCONTAINERNAME \
+    # --permissions acdlrw \
+    # --expiry $TOMORROW \
+    # --auth-mode login \
+    # --as-user)
+
+
+    # FILE STORAGE SAS token
+    # to use 
+    # https://docs.microsoft.com/en-us/cli/azure/storage/share?view=azure-cli-latest#az_storage_share_generate_sas
+    AZSASTOKEN=$(az storage share generate-sas \
+        --name $AZSHARENAME \
+        --account-name $AZSTORAGENAME \
+        --account-key $AZSTORAGEKEY \
+        --ip $HPCC_IP_RANGE\
+        --https-only --permissions dlrw --expiry $TOMORROW -o tsv)
+
+    # az copy command how-to : https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-files
+    # URL template 'https://<storage-account-name>.file.core.windows.net/<file-share-name><SAS-token>' 
+    # example 'https://mystorageaccount.file.core.windows.net/myfileshare?sv=2018-03-28&ss=bjqt&srs=sco&sp=rjklhjup&se=2019-05-10T04:37:48Z&st=2019-05-09T20:37:48Z&spr=https&sig=%2FSOVEFfsKDqRry4bk3qz1vAQFwY5DDzp2%2B%2F3Eykf%2FJLs%3D'
+    AZSTORAGEURL=https://${AZSTORAGENAME}.file.core.windows.net/${AZSHARENAME}${AZSASTOKEN}
+
+
+    AZCOPY_CMD="'""azcopy copy $SOURCEFOLDER $AZSTORAGEURL --recursive""'"
+    echo "the azcopy command for this app is "
+    echo "$AZCOPY_CMD"
+    echo "attempting to use ssh to run the command (ssh must be in the PATH)"
+    ssh hpcc.msu.edu "$AZCOPY_CMD"
+}
+
+
+## storage stuff
+
+# azcopy copy /mnt/ufs18/rs-027/compbio/krishnanlab/projects/GenePlexus/repos/GenePlexusBackend/data_backend2 'https://geneplexusdev.file.core.windows.net/geneplexus-files-dev?Z4FS10CC9zGyudRa8wdbfuS4CW%2BhdGeu6I5iu9edy8o'
+
+# AZSASTOKEN='?sv=2020-02-10&ss=f&srt=sco&sp=rwdlc&se=2021-03-27T00:54:34Z&st=2021-03-25T16:54:34Z&sip=172.16.93.1-172.16.93.255&spr=https,http&sig=TgVomTyI%2BSJ5a15zgYb1Hw2%2BIsnByZ%2FuWW8ViZ4Otfc%3D'
+
+# deployment note
+
+# CLOUD_STORAGE=/home/site/geneplexus-files-dev/data_backend2
+# LOCAL_BACKEND_PATH=/home/site/data_backend  
+# cp -r  $CLOUD_STORAGE/ID_conversion $LOCAL_BACKEND_PATH
