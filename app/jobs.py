@@ -40,20 +40,22 @@ def create_json_file_name(jobname):
 def job_json(job_config, app_config):
     """build the data payload for the http trigger """ 
     # TODO potentially remove all of this from this app
-    
-    acrname="krishnanlabgeneplexusacr"
-
+    app_config['CONTAINER_REGISTRY']="krishnanlabgeneplexusacr.azurecr.io"
     job_path=f"{app_config['BASE_CONTAINER_PATH']}/jobs/"
     jobname = path_friendly_jobname(job_config['jobname'])
     
     input_file_name = create_input_file_name(jobname)
     results_file_name = create_results_file_name(jobname)
 
+#        "imageName": f"{acrname}.azurecr.io/{app_config['JOB_IMAGE_NAME']}:{app_config['JOB_IMAGE_TAG']}",
+    # these values are set or can be discovered using commands in the CLI script. so perhaps they need to go 
+    # direct into the ARM template directly (as params to the template), since they don't affect 
+    # the app. 
     docker_image_config = {
-        "imageName": f"{acrname}.azurecr.io/{app_config['JOB_IMAGE_NAME']}:{app_config['JOB_IMAGE_TAG']}",
+        "imageName": f"{app_config['CONTAINER_REGISTRY_URL']}/{app_config['JOB_IMAGE_NAME']}:{app_config['JOB_IMAGE_TAG']}",
         "registry": {
-            "server": f"{acrname}.azurecr.io",
-            "username": acrname,
+            "server": app_config['CONTAINER_REGISTRY_URL'],
+            "username": app_config['CONTAINER_REGISTRY_USER'],
             "password": app_config["CONTAINER_REGISTRY_PW"]
         }
     }
