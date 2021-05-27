@@ -141,11 +141,14 @@ def run_model():
         # save session data to variable
         input_genes = session['genes']
         # remove the current genelist from session
+        # why remove the geneset from session -- what if someone wants to run a second job with same geneset?
         session.pop('genes')
         
+    else:  # no genes in session
+        # if genes are not in the session, 500 server error? read in genes?        
+        flash("No geneset seems to be selected - please select a geneset to run the model")
+        return redirect('index')
 
-    # if genes are not in the session, 500 server error? read in genes?
-    # else:
     #    f = request.files['input_genes']  # read in the file
     #    input_genes = models.read_input_file(f)
 
@@ -169,6 +172,7 @@ def run_model():
 
     jobname = path_friendly_jobname(jobname)
 
+    # this means someone clicked the form to run the batch job. 
     if form.runbatch.data :
 
         # create dictionary for easy parameter passing
@@ -194,6 +198,7 @@ def run_model():
 
         return redirect('jobs')
 
+    # this option is for testing, and not usually available as a button on the website
     if form.runlocal.data : 
         # this runs the model on the spot and simply returns the results as HTML file
         app.logger.info('running model, jobname %s', jobname)
