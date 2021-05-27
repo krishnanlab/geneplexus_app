@@ -18,6 +18,8 @@ class BaseConfig(object):
     
     # secrets needed for launching batch jobs on azure
     STORAGE_ACCOUNT_KEY = os.getenv('STORAGE_ACCOUNT_KEY', '')
+    CONTAINER_REGISTRY_URL= os.getenv('CONTAINER_REGISTRY_URL','')
+    CONTAINER_REGISTRY_USER = os.getenv('CONTAINER_REGISTRY_USER','')
     CONTAINER_REGISTRY_PW = os.getenv('CONTAINER_REGISTRY_PW', '')
 
     # used in the JSON sent to the trigger, that are sent to container launcher
