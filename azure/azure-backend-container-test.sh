@@ -1,10 +1,16 @@
+## BACK-END CONTAINER TEST
+# these CLI commands mimic what our logic-app
+# should do create an Azure Container Instance from a container
+# along with some commands to build to build the container
+
 source azure/azuredeploy.sh
 # set config params for azure deployment, many are used here. 
 az_set_vars  # AZDOCKERIMAGE, AZRG, AZCR, TAG, etc
 
 #TODO  use variable 'suffix' to genericize 'backend' here
-export AZDOCKERCONTAINERNAME=${AZDOCKERIMAGE}-backend-$RANDOM
-export BACKEND_IMAGE=$AZDOCKERCONTAINERNAME
+export BACKEND_IMAGE=${AZDOCKERIMAGE}-backend
+# TAG is set in azuredeploy.sh
+export AZDOCKERCONTAINERNAME=${BACKEND_IMAGE}-$RANDOM
 export AZBACKENDIMAGE_URL=$ACR.azurecr.io/$BACKEND_IMAGE:$TAG
 export DOCKERFILE="Dockerfile-backend"  # the name of the file in this project
 
