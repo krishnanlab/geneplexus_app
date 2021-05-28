@@ -69,12 +69,16 @@
 # az_build_container
 # az_build_docker_backend
 # az_create_file_storage
+
+# # copy files from HPCC to this new storage created
 # HPCC_FOLDER=/mnt/ufs18/rs-027/compbio/krishnanlab/projects/GenePlexus/repos/GenePlexusBackend/data_backend2
 # az_copy_hpcc_to_files $HPCC_FOLDER
+# # run the command printed above on the hpcc
 # az_create_webapp
 # az_app_set_container
 # az_webapp_setconfig 
 # az_app_mount_file_storage
+
 
 # TODO (currently manual steps)
 # create API connection to Container instance for a controlling account
@@ -90,7 +94,13 @@ az_set_vars ()
     export PROJECT=geneplexus
     export CLIENT=krishnanlab
     export PROJECTENV=dev  # one of dev, qa, prod per IT Services standard practice 
+    
+    # set the resource group name based on project name and environment (dev, qa, prod)
     export AZRG=$CLIENT-$PROJECT-$PROJECTENV 
+    # run the function below to see if the group exists, and if not, recommend creating it
+    if ! check_az_group_exists; then
+        echo "Resource group $AZRG doesn't exist, use the az_group_create function or CLI command"
+    fi
 
     # note from microsoft about A container registry names: 
     # Uppercase characters are detected in the registry name. When using its server url in docker commands, to avoid authentication errors, use all lowercase.    
@@ -128,14 +138,30 @@ az_set_vars ()
 
 }
 
-
-
+# function to confirm that resource group exists
+# if the resource group doesn't exists, most functions below won't run
+check_az_group_exists ()
+{
+    matching group=$(az group list --query "[?name=='$AZRG']")
+    if [ -z "$searchres" ]
+    then
+        # echo "Resource group $AZRG doesn't exist, use the az_group_create function or CLI command"
+        # echo "az group create --location $AZLOCATION --name $AZRG --tags \"$AZTAGS\""
+        return 1
+    else
+        return 0
+     
+}
 
 ### should check if $AZRG is a group and if not create it
 # example group create
 az_create_group () 
 {
-    az group create --location $AZLOCATION --name $AZRG --tags $AZTAGS
+    if check_az_group_exists;
+        echo "resource group $AZRG already exists"
+    else
+        echo "creating resource group $AZRG"
+        az group  create --location $AZLOCATION --name $AZRG --tags $AZTAGS
 }
 
 #########
@@ -167,7 +193,7 @@ az_create_app_registry()
     fi
 }
 
-##########
+########## TODO
 # az_git_deployment_set ()
 # {
 
@@ -233,21 +259,20 @@ az_create_webapp ()
 
 
     # app "identity" allows this app to access things like storage accounts without your user ID (e.g. app-level IAM)
+    # TODO : is this necessary? 
     # this doesn't seem to create a new identity if one exists, just returns existing identity UUID
     export AZAPPIDENTITY=$(az webapp identity assign --resource-group $AZRG --name $AZAPPNAME --query principalId --output tsv)
     
 
     # git deployment of code (not container)
     # the container does not contain the python code, that gets deployed to standard folder on the app service "machine"
-    ## to access the storage, the app needs an "identity"  
-
-
     az webapp deployment source config-local-git \
         -g $AZRG -n $AZAPPNAME
 
 
 }
 
+# return an apps "identity" code
 # this is used to grant the application access to the az storage container
 # so that the azure files storage can be mounted on the app
 az_get_app_identity () 
@@ -579,29 +604,12 @@ az webapp config storage-account add --resource-group $AZRG \
 
 
 
-###### tell the app to use the file storage just created
-
+# config the app to use the file storage just created
 az_update_file_storage ()
 {
 az webapp config storage-account update -g $AZRG -n $AZAPPNAME \
   --custom-id $AZAPPIDENTITY \
   --mount-path $MOUNTPATH
-}
-
-
-az_storage_endpoint_info() {
-    httpEndpoint=$(az storage account show \
-    --resource-group $AZRG \
-    --name $AZSTORAGENAME \
-    --query "primaryEndpoints.file" | tr -d '"')
-
-    smbPath=$(echo $httpEndpoint | cut -c7-$(expr length $httpEndpoint))
-    echo "$AZSTORAGENAME samba path = $smbPath"
-
-    fileHost=$(echo $smbPath | tr -d "/")
-    echo "$AZSTORAGENAME  filehost = $fileHost"
-
-
 }
 
 
@@ -766,21 +774,23 @@ az_app_database_delete ()
 
 }
 
-
+# set the hostname for the app service to use
 az_set_app_hostname ()
 {
-    # TODO check that an argument was set
-
+# this command may not be enough to confirm this hostname may be used 
+# (may require confirmation with the hostname registrar and DNS settings)
 if [[ -z "$1" ]]; then
-    "No     hostname provided, exiting"
+    echo "Usage: az_set_app_hostname <fulll hostname.com>"
 else  
+    echo "configuring app to use hostname $1..."
     az webapp config hostname add \
-    --webapp-name $AZAPPNAME --resource-group $AZRG \
+    --webapp-name $APPNAME --resource-group $RG \
     --hostname $1
-
-    echo "try browsing http://${fqdn} to see $AZAPPNAME"
+     
+    echo "try browsing http://$1 to see $APPNAME"
 fi
 }
+
 
 # DRAFT
 # create the params needed for azcopy to work from HPCC
@@ -796,8 +806,7 @@ az_copy_hpcc_to_files ()
 {
 
 #     
-    SOURCEFOLDER=$1  # TODDO validate that this folder exists/is accessible from here 
-    SOURCEFOLDER="/mnt/ufs18/rs-027/compbio/krishnanlab/projects/GenePlexus/repos/GenePlexusBackend/data_backend2/"
+    SOURCEFOLDER=$1  # TODDO validate that this folder exists/is accessible from here     
     # assumed values $AZSTORAGENAME $AZSHARENAME 
 
     # this option needed to get a SAS token is for blob storage, doesn't work for Azure files
@@ -853,9 +862,27 @@ az_copy_hpcc_to_files ()
     ssh hpcc.msu.edu "$AZCOPY_CMD"
 }
 
+# pull the info from az storage for use with 
+# the az copy command
+az_storage_endpoint_info ()
+{
+    httpEndpoint=$(az storage account show \
+    --resource-group $AZRG \
+    --name $AZSTORAGENAME \
+    --query "primaryEndpoints.file" | tr -d '"')
+
+    smbPath=$(echo $httpEndpoint | cut -c7-$(expr length $httpEndpoint))
+    echo "$AZSTORAGENAME samba path = $smbPath"
+
+    fileHost=$(echo $smbPath | tr -d "/")
+    echo "$AZSTORAGENAME  filehost = $fileHost"
+
+
+}
+
 
 ## storage stuff
-
+## details for this particular app
 # azcopy copy /mnt/ufs18/rs-027/compbio/krishnanlab/projects/GenePlexus/repos/GenePlexusBackend/data_backend2 'https://geneplexusdev.file.core.windows.net/geneplexus-files-dev?Z4FS10CC9zGyudRa8wdbfuS4CW%2BhdGeu6I5iu9edy8o'
 
 # AZSASTOKEN='?sv=2020-02-10&ss=f&srt=sco&sp=rwdlc&se=2021-03-27T00:54:34Z&st=2021-03-25T16:54:34Z&sip=172.16.93.1-172.16.93.255&spr=https,http&sig=TgVomTyI%2BSJ5a15zgYb1Hw2%2BIsnByZ%2FuWW8ViZ4Otfc%3D'
