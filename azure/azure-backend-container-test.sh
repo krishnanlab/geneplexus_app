@@ -3,16 +3,26 @@
 # should do create an Azure Container Instance from a container
 # along with some commands to build to build the container
 
-source azure/azuredeploy.sh
-# set config params for azure deployment, many are used here. 
-az_set_vars  # AZDOCKERIMAGE, AZRG, AZCR, TAG, etc
+. azure/azuredeploy.sh
 
-#TODO  use variable 'suffix' to genericize 'backend' here
-export BACKEND_IMAGE=${AZDOCKERIMAGE}-backend
-# TAG is set in azuredeploy.sh
-export AZDOCKERCONTAINERNAME=${BACKEND_IMAGE}-$RANDOM
-export AZBACKENDIMAGE_URL=$ACR.azurecr.io/$BACKEND_IMAGE:$TAG
-export DOCKERFILE="Dockerfile-backend"  # the name of the file in this project
+set_backend_vars () 
+{
+  export BACKEND_IMAGE=${AZDOCKERIMAGE}-backend
+  # TAG is set in azuredeploy.sh
+  export AZDOCKERCONTAINERNAME=${BACKEND_IMAGE}-$RANDOM
+  export AZBACKENDIMAGE_URL=$ACR.azurecr.io/$BACKEND_IMAGE:$TAG
+  export DOCKERFILE="Dockerfile-backend"  # the name of the file in this project
+}
+
+run_test ()
+{
+
+# set config params for azure deployment, many are used here. 
+az_set_vars "TEST"  # AZDOCKERIMAGE, AZRG, AZCR, TAG, etc
+
+
+
+}
 
 build_docker_backend ()
 {
@@ -154,6 +164,10 @@ THIS_CONTAINER_LOGS=$(az container logs \
 
 }
 
+### this is the example code I started from form Azure 
+# I actually don't know where I got it from... 
+# but here is another example, although written with TerraForm  and not the CLI! 
+#https://docs.microsoft.com/en-us/azure/developer/terraform/deploy-azure-cosmos-db-to-azure-container-instances
 
 containerdbdemo () 
 {
