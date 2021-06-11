@@ -1,11 +1,12 @@
-# Syllabuster App Azure Depoloyment
+# GenePlexus App Azure Depoloyment
 # ===
 # bash script using Azure CLI code to create
-# Azure Container Registry (AZCR) 
-# App Service
-# App Service Plan
-# Postgresql database
-# based on  https://docs.microsoft.com/en-us/azure/app-service/containers/tutorial-custom-docker-image
+# Azure Container Registry (AZCR)  and Docker containers
+# App Service  ( & Plan ) 
+# File Storage
+# script to run on HPC to copy data to File Storage
+# Logic App that creates the Container Instances
+# 
 
 # REQUIREMENTS
 # ---
@@ -56,13 +57,15 @@
 
 #### IMPORTANT you must review the values in the az_set_vars() function below FIRST
 #    things to check:
-#    it assumes your computer userid $USER is the same as for azure 
 #    TAG = the docker container TAG 
-#    PROJECTENV (default is dev, but change to create a new set of azure services, e.g. qa, test, prod)
+#    PROJECT : name of the project (used for all resources with env
+#    CLIENT : name of the lab/person this is for 
+#    PROJECTENV (default is dev) which you set with param value to when calling az_set_vars
 
-#### Commands to create everything needed to run this script and create Azure services in Bash 
+
+#### Workflow: Commands to create everything needed to run this script and create Azure services in Bash 
 # source azure/azuredeploy.sh
-# az_set_vars
+# az_set_vars ENV   # or other environment name
 # # add variable overrides here! e.g use TAG=v35 for the docker container tag
 # az_create_group
 # az_create_app_registry
@@ -85,18 +88,50 @@
 # create logic_app that allows the app to create container instances
 # set the app config to the HPCC endpoint for this new logic app
 
+# set all the variables that will be used below
+# TODO use minimally a parameter to set PROJECTENV so that this function
+# can be re-used for testing or duplicate deployments
+
+
 az_set_vars ()
 {
-    # ==========
-    # variables
+    # set global vars used by other functions below
+    # this function must be run first.  
+
+    # first set the azure subscription
+    az_check_account  # side-effects: sets AZSUBID, exits if not logged in
     
-    export AZSUBID=$(az account show --query id --output tsv)
+    # set user id to use for subsequent commnds. 
+
+    
+    AZFULLUSER=$(az account show --query="user.name")  # this include @msu.edu
+    export AZUSER=(`echo $AZFULLUSER |tr '@' ' '`)  # strip off the @msu.edu 
+    
+    # if there is none (AZSUBID var is empty), then we exit with an error message 
+    if [ -z "$AZSUBID" ]; then 
+        echo "No Azure Subscription Found - perhaps you need to use az login first?" >&2 
+        exit 1
+    fi
+
+
+    # PROJECTENV should be one of dev, test, prod per IT Services standard practice
+    # but this only requires it's set; if not default to 'dev'
+    PROJECTENV = $1
+    if [ -n "$1" ]; then
+        export PROJECTENV=$1
+    else
+        export PROJECTENV=dev
+    fi
+
+    # this is required and set per projects
     export PROJECT=geneplexus
     export CLIENT=krishnanlab
-    export PROJECTENV=dev  # one of dev, qa, prod per IT Services standard practice 
     
     # set the resource group name based on project name and environment (dev, qa, prod)
     export AZRG=$CLIENT-$PROJECT-$PROJECTENV 
+
+    echo "Using project suffix = $PROJETENV and resource group $AZRG" >&2  
+
     # run the function below to see if the group exists, and if not, recommend creating it
     if ! check_az_group_exists; then
         echo "Resource group $AZRG doesn't exist, use the az_group_create function or CLI command"
@@ -122,7 +157,7 @@ az_set_vars ()
     export AZPLAN=${PROJECT}-plan
     export AZLOCATION=centralus # centralus may not have Container Instances needed 
     export ENVFILE=azure/.env
-    export AZTAGS='"createdby='$USER'" "project='$PROJECT'"' # tag=value must be double quoted
+    export AZTAGS='"createdby='$AZUSER'" "project='$PROJECT'"' # tag=value must be double quoted
     export AZ_SERVICE_PLAN_SKU="B2"  # "S1"  # see https://azure.microsoft.com/en-us/pricing/details/app-service/linux/
     # apps like gunicorn or DJango run on port 8000
     # if you are testing a flask app dev server, change this to 5000
@@ -134,7 +169,21 @@ az_set_vars ()
     export AZCONTAINERNAME="${PROJECT}-container"
     export AZSHARENAME="${PROJECT}-files-$PROJECTENV"
 
-    export AZGITUSERNAME=$USER
+    export AZGITUSERNAME=$AZUSER
+
+}
+
+# confirm that there is an az account (and user is logged in) 
+az_check_account () 
+{
+    # check that there is an azure subscription for you
+    export AZSUBID=$(az account show --query id --output tsv)
+
+    # if there is none (AZSUBID var is empty), then we exit with an error message 
+    if [ -z "$AZSUBID" ]; then 
+        echo "No Azure Subscription Found - perhaps you need to use az login first?" >&2 
+        exit 1
+    fi
 
 }
 
@@ -686,7 +735,7 @@ az_app_database_create ()
         fi
     fi
 
-    #TODO add tag created_by=$USER
+    #TODO add tag created_by=$AZUSER
 
     az postgres server create \
     --name  $AZDBSERVERNAME \
@@ -796,7 +845,7 @@ fi
 # create the params needed for azcopy to work from HPCC
 # note you need generate a token with Azure, which requires you to know the IP address
 # of the HPCC system we are copying from, and getting that requires using SSH, which needs your NETID. 
-# in this draft, using $USER as proxy for netid but for everyone but me, that's probably not going to work
+# in this draft, using $AZUSER as proxy for netid but for everyone but me, that's probably not going to work
 # this also use ssh to log-in and run the command on hpcc but
 # this simply echos the command to run to copy and paste  
 # see https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-files
