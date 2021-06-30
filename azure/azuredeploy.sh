@@ -122,16 +122,14 @@ build_all ()
     export TAG=test0721 # for the docker container tag
     echo "creating resources for app $AZAPPNAME in $AZRG..."
     az_create_group
-    az_create_app_registry
-    az_build_container
+    az_create_app_registry  # create container registry and build container
     az_build_docker_backend
     az_create_file_storage
 
     # copy files from HPCC to this new storage created
     HPCC_FOLDER=/mnt/ufs18/rs-027/compbio/krishnanlab/projects/GenePlexus/repos/GenePlexusBackend/data_backend2
     az_copy_hpcc_to_files $HPCC_FOLDER
-    echo "run the command printed above on the hpcc, perhaps in a new term window..."
-    read -n 1 -p "Confirm command worked (y) to continue  or any key to stop (y/)" CMDCONFIRM
+    read -n 1 -p "Confirm the azcopy command worked (y) to continue  or any key to stop script (y/)" CMDCONFIRM
     if [[ "$CMDCONFIRM" == "y" || "$CMDCONFIRM" == "Y" ]]
     then
         echo "continuing app deployment"
@@ -214,7 +212,9 @@ az_set_vars ()
         export AZAPPNAME=${PROJECT}${PROJECTENV}   # modify this if there are multiple/different apps per project
     fi
 
+    # docker container names and tags
     export AZDOCKERIMAGE=$PROJECT
+    export BACKEND_IMAGE=${AZDOCKERIMAGE}-backend
     export TAG=2021.05  # TODO => rename to AZDOCKERTAG
     
     export AZPLAN=${PROJECT}-plan
@@ -291,7 +291,8 @@ az_create_app_registry()
 
     # always build, assume running to rebuild
     echo "using azure acr to build the files in this repository"
-    az acr build -g $AZRG -t $AZDOCKERIMAGE:$TAG -r $AZCR .
+    az_build_container
+    # az acr build -g $AZRG -t $AZDOCKERIMAGE:$TAG -r $AZCR .
 
     # alternative - AZCR task queue
     # echo "queue azue acr task that builds from a github repository."
@@ -433,6 +434,7 @@ az_webapp_setconfig ()
     echo $cmd
     $(cmd)
 
+    az_set_backend_image # also set the config for the back end (requires )
     az_app_restart
 }
 
@@ -448,8 +450,11 @@ az_browse_webapp ()
     open http://$AZAPPNAME.scm.azurewebsites.net
 }
 
+
 az_build_container ()
 {
+    # use Azure Container registry task to build the docker container in Dockerfile
+    # requires the presence of a working Dockerfile, which may require many other things
     echo "building image $AZDOCKERIMAGE:$TAG in azure cr $AZCR using Dockerfile"
     az acr build -t $AZDOCKERIMAGE:$TAG -r $AZCR .
 }
@@ -473,17 +478,38 @@ az_app_set_container ()
 # builds the "backend" container, or the one that just runs the ML code in model.py on a container instance
 az_build_docker_backend ()
 {
-    export BACKEND_IMAGE=${AZDOCKERIMAGE}-backend
-    # TAG is set in azuredeploy.sh
+    
+    # TAG is set in azure_set_vars
+    # check if this var is set, and if not, set to a default name
+    if [[ -z "$BACKEND_IMAGE" || -z "$TAG" ]]; then
+        echo "image name vars not set - Please run az_set_vars function first "
+        exit 1
+    fi
+
+    # TODO check that that AZCR exists first
+    
     export AZBACKENDIMAGE_URL=$ACR.azurecr.io/$BACKEND_IMAGE:$TAG  # needed for the logic app! 
 
+    # TODO  check that this docker file exists!   
+    # TODO set this in az_set_vars and confirm file exists
     export DOCKERFILE="Dockerfile-backend"  # the name of the file in this project
     az acr build -t $BACKEND_IMAGE:$TAG -r $AZCR --file $DOCKERFILE .
-  # then should update the application settings - requires the web app to exist first, 
-  # but the webapp can't run jobs without the backend container
-    az webapp config appsettings set --resource-group $AZRG --name $AZAPPNAME --settings JOB_IMAGE_NAME=$BACKEND_IMAGE JOB_IMAGE_TAG=$TAG
+
+    # then should update the application settings - requires the web app to exist first, 
+    # but the webapp can't run jobs without the backend container
+    #TODO check if the web app currently exists
+    az_set_backend_image    
 }
 
+
+az_set_backend_image () 
+{
+    # for the web applications sets the name of the backend image
+    # the backend image does not have to exists yet (this is just a setting)
+    # but the function az_build_docker_backend() above needs to have run to set the value for $BACKEND_IMAGE
+    # and of course the web app needs to exist! 
+    az webapp config appsettings set --resource-group $AZRG --name $AZAPPNAME --settings JOB_IMAGE_NAME=$BACKEND_IMAGE JOB_IMAGE_TAG=$TAG 
+}
 
 # this is a work in progress and not used, saved here for experiments =
 # Azure App Service has a concept of "slots" so you can deploy updates
@@ -918,10 +944,21 @@ fi
 az_copy_hpcc_to_files ()
 {
 
-#     
-    SOURCEFOLDER=$1  # TODDO validate that this folder exists/is accessible from here     
-    # assumed values $AZSTORAGENAME $AZSHARENAME 
+    # check for required params and env vars
 
+    if [[ -z "$1"]]; then 
+        echo "source file folder path argument is required.  Usage: "
+        echo "$ az_copy_hpcc_to_files /mnt/ufs18/rs-027/etc/etc/etc"
+        return 1
+    else
+        if [[ -z "$AZSTORAGENAME" || -z "$AZSHARENAME"]]; then
+            # values $AZSTORAGENAME $AZSHARENAME required
+            echo "please run az_set_vars first to set storage names (and also run az_create_storage)"
+            return 1
+        fi
+    fi
+
+    SOURCEFOLDER=$1  # TODDO validate that this folder exists/is accessible from here     
     # this option needed to get a SAS token is for blob storage, doesn't work for Azure files
     AZSTORAGEKEY=$(az storage account keys list -g $AZRG -n $AZSTORAGENAME --query [0].value -o tsv)
 
@@ -965,14 +1002,23 @@ az_copy_hpcc_to_files ()
     # az copy command how-to : https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-files
     # URL template 'https://<storage-account-name>.file.core.windows.net/<file-share-name><SAS-token>' 
     # example 'https://mystorageaccount.file.core.windows.net/myfileshare?sv=2018-03-28&ss=bjqt&srs=sco&sp=rjklhjup&se=2019-05-10T04:37:48Z&st=2019-05-09T20:37:48Z&spr=https&sig=%2FSOVEFfsKDqRry4bk3qz1vAQFwY5DDzp2%2B%2F3Eykf%2FJLs%3D'
-    AZSTORAGEURL=https://${AZSTORAGENAME}.file.core.windows.net/${AZSHARENAME}${AZSASTOKEN}
+    AZSTORAGEURL=https://${AZSTORAGENAME}.file.core.windows.net/${AZSHARENAME}\?${AZSASTOKEN}
 
 
-    AZCOPY_CMD="'""azcopy copy $SOURCEFOLDER $AZSTORAGEURL --recursive""'"
-    echo "the azcopy command for this app is "
-    echo "$AZCOPY_CMD"
-    echo "attempting to use ssh to run the command (ssh must be in the PATH)"
-    ssh hpcc.msu.edu "$AZCOPY_CMD"
+    export AZCOPY_CMD="azcopy copy $SOURCEFOLDER '$AZSTORAGEURL' --recursive"
+    echo "the azcopy command for this app is :"
+    echo ""
+    echo $AZCOPY_CMD
+    echo ""
+    echo "you may have to copy/paste this into an HPCC session, and you must have the azcopy utility installed"
+    echo "note the single quotes around the azure storage URL are required"
+    if [[ -z "`which ssh`" ]]; then 
+        echo "no ssh command found (maybe you are on Windows?) then manually log-in and run the above"
+    else
+        # assume that the Azure user id is the same as your hpcc user id
+        # this is true for all MSU accounts (uses NetID by default) 
+        ssh ${AZUSER}@hpcc.msu.edu $AZCOPY_CMD
+    fi
 }
 
 # pull the info from az storage for use with 
