@@ -139,9 +139,8 @@ build_all ()
     fi
 
 
-    az_create_webapp
+    az_create_webapp # create app service plan, service, and set config
     az_app_set_container
-    az_webapp_setconfig 
     az_app_mount_file_storage
 
 
@@ -466,7 +465,8 @@ az_build_container ()
 az_app_set_container ()
 {
    az webapp config container set --name $AZAPPNAME --resource-group $AZRG --docker-custom-image-name ${AZCR}.azurecr.io/$AZDOCKERIMAGE:$TAG --docker-registry-server-url https://${AZCR}.azurecr.io
-   # this setting gets set to false sometimes, so set to true AGAIN here 
+
+   # this setting gets set to false sometimes (but not always).  so set to true AGAIN here
    az webapp config appsettings set --resource-group $AZRG --name $AZAPPNAME --settings WEBSITES_ENABLE_APP_SERVICE_STORAGE=true
    # is manual restart needed, or is it auto-restarted when config is changed?
    az_app_restart
@@ -720,25 +720,29 @@ az storage share create --account-name  $AZSTORAGENAME \
 # mounts the file storage onto the app as a network drive (SMB by default)
 az_app_mount_file_storage ()
 {
+
     MOUNTPATH=/home/site/$AZSHARENAME
 
-## to access the storage, the app needs an "identity"  
-# see function az_get_app_identity()
+    ## to access the storage, the app needs an "identity"  
+    # see function az_get_app_identity() and this is run when the app is created above
 
-# NOTE to simply make a change to the path that is mounted, use 
-# az webapp config storage-account update -g $AZRG -n $AZAPPNAME \
-#   --custom-id $AZAPPIDENTITY \
-#   --mount-path $MOUNTPATH
+    # requires storage account has been created
+    AZSTORAGEKEY=$(az storage account keys list -g $AZRG -n $AZSTORAGENAME --query [0].value -o tsv)
+
+    # NOTE to simply make a change to the path that is mounted, use 
+    # az webapp config storage-account update -g $AZRG -n $AZAPPNAME \
+    #   --custom-id $AZAPPIDENTITY \
+    #   --mount-path $MOUNTPATH
 
 
-# add a new mount
-az webapp config storage-account add --resource-group $AZRG \
-    --name $AZAPPNAME \
-    --custom-id $(az_get_app_identity) \
-    --storage-type AzureFiles \
-    --share-name $AZSHARENAME \
-    --account-name $AZSTORAGENAME --access-key $AZSTORAGEKEY \
-    --mount-path $MOUNTPATH
+    # add a new mount, will error if storage key is blank
+    az webapp config storage-account add --resource-group $AZRG \
+        --name $AZAPPNAME \
+        --custom-id $(az_get_app_identity) \
+        --storage-type AzureFiles \
+        --share-name $AZSHARENAME \
+        --account-name $AZSTORAGENAME --access-key $AZSTORAGEKEY \
+        --mount-path $MOUNTPATH
 }
 
 
@@ -946,12 +950,12 @@ az_copy_hpcc_to_files ()
 
     # check for required params and env vars
 
-    if [[ -z "$1"]]; then 
+    if [[ -z "$1" ]]; then 
         echo "source file folder path argument is required.  Usage: "
         echo "$ az_copy_hpcc_to_files /mnt/ufs18/rs-027/etc/etc/etc"
         return 1
     else
-        if [[ -z "$AZSTORAGENAME" || -z "$AZSHARENAME"]]; then
+        if [[ -z "$AZSTORAGENAME" || -z "$AZSHARENAME" ]]; then
             # values $AZSTORAGENAME $AZSHARENAME required
             echo "please run az_set_vars first to set storage names (and also run az_create_storage)"
             return 1
