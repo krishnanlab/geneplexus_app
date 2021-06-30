@@ -70,6 +70,9 @@
 ##
 # 4. log-in to azure (requires azure cli to be available)
 # az login
+#   note if you have access to multiple azure subscriptions, you may have to set it manually 
+#    list all subs:        az account list --output table
+#    set the sub to use:   az account set --subscription <subid>
 
 ##
 # 4. determine the name of the 'environment' you want to build for : dev, test, prod or other, 
@@ -166,7 +169,7 @@ az_set_vars ()
 
     
     export AZFULLUSER=$(az account show --query="user.name")  # this include @msu.edu
-    export AZUSER=(`echo $AZFULLUSER |tr '@' ' '`)  # strip off the @msu.edu 
+    export AZUSER=`echo $AZFULLUSER | cut -d "@" -f1 | tr -d '"'`  # strip off the @msu.edu , which leaves leading quote that needs to be deleted too
     
     # if there is none (AZSUBID var is empty), then we exit with an error message 
     if [ -z "$AZSUBID" ]; then 
@@ -217,7 +220,7 @@ az_set_vars ()
     export AZPLAN=${PROJECT}-plan
     export AZLOCATION=centralus # centralus may not have Container Instances needed 
     export ENVFILE=azure/.env
-    export AZTAGS='"createdby='$AZUSER'" "project='$PROJECT'"' # tag=value must be double quoted
+    export AZTAGS="createdby=$AZUSER project=$PROJECT" 
     export AZ_SERVICE_PLAN_SKU="B2"  # "S1"  # see https://azure.microsoft.com/en-us/pricing/details/app-service/linux/
     # apps like gunicorn or DJango run on port 8000
     # if you are testing a flask app dev server, change this to 5000
@@ -247,20 +250,18 @@ az_check_account ()
 
 }
 
-# function to confirm that resource group exists
+# confirm that resource group exists
 # if the resource group doesn't exists, most functions below won't run
 check_az_group_exists ()
-{
-    searchres=$(az group list --query "[?name=='$AZRG']")
-    if [ -z "$searchres" ]
+{    
+    if [[ "`az group exists --name $AZRG`" == "false" ]]
     then
-        echo "Resource group $AZRG doesn't exist, use the az_group_create function or CLI command"
-        echo "az group create --location $AZLOCATION --name $AZRG --tags \"$AZTAGS\""
+        # echo "Resource group $AZRG doesn't exist, use the az_group_create function or CLI command"
+        # echo "az group create --location $AZLOCATION --name $AZRG --tags $AZTAGS"
         return 1
     else
         return 0
     fi
-     
 }
 
 ### should check if $AZRG is a group and if not create it
