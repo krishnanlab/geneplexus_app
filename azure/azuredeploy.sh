@@ -54,8 +54,8 @@
 # use the instructions as you would if it were on your computer 
 
 
-
-#### IMPORTANT you must review the values in the az_set_vars() function below FIRST
+##### USAGE
+# 1. IMPORTANT you must review the values in the az_set_vars() function below FIRST
 #    things to check:
 #    TAG = the docker container TAG 
 #    PROJECT : name of the project (used for all resources with env
@@ -63,35 +63,96 @@
 #    PROJECTENV (default is dev) which you set with param value to when calling az_set_vars
 
 
-#### Workflow: Commands to create everything needed to run this script and create Azure services in Bash 
+##
+# 2. source this file
 # source azure/azuredeploy.sh
-# az_set_vars ENV   # or other environment name
-# # add variable overrides here! e.g use TAG=v35 for the docker container tag
-# az_create_group
-# az_create_app_registry
-# az_build_container
-# az_build_docker_backend
-# az_create_file_storage
 
-# # copy files from HPCC to this new storage created
-# HPCC_FOLDER=/mnt/ufs18/rs-027/compbio/krishnanlab/projects/GenePlexus/repos/GenePlexusBackend/data_backend2
-# az_copy_hpcc_to_files $HPCC_FOLDER
-# # run the command printed above on the hpcc
-# az_create_webapp
-# az_app_set_container
-# az_webapp_setconfig 
-# az_app_mount_file_storage
+##
+# 4. log-in to azure (requires azure cli to be available)
+# az login
+
+##
+# 4. determine the name of the 'environment' you want to build for : dev, test, prod or other, 
+
+## 
+# 4. run the build_all function with that environment, eg. for dev
+# build_all dev
+#
+# note this will not re-create an existing resource group or resources
+# you may have to manually delete them in Azure portal first
+# some commands must be run manually - for one the command to copy files from the HPC to Azure
+
+##
+# 5. perform additional manual steps (see comments in the build_all() function)
+#
+
+##
+# 6. git push flask app to app service
+# the build should print your new git remote and give commands to push the app pyhon code to the 
+# new app service which does not contain code
+
+# 7. test
+# manually run a sample job 
+
+build_all ()
+{
+  # build all the resources needed to run the gene plexus application
+  # to run these manually stepy by step (e.g. copy/paste to terminaal), you must manually run the command
+  #  export PROJECTENV=test 
+  # first
+    az_check_account
+    if [ -z "$AZSUBID" ]; then 
+        echo "No Azure Subscription Found - perhaps you need to use az login first?" >&2 
+        exit 1
+    fi
+
+    if [ -n "$1" ]; then
+        export PROJECTENV=$1
+    else
+        echo "project environment name requireed (dev, test, prod for production, etc, eg"
+        echo 'e.g., $ build_all test'
+        exit 1
+    fi
+    
+    az_set_vars $PROJECTENV   # or other environment name
+    # add variable overrides here! e.g use 
+    export TAG=test0721 # for the docker container tag
+    echo "creating resources for app $AZAPPNAME in $AZRG..."
+    az_create_group
+    az_create_app_registry
+    az_build_container
+    az_build_docker_backend
+    az_create_file_storage
+
+    # copy files from HPCC to this new storage created
+    HPCC_FOLDER=/mnt/ufs18/rs-027/compbio/krishnanlab/projects/GenePlexus/repos/GenePlexusBackend/data_backend2
+    az_copy_hpcc_to_files $HPCC_FOLDER
+    echo "run the command printed above on the hpcc, perhaps in a new term window..."
+    read -n 1 -p "Confirm command worked (y) to continue  or any key to stop (y/)" CMDCONFIRM
+    if [[ "$CMDCONFIRM" == "y" || "$CMDCONFIRM" == "Y" ]]
+    then
+        echo "continuing app deployment"
+    else 
+        "command completion not confirmed, exiting..."
+        exit 1
+    fi
 
 
-# TODO (currently manual steps)
-# create API connection to Container instance for a controlling account
-# create logic_app that allows the app to create container instances
-# set the app config to the HPCC endpoint for this new logic app
+    az_create_webapp
+    az_app_set_container
+    az_webapp_setconfig 
+    az_app_mount_file_storage
 
-# set all the variables that will be used below
-# TODO use minimally a parameter to set PROJECTENV so that this function
-# can be re-used for testing or duplicate deployments
 
+    # TODO (currently manual steps)
+    # create API connection to Container instance for a controlling account
+    # create logic_app that allows the app to create container instances
+    # set the app config to the HPCC endpoint for this new logic app
+
+    # set all the variables that will be used below
+    # TODO use minimally a parameter to set PROJECTENV so that this function
+    # can be re-used for testing or duplicate deployments
+}
 
 az_set_vars ()
 {
@@ -104,7 +165,7 @@ az_set_vars ()
     # set user id to use for subsequent commnds. 
 
     
-    AZFULLUSER=$(az account show --query="user.name")  # this include @msu.edu
+    export AZFULLUSER=$(az account show --query="user.name")  # this include @msu.edu
     export AZUSER=(`echo $AZFULLUSER |tr '@' ' '`)  # strip off the @msu.edu 
     
     # if there is none (AZSUBID var is empty), then we exit with an error message 
@@ -116,7 +177,6 @@ az_set_vars ()
 
     # PROJECTENV should be one of dev, test, prod per IT Services standard practice
     # but this only requires it's set; if not default to 'dev'
-    PROJECTENV = $1
     if [ -n "$1" ]; then
         export PROJECTENV=$1
     else
@@ -130,7 +190,7 @@ az_set_vars ()
     # set the resource group name based on project name and environment (dev, qa, prod)
     export AZRG=$CLIENT-$PROJECT-$PROJECTENV 
 
-    echo "Using project suffix = $PROJETENV and resource group $AZRG" >&2  
+    echo "Using project suffix '$PROJECTENV' and resource group '$AZRG'" >&2  
 
     # run the function below to see if the group exists, and if not, recommend creating it
     if ! check_az_group_exists; then
@@ -191,14 +251,15 @@ az_check_account ()
 # if the resource group doesn't exists, most functions below won't run
 check_az_group_exists ()
 {
-    matching group=$(az group list --query "[?name=='$AZRG']")
+    searchres=$(az group list --query "[?name=='$AZRG']")
     if [ -z "$searchres" ]
     then
-        # echo "Resource group $AZRG doesn't exist, use the az_group_create function or CLI command"
-        # echo "az group create --location $AZLOCATION --name $AZRG --tags \"$AZTAGS\""
+        echo "Resource group $AZRG doesn't exist, use the az_group_create function or CLI command"
+        echo "az group create --location $AZLOCATION --name $AZRG --tags \"$AZTAGS\""
         return 1
     else
         return 0
+    fi
      
 }
 
@@ -206,11 +267,13 @@ check_az_group_exists ()
 # example group create
 az_create_group () 
 {
-    if check_az_group_exists;
+    if check_az_group_exists
+    then
         echo "resource group $AZRG already exists"
     else
         echo "creating resource group $AZRG"
         az group  create --location $AZLOCATION --name $AZRG --tags $AZTAGS
+    fi
 }
 
 #########
