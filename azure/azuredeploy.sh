@@ -202,8 +202,8 @@ az_set_vars ()
 
     # note from microsoft about A container registry names: 
     # Uppercase characters are detected in the registry name. When using its server url in docker commands, to avoid authentication errors, use all lowercase.    
-    # NOTE from Azure: 'registry_name' must conform to the following pattern: '^[a-zA-Z0-9]*$'
-    export AZCR=${CLIENT}cr  #  in future use a department-wide container registry for all projects
+    # NOTE from Azure: 'registry_name' must conform to the following pattern: '^[a-zA-Z0-9]*$'  eg no hypens etc
+    export AZCR=${CLIENT}${PROJECTENV}cr  #  in future use a department-wide container registry for all projects
 
 
     # if this is the production version, 
