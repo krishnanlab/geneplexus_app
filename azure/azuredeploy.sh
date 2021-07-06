@@ -143,15 +143,14 @@ build_all ()
     az_app_set_container
     az_app_mount_file_storage
 
+    # TODO  - copy the files needed to from storage to internal folder in container
+    # with ssh?
 
     # TODO (currently manual steps)
     # create API connection to Container instance for a controlling account
     # create logic_app that allows the app to create container instances
     # set the app config to the HPCC endpoint for this new logic app
 
-    # set all the variables that will be used below
-    # TODO use minimally a parameter to set PROJECTENV so that this function
-    # can be re-used for testing or duplicate deployments
 }
 
 az_set_vars ()
@@ -747,12 +746,14 @@ az_app_mount_file_storage ()
 
 
 
-# config the app to use the file storage just created
+# use the function above to mount storage;
+# use this only to updaate the mount point (or refresh?)
+# normally this function is not necessary
 az_update_file_storage ()
 {
-az webapp config storage-account update -g $AZRG -n $AZAPPNAME \
-  --custom-id $AZAPPIDENTITY \
-  --mount-path $MOUNTPATH
+    az webapp config storage-account update -g $AZRG -n $AZAPPNAME \
+    --custom-id $AZAPPIDENTITY \
+    --mount-path $MOUNTPATH
 }
 
 
