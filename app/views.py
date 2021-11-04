@@ -186,7 +186,7 @@ def run_model():
         print("launching job with job config =")
         print(job_config)
 
-        response = launch_job(session['genes'], job_config, app.config)
+        response = launch_job(input_genes, job_config, app.config)
         print("response = ", response)
 
         if 'jobs' in session and session['jobs']:
