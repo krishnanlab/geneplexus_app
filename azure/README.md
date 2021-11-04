@@ -24,20 +24,33 @@ docker build -t geneplexus:latest .
 
 ####  Running locally
 
-using bash with an external data folder: 
+using bash with an external data folder (set the data folder to whereever you have copies of the 'backend' files)
 
 ```bash
-export DATAFOLDER=/Volumes/hpchome/data_backend
+# example mounted folder on a Mac laptop
+export DATAFOLDER=/Volumes/mountedfolder/data_backend
+# location of the .env file to use when deployed to azure, 
+# but a testing .env file may also be appropriate. 
+export DOCKERENV=azure/.env 
+# run the image as a container, which launches gunicorn on port 8000
+docker run -d  --env-file $DOCKERENV -p 8000:8000 -v $(pwd):/home/site/wwwroot -v $DATAFOLDER:/home/site/wwwroot/app/data_backend   --name geneplexus_container geneplexus:latest
 
-docker run -d  --env-file azure/.azenv -p 8000:8000 -v $(pwd):/home/site/wwwroot -v /Volumes/hpchome/data_backend:/home/site/wwwroot/app/data_backend   --name geneplexus_container geneplexus:latest
+# Did it work?  there should be at least on line in the command
+docker ps
+
+# if so then browse to http://localhost:8000
+
+# if not then you can seee the start-up output using 
+docker logs geneplexus_container
+
 ```
 
-Did it work?  `docker ps`
+
 
 Note The dockerfile starts the webserver automatically, which may make it difficult to debug.  To start a docker container with a bash shell in which you can manually start the webserver or flask shell for debugging, use this  run command (in the main code directory)
 
 ```bash
-docker run -it  --env-file azure/.azenv -p 8000:8000 -v $(pwd):/home/site/wwwroot -v /Volumes/hpchome/data_backend:/home/site/wwwroot/app/data_backend  --entrypoint=""  geneplexus:latest bash
+docker run -it  --env-file azure/.env -p 8000:8000 -v $(pwd):/home/site/wwwroot -v  /Volumes/msuhpcc/tmp/data_backend2:/home/site/wwwroot/app/data_backend  --entrypoint=""  geneplexus:latest bash
 ```
 
 
@@ -166,7 +179,7 @@ echo $RG
 ```
 Start in the root dir of the project.  Open a bash terminal, open the environment or how you use the az command line,  and log-in to azure with   `az login`
 
-Review the functions in the script `azure/create_azure_services.sh` 
+Review the functions in the script `azure/azuredeploy.sh` 
 
 In that script, the first function `az_set_vars()` is used to set environment variables.  check and adjust the values
 in the script for your needs.  Note you can override those. 
