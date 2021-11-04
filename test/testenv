@@ -1,0 +1,22 @@
+FLASK_ENV=development
+FLASK_DEBUG=TRUE
+# azure settings
+# in azure env, the mount point of the azure files storage
+# DATA_PATH=/home//site/geneplexusfiles/data_backend
+# JOB_PATH=/home/site/geneplexusfiles/jobs
+# hpcc test paths
+DATA_PATH=/mnt/home/billspat/tmp/geneplexus_data_backend2/
+JOB_PATH=/mnt/home/billspat/tmp/geneplexus_test_jobs
+
+# set by ENV vars
+GENE_FILE=
+OUTPUT_FILE=
+GP_NET_TYPE=BioGRID
+GP_FEATURES=Adjacency
+GP_GSC=DisGeNet
+JOBNAME=test_job
+# container config for azure CI
+BASE_CONTAINER_PATH=/home/dockeruser/
+JOB_IMAGE_NAME=geneplexus-backend
+JOB_IMAGE_TAG=latest
+JOB_URL=
