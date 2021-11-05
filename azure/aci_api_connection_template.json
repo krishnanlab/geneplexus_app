@@ -1,0 +1,58 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "connection_name": {
+            "defaultValue": "geneplexusrunner",
+            "type": "String"
+        },
+        "environment": {
+            "defaultValue": "dev",
+            "type": "String"
+        },
+
+        "azlocation": {
+            "defaultValue": "centralus",
+            "type": "String"
+        },
+
+
+    },
+    "variables": {
+          "connection_name_env": "[concat(parameters('connection_name'),parameters('environment'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Web/connections",
+            "apiVersion": "2016-06-01",
+            "name": "[variables('connection_name_env')]",
+            "location": "[parameters('azlocation')]",
+            "kind": "V1",
+            "properties": {
+                "displayName": "[variables('connection_name_env')]",
+                "statuses": [
+                    {
+                        "status": "Connected"
+                    }
+                ],
+                "customParameterValues": {},
+                "nonSecretParameterValues": {
+                    "token:TenantId": "[subscription().tenantId]",
+                    "token:grantType": "code"
+                },
+                "createdTime": "2020-12-15T04:26:48.9746605Z",
+                "changedTime": "2021-11-03T02:12:27.8880507Z",
+                "api": {
+                    "name": "[variables('connection_name_env')]",
+                    "displayName": "Create Azure Container Instance For Geneplexus",
+                    "description": "create an Azure container",
+                    "iconUri": "[concat('https://connectoricons-prod.azureedge.net/releases/v1.0.1479/1.0.1479.2452/', 'aci', '/icon.png')]",
+                    "brandColor": "#0089D0",
+                    "id": "[concat('/subscriptions/',subscription().subscriptionId,'/providers/Microsoft.Web/locations/',parameters('azlocation'),'/managedApis/', 'aci')]",
+                    "type": "Microsoft.Web/locations/managedApis"
+                },
+                "testLinks": []
+            }
+        }
+    ]
+}

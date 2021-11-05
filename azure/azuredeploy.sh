@@ -151,6 +151,13 @@ build_all ()
     # create logic_app that allows the app to create container instances
     # set the app config to the HPCC endpoint for this new logic app
 
+    # create the api connection needed for the logic app
+    az deployment group create \
+        --name  ${PROJECT}${PROJECTENV}aciapi  \
+        --resource-group $AZRG \
+        --template-file azure/aci_api_connection_template.json \
+        --parameters connection_name=${PROJECT}${PROJECTENV}aciapi environment=$PROJECTENV azlocation=$AZLOCATION
+        
 }
 
 az_set_vars ()
