@@ -794,7 +794,7 @@ fi
 }
 
 
-# DRAFT
+# BACK END DATA COPY HPCC TO CLOUD
 # create the params needed for azcopy to work from HPCC
 # note you need generate a token with Azure, which requires you to know the IP address
 # of the HPCC system we are copying from, and getting that requires using SSH, which needs your NETID. 
@@ -804,6 +804,8 @@ fi
 # see https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-files
 # example successful az copy command: 
 #  azcopy copy /mnt/ufs18/rs-027/compbio/krishnanlab/projects/GenePlexus/repos/GenePlexusBackend/data_backend2 https://geneplexusdev.file.core.windows.net/geneplexus-files-dev/$AZSASTOKEN --recursive
+# requirements: HPCC account set HPCC_FOLDER to current location of backend files, and you have access to that
+# tested on MacOS but should work on Linux or anything with `ssh` command
 az_copy_hpcc_to_files ()
 {
 
