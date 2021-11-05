@@ -662,17 +662,6 @@ az_local_docker_teardown ()
     docker rmi $AZDOCKERIMAGE:$TAG
 }
 
-az_create_container_instance ()
-{
-# users the Azure Containers Instances instead of App Service
-az container create -g $AZRG --name $AZAPPNAME \
-    --ports 80 443 8000 22 2222 --ip-address Public \
-    --image $AZCR.azurecr.io/$AZDOCKERIMAGE:$TAG \
-    --registry-username $AZCR \
-    --registry-password $(az acr credential show --name $AZCR -g $AZRG  --output tsv  --query="passwords[0]|value") 
-    #     --dns-name-label $AZAPPNAME
-
-}
 
 #################
 # storage account 
