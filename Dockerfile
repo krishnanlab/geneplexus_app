@@ -3,14 +3,7 @@
 # Geneplexus Flask application for testing.  This is for deployment to Azure
 FROM python:3.9
 
-### CONFIG for this build
-# at build time, set this using the value to be used in the app, that's in the  azure/.azenv file
-# $ docker build --build-arg APP_DATA_FOLDER=$DATA_PATH
 
-ARG APP_DATA_FOLDER=/usr/local/share/data_backend
-# can override this to match where you have the data on your computer now, typically in the .env file
-# $ docker build --build-arg APP_DATA_SOURCE=$DATA_PATH
-ARG APP_DATA_SOURCE=app/backend_data
 
 ### ENVIRONMENT
 # match local and lang to what is on the MSU HPC as that's how the Pickle files were created
@@ -58,11 +51,18 @@ RUN pip install -r /var/local/requirements.txt \
     && pip install subprocess32 gunicorn
 
 # PROPOSED: copy app data into the container to simplify deployment (but not app code)
+# but only for data required for geneset validation
+
+# ARG APP_DATA_FOLDER=/usr/local/share/data_backend
+# can override this to match where you have the data on your computer now, typically in the .env file
+# $ docker build --build-arg APP_DATA_SOURCE=$DATA_PATH
+# ARG APP_DATA_SOURCE=app/backend_data
 # RUN mkdir $APP_DATA_FOLDER
-# COPY app/data_backend/Node_Orders $APP_DATA_FOLDER
-# COPY app/data_backend/ID_conversion $APP_DATA_FOLDER
+# COPY $APP_DATA_SOURCE/Node_Orders $APP_DATA_FOLDER
+# COPY $APP_DATA_SOURCE/ID_conversion $APP_DATA_FOLDER
 # ENV DATA_PATH=$APP_DATA_FOLDER
-# requires that DATA_PATH not be set in .azenv or .env 
+# IF DATA_PATH not be set in app  .env  OR set in App Service config, 
+# then the app will use THAT setting over this one
 
 # NOTES for the app to run,require the FLASK_APP env var to be set
 # eg ENV FLASK_APP=app ; typically with the dot-env package
