@@ -10,8 +10,16 @@
             "defaultValue": "dev",
             "type": "String"
         },
+        "projectname": {
+            "defaultValue": "a project",
+            "type": "String"
+        },
         "azlocation": {
             "defaultValue": "centralus",
+            "type": "String"
+        },
+        "azuser": {
+            "defaultValue": "azure_user",
             "type": "String"
         }
 
@@ -25,6 +33,11 @@
             "apiVersion": "2016-06-01",
             "name": "[variables('connection_name_env')]",
             "location": "[parameters('azlocation')]",
+            "tags": {
+                "created_by": "[parameters('azuser')]",
+                "project": "[parameters('projectname')]",
+                "environment": "[parameters('environment')]"
+            },
             "kind": "V1",
             "properties": {
                 "displayName": "[variables('connection_name_env')]",
