@@ -10,12 +10,10 @@
             "defaultValue": "dev",
             "type": "String"
         },
-
         "azlocation": {
             "defaultValue": "centralus",
             "type": "String"
-        },
-
+        }
 
     },
     "variables": {
