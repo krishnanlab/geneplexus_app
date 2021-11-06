@@ -218,7 +218,7 @@ az_set_vars ()
     export AZPLAN=${PROJECT}-plan
     export AZLOCATION=centralus # centralus may not have Container Instances needed 
     export ENVFILE=azure/.env
-    export AZTAGS="createdby=$AZUSER project=$PROJECT" 
+    export AZTAGS="createdby=$AZUSER project=$PROJECT environment=$PROJECTENV" 
     export AZ_SERVICE_PLAN_SKU="B2"  # "S1"  # see https://azure.microsoft.com/en-us/pricing/details/app-service/linux/
     # apps like gunicorn or DJango run on port 8000
     # if you are testing a flask app dev server, change this to 5000
@@ -915,13 +915,16 @@ az_storage_endpoint_info ()
 az_create_aci_api_connector ()
 {
     arm_template_file='azure/aci_api_connection_template.json'
+    
     if [[ -f "$arm_template_file" ]]; then
         # create the api connection needed for the logic app
         az deployment group create \
         --name  ${PROJECT}${PROJECTENV}aciapi  \
         --resource-group $AZRG \
         --template-file azure/aci_api_connection_template.json \
-        --parameters connection_name=${PROJECT}${PROJECTENV}aciapi environment=$PROJECTENV azlocation=$AZLOCATION
+        --parameters connection_name=${PROJECT}${PROJECTENV}aciapi environment=$PROJECTENV azlocation=$AZLOCATION \
+                     projectname=$PROJECT azuser=$AZUSER
+
     else
         echo "error, the arm template file for api connection not found : $arm_template_file"
     fi
