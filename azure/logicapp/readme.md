@@ -111,3 +111,20 @@ az deployment group create \
 
 
 
+### more info on logic app types: standard vs consuption
+
+There are (at least ) two typees of logic apps 
+
+https://docs.microsoft.com/en-us/azure/logic-apps/single-tenant-overview-compare
+
+https://docs.microsoft.com/en-us/azure/logic-apps/logic-apps-overview#logic-app-concepts
+
+Automate deployment for Azure Logic Apps by using Azure Resource Manager templates: https://docs.microsoft.com/en-us/azure/logic-apps/logic-apps-azure-resource-manager-templates-overview
+
+Logic App Azure Resource Manager template: https://github.com/Azure/azure-quickstart-templates/blob/master/quickstarts/microsoft.logic/logic-app-create/azuredeploy.json
+
+note that the ARM template in the example and in the documentation "apiVersion": "2019-05-01" BUT when exporting from Portal the  "apiVersion": "2017-07-01" 
+which is not listed in the Logica App arm template documentation at all ( there is 2016, 2018, 2019 only ).   Where are the docs?!?
+
+
+

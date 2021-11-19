@@ -2,36 +2,48 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "workflows_geneplexus_runmodel_name": {
+        "rgname" : {
+            "type": "String",
+            "defaultValue" : "[resourceGroup().name]"
+        },
+        "location": {
+            "defaultValue": "[resourceGroup().location]",
+            "type": "String"
+        },
+        "workflow_name": {
             "defaultValue": "geneplexus-runmodel",
             "type": "String"
         },
-        "containerGroups___encodeURIComponent_concat__geneplexus___triggerBody_____envvars_____JOBNAME______externalid": {
-            "type": "String"
+        "sku": {
+            "defaultValue": "Standard",
+            "type": "String" 
         },
-        "connections_aci_externalid": {
-            "type": "String"
+        "connection_name" : {
+            "defaultValue": "acirunner",
+            "type": "String" 
         },
-        "azlocation": {
-            "defaultValue": "centralus",
-            "type": "String"
-        },
-        "connection_id": {
+        "subid" :{
+            "defaultValue": "[subscription().subscriptionId]",
             "type": "String"
         }
 
     },
-    "variables": {},
+
+    "variables": {
+        "container_action_path": "[concat('/subscriptions/',parameters('subid'),'/resourceGroups/',parameters('rgname'), '/providers/Microsoft.ContainerInstance/containerGroups/geneplexus-','/@{triggerBody()?[''envvars'']?[''JOBNAME'']}')]",  
+        "connections_aci_externalid":  "[concat('/subscriptions/', parameters('subid'), '/resourceGroups/',parameters('rgname'),'/providers/Microsoft.Web/connections/',parameters('connection_name'))]"
+    },
+
     "resources": [
         {
             "type": "Microsoft.Logic/workflows",
             "apiVersion": "2017-07-01",
-            "name": "[parameters('workflows_geneplexus_runmodel_name')]",
-            "location": "[parameters('azlocation')]",
+            "name": "[parameters('workflow_name')]",
+            "location": "[parameters('location')]",
             "tags": {
                 "created_by": "billspat",
-                "project": "krishnanlab-geneplexus",
-                "status": "dev"
+                "project": "geneplexus",
+                "environment": "dev"
             },
             "properties": {
                 "state": "Enabled",
@@ -159,7 +171,7 @@
                             "type": "ApiConnection",
                             "inputs": {
                                 "body": {
-                                    "location": "[parameters('azlocation')]",
+                                    "location": "centralus",
                                     "properties": {
                                         "containers": [
                                             {
@@ -229,7 +241,7 @@
                                         ],
                                         "osType": "Linux",
                                         "restartPolicy": "Never",
-                                        "sku": "Standard",
+                                        "sku": "[parameters('sku')]",
                                         "volumes": [
                                             {
                                                 "azureFile": {
@@ -249,7 +261,7 @@
                                     }
                                 },
                                 "method": "put",
-                                "path": "[parameters('containerGroups___encodeURIComponent_concat__geneplexus___triggerBody_____envvars_____JOBNAME______externalid')]",
+                                "path": "[variables('container_action_path')]",
                                 "queries": {
                                     "x-ms-api-version": "2019-12-01"
                                 }
@@ -262,9 +274,9 @@
                     "$connections": {
                         "value": {
                             "aci": {
-                                "connectionId": "[parameters('connections_aci_externalid')]",
-                                "connectionName": "aci",
-                                "id": "[parameters('connection_id')]" // "/subscriptions/aa32e19c-49b5-478c-af56-fc710b1a8a1c/providers/Microsoft.Web/locations/northcentralus/managedApis/aci"
+                                "connectionId": "[variables('connections_aci_externalid')]",
+                                "connectionName": "[parameters('connection_name')]",
+                                "id": "[concat('/subscriptions/',subscription().subscriptionId,'/providers/Microsoft.Web/locations/',parameters('location'),'/managedApis/aci')]"
                             }
                         }
                     }
