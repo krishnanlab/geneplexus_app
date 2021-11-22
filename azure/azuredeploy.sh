@@ -313,17 +313,6 @@ az_create_app_registry()
     fi
 }
 
-########## TODO
-# az_git_deployment_set ()
-# {
-
-# }
-
-# az_git_deployment_url ()
-# {
-
-# }
-
 
 az_create_webapp ()
 {
@@ -437,10 +426,7 @@ az_webapp_setconfig ()
     # read the file $ENVFILE, and convert to space delimited set of values
     AZ_ENV_VARS=`paste -sd " " $ENVFILE`
     # set the values from the ENVFILE in the webapp
-    cmd="az webapp config appsettings set --resource-group $AZRG --name $AZAPPNAME --settings WEBSITES_PORT=$PORT $AZ_ENV_VARS"
-    echo $cmd
-    $(cmd)
-
+    az webapp config appsettings set --resource-group $AZRG --name $AZAPPNAME --settings WEBSITES_PORT=$PORT $AZ_ENV_VARS
     az_set_backend_image # also set the config for the back end (requires )
     az_app_restart
 }
@@ -707,19 +693,30 @@ export AZSTORAGEKEY=$(az storage account keys list -g $AZRG -n $AZSTORAGENAME --
 
 az storage share create --account-name  $AZSTORAGENAME \
     --name $AZSHARENAME --account-key $AZSTORAGEKEY
-#unrecognized arguments: --enabled-protocols SMB
-
-
-# TODO send command to app service to create this mount folder
-# TODO perhaps read from azure/.env for this path instead of manually sync'ing them
+# 7/2021: The documentation says to use the option  '--enabled-protocols SMB' but then there is this unrecognized arguments error
+# per MSFT ticket, this option is no longer supported (or necessary apparently)
 
 }
 
-# mounts the file storage onto the app as a network drive (SMB by default)
 az_app_mount_file_storage ()
 {
+    # mounts the file storage onto the app as a network drive (SMB by default)
+    # the Flask app itself ONLY uses this for the gene validation step, so this particular function mounts the 
+    # azure storage, BUT it then copies the data we need directly into the azure WebApp host drive since it's small
+    # and the validation then runs about 3X faster
+    # is uses the 'in-preview' command az webapp create-remote-connection which just creates an SSH tunnel... see below for details
+    # then set the webapp config for the data path so the Flask app knows where to look
 
-    MOUNTPATH=/home/site/$AZSHARENAME
+    # NOTE there is a different ENV variable for where to look for jobs, but this is the same storage account (but in the /jobs folder)
+
+    MOUNTPATH=/home/site/$AZSHARENAME/
+    # HARDCODED sub-folder in this deploy script.  This is where the flask app will look, 
+    # and depends on how the data is copied into storage from HPCC
+    APP_DATA_FOLDER=$MOUNTPATH/data_backend2  #/home/site/data
+    
+    # this is the name of the env variable the flask app is looking for 
+    # hard coded in the flask app, use variable here to make it explicit
+    APP_VARIABLE_FOR_MOUNTPATH="DATA_PATH"
 
     ## to access the storage, the app needs an "identity"  
     # see function az_get_app_identity() and this is run when the app is created above
@@ -741,6 +738,14 @@ az_app_mount_file_storage ()
         --share-name $AZSHARENAME \
         --account-name $AZSTORAGENAME --access-key $AZSTORAGEKEY \
         --mount-path $MOUNTPATH
+
+    
+    # NOW tell the app where the back-end data is for the gene validation 
+
+    az webapp config appsettings set --resource-group $AZRG --name $AZAPPNAME --settings ${APP_VARIABLE_FOR_MOUNTPATH}=$APP_DATA_FOLDER
+
+
+
 }
 
 
@@ -803,11 +808,9 @@ az_logic_app_create ()
     --parameters workflow_name=$WORKFLOW_NAME \
     --name $PROJECT_logicapp_deployment_$PROJECTENV 
     
-
+    # now add tags to the logic app using the CLIhere (so we don't send PROJECTENV params to ARM template, keep it simple)
     LOGICAPPID=`az logic workflow show -g $AZRG --name "$WORKFLOW_NAME" --query id`
-    
-    # add tags to the logic app here (to keep the ARM template simple)
-    # az tag create --resource-id $LOGICAPPID --tags Dept=Finance Status=Normal
+    az tag create --resource-id $LOGICAPPID --tags created_by=$AZUSER project=$PROJECT enviroment=$PROJECTENV
 
 }
 
@@ -941,13 +944,8 @@ az_storage_endpoint_info ()
 
 
 ## storage stuff
-## details for this particular app
+## example of the kind of command that is generated 
+# the command can only execute of you have access to the folder you are copying from
+# NOTE the destination MUST be single-quoted as there are special chars in the SAS URL 'sig' parameter
 # azcopy copy /mnt/ufs18/rs-027/compbio/krishnanlab/projects/GenePlexus/repos/GenePlexusBackend/data_backend2 'https://geneplexusdev.file.core.windows.net/geneplexus-files-dev?Z4FS10CC9zGyudRa8wdbfuS4CW%2BhdGeu6I5iu9edy8o'
-# AZSASTOKEN='?sv=2020-02-10&ss=f&srt=sco&sp=rwdlc&se=2021-03-27T00:54:34Z&st=2021-03-25T16:54:34Z&sip=172.16.93.1-172.16.93.255&spr=https,http&sig=TgVomTyI%2BSJ5a15zgYb1Hw2%2BIsnByZ%2FuWW8ViZ4Otfc%3D'
-
-
-# deployment note
-
-# CLOUD_STORAGE=/home/site/geneplexus-files-dev/data_backend2
-# LOCAL_BACKEND_PATH=/home/site/data_backend  
-# cp -r  $CLOUD_STORAGE/ID_conversion $LOCAL_BACKEND_PATH
+# AZSASTOKEN='?sv=2020-02-10&ss=f&srt=sco&sp=rwdlc&se=2021-03-27T00:54:34Z&st=2021-03-25T16:54:34Z&sip=172.16.93.1-172.16.93.255&spr=https,http&sig=SOMELONGSTRINGWITH%ANDOTHERCHARS'
