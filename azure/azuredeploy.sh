@@ -121,10 +121,9 @@ build_all ()
     export TAG=test0721 # for the docker container tag
     echo "creating resources for app $AZAPPNAME in $AZRG..."
     az_create_group
-    az_create_app_registry  # create container registry and build container
-    az_build_docker_backend
-    az_create_file_storage
 
+    # STORAGE
+    az_create_file_storage
     # copy files from HPCC to this new storage created
     HPCC_FOLDER=/mnt/ufs18/rs-027/compbio/krishnanlab/projects/GenePlexus/repos/GenePlexusBackend/data_backend2
     az_copy_hpcc_to_files $HPCC_FOLDER
@@ -138,17 +137,26 @@ build_all ()
     fi
 
 
-    az_create_webapp # create app service plan, service, and set config
+    # Containerized web application Service
+    # create container registry and build container
+    az_create_app_registry  
+    # create app service plan, service, and set config
+    az_create_webapp 
     az_app_set_container
     az_app_mount_file_storage
 
-    # TODO  - copy the files needed to from storage to internal folder in container
-    # with ssh?
+    # Containerized model runner 
+    az_build_docker_backend
+    # set the app config used by the app to launch jobs
+    az_set_backend_image 
+    
 
-    # TODO (currently manual steps)
     # create API connection to Container instance for a controlling account
     # create logic_app that allows the app to create container instances
     # set the app config to the HPCC endpoint for this new logic app
+    az_logic_app_create
+
+
 
 
 }
@@ -335,7 +343,7 @@ az_create_webapp ()
 
     # CLI to create web app using custom container from 'local' Azure container repository (AZCR)
     # deployment local git from https://docs.microsoft.com/en-us/azure/app-service/deploy-local-git?tabs=cli
-    # https://docs.microsoft.com/en-us/azure/app-service/scripts/cli-deploy-local-git?toc=/cli/azure/toc.json
+    # https://docs.microsoft.com/en-us/azure/app-service/scripts/cli-deploy-local-git?toc=/cli/azure/toc.
     az webapp create -g $AZRG -p $AZPLAN -n $AZAPPNAME \
             --deployment-local-git \
             --deployment-container-image-name $AZCR.azurecr.io/$AZDOCKERIMAGE:$TAG  \
@@ -409,9 +417,10 @@ echo "your azure deployment user is: $AZGITUSERNAME"
     git remote remove $AZREMOTENAME
     echo "adding azure git remote $AZREMOTENAME as $AZGITREMOTE"
     git remote add $AZREMOTENAME $AZGITREMOTE
+    CURRENTBRANCH=`git branch --show-current`
     echo "your next step is to run command:"
-    echo "git push $AZREMOTENAME master"
-    echo "using the deployment password you've set. "
+    echo "git push $AZREMOTENAME $CURRENTBRANCH:master"
+    echo "to deploy the website, using the deployment password you've set. "
 
     ## NEXT 
     # the dockerfile does not contain the app scripts, only software to run it
@@ -492,6 +501,7 @@ az_build_docker_backend ()
     # TODO  check that this docker file exists!   
     # TODO set this in az_set_vars and confirm file exists
     export DOCKERFILE="Dockerfile-backend"  # the name of the file in this project
+    echo "using Azure ACR to build docker image $BACKEND_IMAGE:$TAG from $DOCKERFILE"
     az acr build -t $BACKEND_IMAGE:$TAG -r $AZCR --file $DOCKERFILE .
 
     # then should update the application settings - requires the web app to exist first, 
@@ -762,17 +772,42 @@ az_logic_app_create ()
       
 # TODO rather than use a template of a template for params, 
 # including them in the az deployment group create command in-lin from vars set here.  
-# there are only ~ 4 params
-envsubst < azure/az_logicapp_parameters.json.bash > azure/az_logicapp_parameters.json
 
 
-az deployment group create \
-  --name $PROJECT_logicapp_deployment \
-  --resource-group $AZRG \
-  --template-file azure/logicapp_template.json \
-  --parameters   @azure/logicapp_template_parameters.json
+# envsubst < azure/az_logicapp_parameters.bash > azure/az_logicapp_parameters.json
 
-# to do: add tags to parameters and to template 
+    arm_template_file='azure/aci_api_connection_template.json'
+    connection_name=${PROJECT}acirunner 
+    
+
+    if [[ -f "$arm_template_file" ]]; then
+        # create the api connection needed for the logic app
+        az deployment group create \
+        --name  ${PROJECT}${PROJECTENV}aciapi  \
+        --resource-group $AZRG \
+        --template-file $arm_template_file \
+        --parameters connection_name=${PROJECT}acirunner environment=$PROJECTENV azlocation=$AZLOCATION projectname=$PROJECT azuser=$AZUSER
+
+    else
+        echo "error, the arm template file for api connection not found : $arm_template_file"
+    fi
+
+    ARM_TEMPLATE_FILE='azure/aci_logicapp_template.json'
+    ARM_PARAMETERS_FILE='azure/aci_logicapp_template_parameters.json'
+    WORKFLOW_NAME=geneplexus-runmodel
+
+    az deployment group create \
+    --resource-group $AZRG \
+    --template-file  $ARM_TEMPLATE_FILE \
+    --parameters   @${ARM_PARAMETERS_FILE} --parameters connection_name=${PROJECT}acirunner${PROJECTENV} \
+    --parameters workflow_name=$WORKFLOW_NAME \
+    --name $PROJECT_logicapp_deployment_$PROJECTENV 
+    
+
+    LOGICAPPID=`az logic workflow show -g $AZRG --name "$WORKFLOW_NAME" --query id`
+    
+    # add tags to the logic app here (to keep the ARM template simple)
+    # az tag create --resource-id $LOGICAPPID --tags Dept=Finance Status=Normal
 
 }
 
@@ -909,27 +944,6 @@ az_storage_endpoint_info ()
 ## details for this particular app
 # azcopy copy /mnt/ufs18/rs-027/compbio/krishnanlab/projects/GenePlexus/repos/GenePlexusBackend/data_backend2 'https://geneplexusdev.file.core.windows.net/geneplexus-files-dev?Z4FS10CC9zGyudRa8wdbfuS4CW%2BhdGeu6I5iu9edy8o'
 # AZSASTOKEN='?sv=2020-02-10&ss=f&srt=sco&sp=rwdlc&se=2021-03-27T00:54:34Z&st=2021-03-25T16:54:34Z&sip=172.16.93.1-172.16.93.255&spr=https,http&sig=TgVomTyI%2BSJ5a15zgYb1Hw2%2BIsnByZ%2FuWW8ViZ4Otfc%3D'
-
-# create the api connector so the Logic app can control the ACI service and create new instances
-# requires the ARM template file in this folder to exist, assumes the function is run in the parent directory, just as the docker build functions
-az_create_aci_api_connector ()
-{
-    arm_template_file='azure/aci_api_connection_template.json'
-    
-    if [[ -f "$arm_template_file" ]]; then
-        # create the api connection needed for the logic app
-        az deployment group create \
-        --name  ${PROJECT}${PROJECTENV}aciapi  \
-        --resource-group $AZRG \
-        --template-file azure/aci_api_connection_template.json \
-        --parameters connection_name=${PROJECT}${PROJECTENV}aciapi environment=$PROJECTENV azlocation=$AZLOCATION \
-                     projectname=$PROJECT azuser=$AZUSER
-
-    else
-        echo "error, the arm template file for api connection not found : $arm_template_file"
-    fi
-
-}
 
 
 # deployment note

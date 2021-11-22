@@ -28,7 +28,6 @@
         }
 
     },
-
     "variables": {
         "container_action_path": "[concat('/subscriptions/',parameters('subid'),'/resourceGroups/',parameters('rgname'), '/providers/Microsoft.ContainerInstance/containerGroups/geneplexus-','/@{triggerBody()?[''envvars'']?[''JOBNAME'']}')]",  
         "connections_aci_externalid":  "[concat('/subscriptions/', parameters('subid'), '/resourceGroups/',parameters('rgname'),'/providers/Microsoft.Web/connections/',parameters('connection_name'))]"
@@ -40,11 +39,6 @@
             "apiVersion": "2017-07-01",
             "name": "[parameters('workflow_name')]",
             "location": "[parameters('location')]",
-            "tags": {
-                "created_by": "billspat",
-                "project": "geneplexus",
-                "environment": "dev"
-            },
             "properties": {
                 "state": "Enabled",
                 "definition": {

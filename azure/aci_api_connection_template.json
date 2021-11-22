@@ -24,14 +24,11 @@
         }
 
     },
-    "variables": {
-          "connection_name_env": "[concat(parameters('connection_name'),parameters('environment'))]"
-    },
     "resources": [
         {
             "type": "Microsoft.Web/connections",
             "apiVersion": "2016-06-01",
-            "name": "[variables('connection_name_env')]",
+            "name": "[parameters('connection_name')]",
             "location": "[parameters('azlocation')]",
             "tags": {
                 "created_by": "[parameters('azuser')]",
@@ -40,7 +37,7 @@
             },
             "kind": "V1",
             "properties": {
-                "displayName": "[variables('connection_name_env')]",
+                "displayName": "[parameters('connection_name')]",
                 "statuses": [
                     {
                         "status": "Connected"
@@ -54,7 +51,7 @@
                 "createdTime": "2020-12-15T04:26:48.9746605Z",
                 "changedTime": "2021-11-03T02:12:27.8880507Z",
                 "api": {
-                    "name": "[variables('connection_name_env')]",
+                    "name": "[parameters('connection_name')]",
                     "displayName": "Create Azure Container Instance For Geneplexus",
                     "description": "create an Azure container",
                     "iconUri": "[concat('https://connectoricons-prod.azureedge.net/releases/v1.0.1479/1.0.1479.2452/', 'aci', '/icon.png')]",
