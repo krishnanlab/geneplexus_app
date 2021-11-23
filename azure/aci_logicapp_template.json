@@ -33,7 +33,7 @@
 
     },
     "variables": {
-        "container_action_path": "[concat('/subscriptions/',parameters('subid'),'/resourceGroups/',parameters('rgname'), '/providers/Microsoft.ContainerInstance/containerGroups/geneplexus-','/@{triggerBody()?[''envvars'']?[''JOBNAME'']}')]",  
+        "container_action_path": "[concat('/subscriptions/',parameters('subid'),'/resourceGroups/',parameters('rgname'), '/providers/Microsoft.ContainerInstance/containerGroups/geneplexus-','@{triggerBody()?[''envvars'']?[''JOBNAME'']}')]",  
         "connections_aci_externalid":  "[concat('/subscriptions/', parameters('subid'), '/resourceGroups/',parameters('rgname'),'/providers/Microsoft.Web/connections/',parameters('connection_name'))]"
     },
 
