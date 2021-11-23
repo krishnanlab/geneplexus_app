@@ -809,7 +809,7 @@ az_logic_app_create ()
     settagscmd="az tag create --resource-id $LOGICAPPID --tags created_by=$AZUSER project=$PROJECT environment=$PROJECTENV"
     echo $settagscmd
     
-    echo "setting app config for logic app trigger URL..."
+    echo "setting app config to use the HTTP URL for this logic app trigger URL..."
     # we need to get the Logic app trigger URL to set the config for the flask application.  Only Powershell and REST API are supported (no )
     # REF https://docs.microsoft.com/en-us/azure/logic-apps/logic-apps-workflow-actions-triggers
     LOGICAPP_APIVERSION="2016-06-01"  # template says 2017-07-01 but this is the only one that seems to work 
@@ -828,10 +828,10 @@ az_logic_app_create ()
     # example JOB URL
     # JOB_URL='https://prod-02.northcentralus.logic.azure.com:443/workflows/d7b7c90d03blahblahblah/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ZO2XtJ8cFUwUmr_rxHblahblahblah'
 
-    U="https://portal.azure.com/#@msu.edu/resource/subscriptions/$AZSUBID/resourceGroups/$AZRG/providers/Microsoft.Web/connections/$ACI_CONNECTION_NAME/edit"
-    echo "MANUAL CONFIGURATION REQUIRED: open this URL toauthorize the API connection:"
-    echo $U
-
+    # authorizing logic app API connectors musdt be done manually, or with a service principal (which we would need to request)
+    # REFERENCE https://docs.microsoft.com/en-us/azure/logic-apps/logic-apps-deploy-azure-resource-manager-templates#authorize-oauth-connections
+    echo "MANUAL CONFIGURATION REQUIRED: open this URL to authorize the API connection:"
+    echo "https://portal.azure.com/#@msu.edu/resource/subscriptions/$AZSUBID/resourceGroups/$AZRG/providers/Microsoft.Web/connections/$ACI_CONNECTION_NAME/edit"
 
 }
 
