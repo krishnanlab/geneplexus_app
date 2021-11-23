@@ -21,8 +21,6 @@ class BaseConfig(object):
     STORAGE_SHARE_NAME=os.getenv('STORAGE_SHARE_NAME','')
     STORAGE_ACCOUNT_KEY = os.getenv('STORAGE_ACCOUNT_KEY', '')
 
-        app_config['CONTAINER_REGISTRY']="krishnanlabgeneplexusacr.azurecr.io"
-
     CONTAINER_REGISTRY_URL= os.getenv('CONTAINER_REGISTRY_URL','')
     CONTAINER_REGISTRY_USER = os.getenv('CONTAINER_REGISTRY_USER','')
     CONTAINER_REGISTRY_PW = os.getenv('CONTAINER_REGISTRY_PW', '')
