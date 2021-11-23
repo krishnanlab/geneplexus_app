@@ -1,0 +1,103 @@
+// this json schema is required by the logic app to define the post data
+// it is also embedded in the logic ARM template, but if using the portal UI to create the logic app
+// you need to upload it
+{
+    "type": "object",
+    "properties": {
+        "aciName": {
+            "type": "string"
+        },
+        "location": {
+            "type": "string"
+        },
+        "memoryInGB": {
+            "type": "number"
+        },
+        "cpu": {
+            "type": "number"
+        },
+        "volumeMount": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "mountPath": {
+                    "type": "string"
+                },
+                "readOnly": {
+                    "type": "boolean"
+                },
+                "shareName": {
+                    "type": "string"
+                },
+                "shareReadOnly": {
+                    "type": "boolean"
+                },
+                "storageAccountName": {
+                    "type": "string"
+                },
+                "storageAccountKey": {
+                    "type": "string"
+                }
+            }
+        },
+        "image": {
+            "type": "object",
+            "properties": {
+                "imageName": {
+                    "type": "string"
+                },
+                "registry": {
+                    "type": "object",
+                    "properties": {
+                        "server": {
+                            "type": "string"
+                        },
+                        "username": {
+                            "type": "string"
+                        },
+                        "password": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "envvars": {
+            "type": "object",
+            "properties": {
+                "FLASK_ENV": {
+                    "type": "string"
+                },
+                "FLASK_DEBUG": {
+                    "type": "boolean"
+                },
+                "GP_NET_TYPE": {
+                    "type": "string"
+                },
+                "GP_FEATURES": {
+                    "type": "string"
+                },
+                "GP_GSC": {
+                    "type": "string"
+                },
+                "JOBNAME": {
+                    "type": "string"
+                },
+                "DATA_PATH": {
+                    "type": "string"
+                },
+                "JOB_PATH": {
+                    "type": "string"
+                },
+                "GENE_FILE": {
+                    "type": "string"
+                },
+                "OUTPUT_FILE": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
