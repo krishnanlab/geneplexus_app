@@ -39,7 +39,8 @@ def create_json_file_name(jobname):
 
 def job_json(job_config, app_config):
     """build the data payload for the http trigger """ 
-    # TODO potentially remove all of this from this app
+    # TODO remove the hard-coded "jobs" folder here and set as config value
+    # the job folder ('jobs') must be in sync in the app and the job-runner container setting
     job_path=f"{app_config['JOB_CONTAINER_FILE_MOUNT']}/jobs/"
     jobname = path_friendly_jobname(job_config['jobname'])
     
@@ -59,7 +60,8 @@ def job_json(job_config, app_config):
         }
     }
 
-    # TODO remove all of this from this app, leave elsewhere
+    # TODO remove all of this config from this app?  
+    # most does not change from job-to-job, so set it when creating the logic app
     volume_config = {
         "name": "geneplexusfiles",
                 "mountPath": app_config['JOB_CONTAINER_FILE_MOUNT'],
@@ -70,6 +72,8 @@ def job_json(job_config, app_config):
                 "storageAccountKey": app_config["STORAGE_ACCOUNT_KEY"]
     }
 
+    # TODO see above, set most of this when creating the logic app
+    # TODO remove the hard-coded data folder, and set this as an env var
     envvars = {
         "FLASK_ENV": "development",
         "FLASK_DEBUG": True,
@@ -78,7 +82,7 @@ def job_json(job_config, app_config):
         "GP_GSC": job_config['GSC'],
         "JOBNAME": job_config['jobname'],
         "JOBID": job_config['jobid'],
-        "DATA_PATH": f"{app_config['JOB_CONTAINER_FILE_MOUNT']}/data_backend2",
+        "DATA_PATH": f"{app_config['JOB_CONTAINER_FILE_MOUNT']}/data_backend2/",
         "GENE_FILE": f"{job_path}/{job_config['jobname']}/{input_file_name}",
         "OUTPUT_FILE": f"{job_path}/{job_config['jobname']}/{results_file_name}",
         "JOB_PATH": job_path
