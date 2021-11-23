@@ -16,7 +16,7 @@ GP_FEATURES=Adjacency
 GP_GSC=DisGeNet
 JOBNAME=test_job
 # container config for azure CI
-BASE_CONTAINER_PATH=/home/dockeruser/
+JOB_CONTAINER_FILE_MOUNT=/home/dockeruser/
 JOB_IMAGE_NAME=geneplexus-backend
 JOB_IMAGE_TAG=latest
 JOB_URL=
