@@ -22,6 +22,10 @@
             "defaultValue": "acirunner",
             "type": "String" 
         },
+        "trigger_name" : {
+            "defaultValue": "manual",
+            "type": "String"
+        },
         "subid" :{
             "defaultValue": "[subscription().subscriptionId]",
             "type": "String"
@@ -51,7 +55,7 @@
                         }
                     },
                     "triggers": {
-                        "manual": {
+                        "[parameters('trigger_name')]": {
                             "type": "Request",
                             "kind": "Http",
                             "inputs": {
