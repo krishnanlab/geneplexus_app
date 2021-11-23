@@ -64,9 +64,9 @@ def job_json(job_config, app_config):
         "name": "geneplexusfiles",
                 "mountPath": app_config['JOB_CONTAINER_FILE_MOUNT'],
                 "readOnly": False,
-                "shareName": "geneplexusfiles",
+                "shareName": app_config["STORAGE_SHARE_NAME"],
                 "shareReadOnly": False,
-                "storageAccountName": "geneplexusstorage",
+                "storageAccountName": app_config["STORAGE_ACCOUNT_NAME"],
                 "storageAccountKey": app_config["STORAGE_ACCOUNT_KEY"]
     }
 
