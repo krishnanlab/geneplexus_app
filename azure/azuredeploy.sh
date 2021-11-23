@@ -671,6 +671,15 @@ az storage account create -g $AZRG --name $AZSTORAGENAME -l $AZLOCATION \
 ##############################
 ##### CREATE FILE STORAGE
 
+
+# get a storage account key for given storage name - 
+get_storage_key()
+{
+  THIS_STORAGE_ACCOUNT=${1:-$AZSTORAGENAME}
+  STORAGE_KEY=$(az storage account keys list --resource-group $AZRG --account-name $THIS_STORAGE_ACCOUNT --query "[0].value" --output tsv)
+  echo $STORAGE_KEY
+}
+
 az_create_file_storage ()
 {
 
