@@ -51,7 +51,6 @@ RUN conda install -y conda=${CONDA_VERSION} python=${PYTHON_VERSION} pip && \
 # since this will not be run by the app service, but as a stand-alone container
 
 COPY app app
-COPY azure/.dockerenv .env
 COPY config.py .
 COPY .flaskenv .
 COPY runner.py .
