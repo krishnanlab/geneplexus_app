@@ -118,7 +118,7 @@ build_all ()
     
     az_set_vars $PROJECTENV   # or other environment name
     # add variable overrides here! e.g use 
-    export TAG=test0721 # for the docker container tag
+    export TAG=2021.11 # for the docker container tag
     echo "creating resources for app $AZAPPNAME in $AZRG..."
     az_create_group
 
@@ -216,7 +216,7 @@ az_set_vars ()
     # docker container names and tags
     export AZDOCKERIMAGE=$PROJECT
     export BACKEND_IMAGE=${AZDOCKERIMAGE}-backend
-    export TAG=2021.05  # TODO => rename to AZDOCKERTAG
+    export TAG=latest  # TODO => rename to AZDOCKERTAG
     
     export AZPLAN=${PROJECT}-plan
     export AZLOCATION=centralus # centralus may not have Container Instances needed 
@@ -734,10 +734,9 @@ az_app_mount_file_storage ()
 
     
     # NOW set config for the app, so it can send via a logic app to the backend job (see jobs.py)
-    az webapp config appsettings set --resource-group $AZRG --name $AZAPPNAME \ 
+    az webapp config appsettings set --resource-group $AZRG --name $AZAPPNAME \
     --settings ${APP_VARIABLE_FOR_MOUNTPATH}=$APP_DATA_FOLDER ${APP_VARIABLE_FOR_JOBPATH}=$APP_DATA_FOLDER \
     STORAGE_ACCOUNT_KEY=$AZSTORAGEKEY STORAGE_ACCOUNT_NAME=$AZSTORAGENAME STORAGE_SHARE_NAME=$AZSHARENAME 
-    
 
 }
 
@@ -769,17 +768,18 @@ az_logic_app_create ()
     # a better solution is to use ARM template and a parameter file for all of these params (sub id, res group, etc)    
       
     arm_template_file='azure/aci_api_connection_template.json'
-    connection_name=${PROJECT}acirunner 
+    ACI_CONNECTION_NAME=${PROJECT}acirunner 
     
     # JOB_URL='https://prod-02.northcentralus.logic.azure.com:443/workflows/d7b7c90d031547fd989687f5b7e66287/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ZO2XtJ8cFUwUmr_rxHU-YbWG8YEDO22M3EtqekhHPHU'
 
     if [[ -f "$arm_template_file" ]]; then
         # create the api connection needed for the logic app
+        echo "creating API connection for $ACI_CONNECTION_NAME"
         az deployment group create \
         --name  ${PROJECT}${PROJECTENV}aciapi  \
         --resource-group $AZRG \
         --template-file $arm_template_file \
-        --parameters connection_name=${PROJECT}acirunner environment=$PROJECTENV azlocation=$AZLOCATION projectname=$PROJECT azuser=$AZUSER
+        --parameters connection_name=$ACI_CONNECTION_NAME environment=$PROJECTENV azlocation=$AZLOCATION projectname=$PROJECT azuser=$AZUSER
 
     else
         echo "error, the arm template file for api connection not found : $arm_template_file"
@@ -788,24 +788,28 @@ az_logic_app_create ()
     # these are hard-coded values that are also in the json template
     # and must sync with that 
 
-    ARM_TEMPLATE_FILE='azure/aci_logicapp_template.json'
+    LOGICAPP_ARM_TEMPLATE_FILE='azure/aci_logicapp_template.json'
     ARM_PARAMETERS_FILE='azure/aci_logicapp_template_parameters.json'
     WORKFLOW_NAME="geneplexus-runmodel"
     TRIGGER_NAME="manual"
 
 
-
+    echo "running ARM template $LOGICAPP_ARM_TEMPLATE_FILE "
     az deployment group create \
     --resource-group $AZRG \
-    --template-file  $ARM_TEMPLATE_FILE \
-    --parameters   @${ARM_PARAMETERS_FILE} --parameters connection_name=${PROJECT}acirunner${PROJECTENV} \
-    --parameters workflow_name=$WORKFLOW_NAME \
+    --template-file  $LOGICAPP_ARM_TEMPLATE_FILE \
+    --parameters @${ARM_PARAMETERS_FILE} \
+    --parameters connection_name=$ACI_CONNECTION_NAME workflow_name=$WORKFLOW_NAME trigger_name=$TRIGGER_NAME \
     --name $PROJECT_logicapp_deployment_$PROJECTENV 
     
-    # now add tags to the logic app using the CLIhere (so we don't send PROJECTENV params to ARM template, keep it simple)
+    echo "add tags to the logic app $WORKFLOW_NAME"
     LOGICAPPID=`az logic workflow show -g $AZRG --name "$WORKFLOW_NAME" --query id`
-    az tag create --resource-id $LOGICAPPID --tags created_by=$AZUSER project=$PROJECT enviroment=$PROJECTENV
+    echo Due to azure bug, the following can\'t be run from this script, but will run if you copy/paste, to set tags on logic app
 
+    settagscmd="az tag create --resource-id $LOGICAPPID --tags created_by=$AZUSER project=$PROJECT environment=$PROJECTENV"
+    echo $settagscmd
+    
+    echo "setting app config for logic app trigger URL..."
     # we need to get the Logic app trigger URL to set the config for the flask application.  Only Powershell and REST API are supported (no )
     # REF https://docs.microsoft.com/en-us/azure/logic-apps/logic-apps-workflow-actions-triggers
     LOGICAPP_APIVERSION="2016-06-01"  # template says 2017-07-01 but this is the only one that seems to work 
