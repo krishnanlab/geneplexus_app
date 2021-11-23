@@ -11,6 +11,7 @@ __pycache
 .vscode/
 .DS_Store
 .vscode/*
+.idea/
 
 # log files
 *.log
