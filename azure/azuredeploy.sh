@@ -735,7 +735,7 @@ az_app_mount_file_storage ()
     
     # NOW set config for the app, so it can send via a logic app to the backend job (see jobs.py)
     az webapp config appsettings set --resource-group $AZRG --name $AZAPPNAME \
-    --settings ${APP_VARIABLE_FOR_MOUNTPATH}=$APP_DATA_FOLDER ${APP_VARIABLE_FOR_JOBPATH}=$APP_DATA_FOLDER \
+    --settings ${APP_VARIABLE_FOR_MOUNTPATH}=$APP_DATA_FOLDER ${APP_VARIABLE_FOR_JOBPATH}=$APP_JOB_FOLDER \
     STORAGE_ACCOUNT_KEY=$AZSTORAGEKEY STORAGE_ACCOUNT_NAME=$AZSTORAGENAME STORAGE_SHARE_NAME=$AZSHARENAME 
 
 }
@@ -766,15 +766,15 @@ az_logic_app_create ()
     # with the extension ".bash"  (not sure why I picked that! it's a template template)
     # that are defined above $AZRG etc.  
     # a better solution is to use ARM template and a parameter file for all of these params (sub id, res group, etc)    
-      
+    # reference: https://docs.microsoft.com/en-us/azure/connectors/apis-list
+
+    echo "Creating ACI API connection for logic app to use  "
     arm_template_file='azure/aci_api_connection_template.json'
     ACI_CONNECTION_NAME=${PROJECT}acirunner 
     
     # JOB_URL='https://prod-02.northcentralus.logic.azure.com:443/workflows/d7b7c90d031547fd989687f5b7e66287/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ZO2XtJ8cFUwUmr_rxHU-YbWG8YEDO22M3EtqekhHPHU'
 
     if [[ -f "$arm_template_file" ]]; then
-        # create the api connection needed for the logic app
-        echo "creating API connection for $ACI_CONNECTION_NAME"
         az deployment group create \
         --name  ${PROJECT}${PROJECTENV}aciapi  \
         --resource-group $AZRG \
@@ -828,6 +828,9 @@ az_logic_app_create ()
     # example JOB URL
     # JOB_URL='https://prod-02.northcentralus.logic.azure.com:443/workflows/d7b7c90d03blahblahblah/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ZO2XtJ8cFUwUmr_rxHblahblahblah'
 
+    U="https://portal.azure.com/#@msu.edu/resource/subscriptions/$AZSUBID/resourceGroups/$AZRG/providers/Microsoft.Web/connections/$ACI_CONNECTION_NAME/edit"
+    echo "MANUAL CONFIGURATION REQUIRED: open this URL toauthorize the API connection:"
+    echo $U
 
 
 }
