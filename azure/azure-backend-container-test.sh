@@ -1,9 +1,19 @@
 ## BACK-END CONTAINER TEST
 # these CLI commands mimic what our logic-app
 # should do create an Azure Container Instance from a container
-# along with some commands to build to build the container
-
-. azure/azuredeploy.sh
+# along with some commands to build the container
+# requirements
+# resource group, storage account already created for this test env
+## to run the test
+## from the project root folder in bash shell...
+#
+# . azure/azure-backend-container-test.sh
+# . azure/azuredeploy.sh
+# az_set_vars test   # AZDOCKERIMAGE, AZRG, AZCR, TAG, etc
+##  build everything in this new test env, if it isn't already , especially az_build_docker_backend
+# set_backend_vars
+# run_geneplexus_container testjob-$RANDOM
+## look into the storage account for output files 
 
 set_backend_vars () 
 {
@@ -12,32 +22,10 @@ set_backend_vars ()
   export AZDOCKERCONTAINERNAME=${BACKEND_IMAGE}-$RANDOM
   export AZBACKENDIMAGE_URL=$ACR.azurecr.io/$BACKEND_IMAGE:$TAG
   export DOCKERFILE="Dockerfile-backend"  # the name of the file in this project
+
+  # MODIFY THIS IF THIS FOLDER CHANGES
+  export BACKEND_DATA_FOLDER=data_backend2
 }
-
-run_test ()
-{
-
-# set config params for azure deployment, many are used here. 
-az_set_vars "TEST"  # AZDOCKERIMAGE, AZRG, AZCR, TAG, etc
-
-
-
-}
-
-build_docker_backend ()
-{
-  az acr build -t $BACKEND_IMAGE:$TAG -r $AZCR --file $DOCKERFILE .
-  # then should update the application settings
-  # az webapp config appsettings set --resource-group $AZRG --name $APPNAME --settings JOB_IMAGE_NAME=$BACKEND_IMAGE JOB_IMAGE_TAG=$TAG
-}
-
-get_storage_key()
-{
-  THIS_STORAGE_ACCOUNT=$1
-  STORAGE_KEY=$(az storage account keys list --resource-group $AZRG --account-name $THIS_STORAGE_ACCOUNT --query "[0].value" --output tsv)
-  echo $STORAGE_KEY
-}
-
 
 ###### TEST RUN
 # manually set the env vars, provision and run an azure container instance
@@ -54,7 +42,7 @@ SKEY=$(get_storage_key $AZSTORAGENAME)
 CONTAINER_MOUNT_PATH=/home/dockeruser/$AZSHARENAME
 
 # setting memory could be done depending on the size of the network
-$MEMORY_NEEDED=4.0
+MEMORY_NEEDED=4.0
 
 # create local file to hold env vars
 # WORKDIR=$(mktemp -d "${TMPDIR:-/tmp/}$(basename $0).XXXXXXXXXXXX")
@@ -68,10 +56,10 @@ CONTAINER_ENV_VARS="$CONTAINER_ENV_VARS GP_NET_TYPE=BioGRID"
 CONTAINER_ENV_VARS="$CONTAINER_ENV_VARS GP_FEATURES=Embedding" 
 CONTAINER_ENV_VARS="$CONTAINER_ENV_VARS GP_GSC=GO" 
 CONTAINER_ENV_VARS="$CONTAINER_ENV_VARS JOBNAME=${JOBNAME}"
-# add paths to env vars
-CONTAINER_ENV_VARS="$CONTAINER_ENV_VARS DATA_PATH=$CONTAINER_MOUNT_PATH/data_backend" 
-CONTAINER_ENV_VARS="$CONTAINER_ENV_VARS GENE_FILE=$CONTAINER_MOUNT_PATH/jobs/${JOBNAME}/input_genes.txt" 
-CONTAINER_ENV_VARS="$CONTAINER_ENV_VARS OUTPUT_FILE=$CONTAINER_MOUNT_PATH/jobs/${JOBNAME}/results.html" 
+CONTAINER_ENV_VARS="$CONTAINER_ENV_VARS DATA_PATH=$CONTAINER_MOUNT_PATH/$BACKEND_DATA_FOLDER/"  # must have trailing slash
+CONTAINER_ENV_VARS="$CONTAINER_ENV_VARS JOB_PATH=$CONTAINER_MOUNT_PATH/jobs/" 
+CONTAINER_ENV_VARS="$CONTAINER_ENV_VARS GENE_FILE=$JOB_PATH/${JOBNAME}/input_genes.txt" 
+CONTAINER_ENV_VARS="$CONTAINER_ENV_VARS OUTPUT_FILE=$JOB_PATH/${JOBNAME}/results.html" 
 
 echo "ENV VARS = $CONTAINER_ENV_VARS"
 
@@ -209,8 +197,20 @@ az container show \
   --output tsv
 }
 
-### stoping containers
-# https://docs.microsoft.com/en-us/azure/container-instances/container-instances-restart-policy
+
+# alternate code for creating a container instance...
+
+az_create_container_instance ()
+{
+# users the Azure Containers Instances instead of App Service
+az container create -g $AZRG --name $AZAPPNAME \
+    --ports 80 443 8000 22 2222 --ip-address Public \
+    --image $AZCR.azurecr.io/$AZDOCKERIMAGE:$TAG \
+    --registry-username $AZCR \
+    --registry-password $(az acr credential show --name $AZCR -g $AZRG  --output tsv  --query="passwords[0]|value") 
+    #     --dns-name-label $AZAPPNAME
+
+}
 
 
 # connecting to azure storage from a container
