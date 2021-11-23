@@ -40,8 +40,7 @@ def create_json_file_name(jobname):
 def job_json(job_config, app_config):
     """build the data payload for the http trigger """ 
     # TODO potentially remove all of this from this app
-    app_config['CONTAINER_REGISTRY']="krishnanlabgeneplexusacr.azurecr.io"
-    job_path=f"{app_config['BASE_CONTAINER_PATH']}/jobs/"
+    job_path=f"{app_config['JOB_CONTAINER_FILE_MOUNT']}/jobs/"
     jobname = path_friendly_jobname(job_config['jobname'])
     
     input_file_name = create_input_file_name(jobname)
@@ -63,7 +62,7 @@ def job_json(job_config, app_config):
     # TODO remove all of this from this app, leave elsewhere
     volume_config = {
         "name": "geneplexusfiles",
-                "mountPath": app_config['BASE_CONTAINER_PATH'],
+                "mountPath": app_config['JOB_CONTAINER_FILE_MOUNT'],
                 "readOnly": False,
                 "shareName": "geneplexusfiles",
                 "shareReadOnly": False,
@@ -79,7 +78,7 @@ def job_json(job_config, app_config):
         "GP_GSC": job_config['GSC'],
         "JOBNAME": job_config['jobname'],
         "JOBID": job_config['jobid'],
-        "DATA_PATH": f"{app_config['BASE_CONTAINER_PATH']}/data_backend2",
+        "DATA_PATH": f"{app_config['JOB_CONTAINER_FILE_MOUNT']}/data_backend2",
         "GENE_FILE": f"{job_path}/{job_config['jobname']}/{input_file_name}",
         "OUTPUT_FILE": f"{job_path}/{job_config['jobname']}/{results_file_name}",
         "JOB_PATH": job_path

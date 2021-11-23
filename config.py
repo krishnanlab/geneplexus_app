@@ -17,15 +17,18 @@ class BaseConfig(object):
     JOB_IMAGE_TAG  = os.getenv('JOB_IMAGE_TAG', 'latest')
     
     # secrets needed for launching batch jobs on azure
+    STORAGE_ACCOUNT_NAME=os.getenv('STORAGE_ACCOUNT_NAME', '')
+    STORAGE_SHARE_NAME=os.getenv('STORAGE_SHARE_NAME','')
     STORAGE_ACCOUNT_KEY = os.getenv('STORAGE_ACCOUNT_KEY', '')
+
+        app_config['CONTAINER_REGISTRY']="krishnanlabgeneplexusacr.azurecr.io"
+
     CONTAINER_REGISTRY_URL= os.getenv('CONTAINER_REGISTRY_URL','')
     CONTAINER_REGISTRY_USER = os.getenv('CONTAINER_REGISTRY_USER','')
     CONTAINER_REGISTRY_PW = os.getenv('CONTAINER_REGISTRY_PW', '')
 
     # used in the JSON sent to the trigger, that are sent to container launcher
-    container_home_dir = "/home/dockeruser/"
-    container_mount_path = "geneplexusfiles"  # which is also the name of the file share
-    BASE_CONTAINER_PATH = os.getenv('BASE_CONTAINER_PATH', container_home_dir + "/" + container_mount_path )
+    JOB_CONTAINER_FILE_MOUNT = os.getenv('JOB_CONTAINER_FILE_MOUNT', '' )
     
     JOB_URL = os.getenv('JOB_URL', '')  # the URL for the logic app trigger
 

@@ -145,18 +145,13 @@ build_all ()
     az_app_set_container
     az_app_mount_file_storage
 
-    # Containerized model runner 
+    # build container for model runner, and set app config for jobs
     az_build_docker_backend
-    # set the app config used by the app to launch jobs
-    az_set_backend_image 
-    
 
     # create API connection to Container instance for a controlling account
     # create logic_app that allows the app to create container instances
     # set the app config to the HPCC endpoint for this new logic app
     az_logic_app_create
-
-
 
 
 }
@@ -427,8 +422,7 @@ az_webapp_setconfig ()
     AZ_ENV_VARS=`paste -sd " " $ENVFILE`
     # set the values from the ENVFILE in the webapp
     az webapp config appsettings set --resource-group $AZRG --name $AZAPPNAME --settings WEBSITES_PORT=$PORT $AZ_ENV_VARS
-    az_set_backend_image # also set the config for the back end (requires )
-    az_app_restart
+
 }
 
 az_browse_webapp () 
@@ -472,7 +466,8 @@ az_app_set_container ()
 # builds the "backend" container, or the one that just runs the ML code in model.py on a container instance
 az_build_docker_backend ()
 {
-    
+    #THIS HAS TO BE RUN _after_ THE WEB APP IS CREATED
+
     # TAG is set in azure_set_vars
     # check if this var is set, and if not, set to a default name
     if [[ -z "$BACKEND_IMAGE" || -z "$TAG" ]]; then
@@ -485,26 +480,24 @@ az_build_docker_backend ()
     export AZBACKENDIMAGE_URL=$ACR.azurecr.io/$BACKEND_IMAGE:$TAG  # needed for the logic app! 
 
     # TODO  check that this docker file exists!   
-    # TODO set this in az_set_vars and confirm file exists
-    export DOCKERFILE="Dockerfile-backend"  # the name of the file in this project
-    echo "using Azure ACR to build docker image $BACKEND_IMAGE:$TAG from $DOCKERFILE"
-    az acr build -t $BACKEND_IMAGE:$TAG -r $AZCR --file $DOCKERFILE .
+    # TODO set this in az_set_vars, not here, and confirm file exists
+    export JOB_DOCKERFILE="Dockerfile-backend"  # the name of the file in this project
+    echo "using Azure ACR to build docker image $BACKEND_IMAGE:$TAG from $JOB_DOCKERFILE"
+    az acr build -t $BACKEND_IMAGE:$TAG -r $AZCR --file $JOB_DOCKERFILE .
 
     # then should update the application settings - requires the web app to exist first, 
     # but the webapp can't run jobs without the backend container
-    #TODO check if the web app currently exists
-    az_set_backend_image    
+    
+    # this is where the job container volumn mount point is truly defined for the first time
+    az webapp config appsettings set --resource-group $AZRG --name $AZAPPNAME \
+    --settings JOB_IMAGE_NAME=$BACKEND_IMAGE JOB_IMAGE_TAG=$TAG \
+     JOB_CONTAINER_FILE_MOUNT=/home/dockeruser/$AZSHARENAME \
+     CONTAINER_REGISTRY_URL=$AZCR.azurecr.io CONTAINER_REGISTRY_USER=$AZCR \
+     CONTAINER_REGISTRY_PW=$(az acr credential show --name $AZCR -g $AZRG  --output tsv  --query="passwords[0]|value")
+
 }
 
 
-az_set_backend_image () 
-{
-    # for the web applications sets the name of the backend image
-    # the backend image does not have to exists yet (this is just a setting)
-    # but the function az_build_docker_backend() above needs to have run to set the value for $BACKEND_IMAGE
-    # and of course the web app needs to exist! 
-    az webapp config appsettings set --resource-group $AZRG --name $AZAPPNAME --settings JOB_IMAGE_NAME=$BACKEND_IMAGE JOB_IMAGE_TAG=$TAG 
-}
 
 # this is a work in progress and not used, saved here for experiments =
 # Azure App Service has a concept of "slots" so you can deploy updates
@@ -701,10 +694,7 @@ az storage share create --account-name  $AZSTORAGENAME \
 az_app_mount_file_storage ()
 {
     # mounts the file storage onto the app as a network drive (SMB by default)
-    # the Flask app itself ONLY uses this for the gene validation step, so this particular function mounts the 
-    # azure storage, BUT it then copies the data we need directly into the azure WebApp host drive since it's small
-    # and the validation then runs about 3X faster
-    # is uses the 'in-preview' command az webapp create-remote-connection which just creates an SSH tunnel... see below for details
+    # the Flask app itself ONLY uses this for the gene validation step
     # then set the webapp config for the data path so the Flask app knows where to look
 
     # NOTE there is a different ENV variable for where to look for jobs, but this is the same storage account (but in the /jobs folder)
@@ -712,11 +702,14 @@ az_app_mount_file_storage ()
     MOUNTPATH=/home/site/$AZSHARENAME/
     # HARDCODED sub-folder in this deploy script.  This is where the flask app will look, 
     # and depends on how the data is copied into storage from HPCC
-    APP_DATA_FOLDER=$MOUNTPATH/data_backend2  #/home/site/data
+    APP_DATA_FOLDER=$MOUNTPATH/data_backend2 
+    APP_JOB_FOLDER=$MOUNTPATH/jobs  #/home/site/data
+
     
     # this is the name of the env variable the flask app is looking for 
     # hard coded in the flask app, use variable here to make it explicit
     APP_VARIABLE_FOR_MOUNTPATH="DATA_PATH"
+    APP_VARIABLE_FOR_JOBPATH="JOB_PATH"
 
     ## to access the storage, the app needs an "identity"  
     # see function az_get_app_identity() and this is run when the app is created above
@@ -740,11 +733,11 @@ az_app_mount_file_storage ()
         --mount-path $MOUNTPATH
 
     
-    # NOW tell the app where the back-end data is for the gene validation 
-
-    az webapp config appsettings set --resource-group $AZRG --name $AZAPPNAME --settings ${APP_VARIABLE_FOR_MOUNTPATH}=$APP_DATA_FOLDER
-
-
+    # NOW set config for the app, so it can send via a logic app to the backend job (see jobs.py)
+    az webapp config appsettings set --resource-group $AZRG --name $AZAPPNAME \ 
+    --settings ${APP_VARIABLE_FOR_MOUNTPATH}=$APP_DATA_FOLDER ${APP_VARIABLE_FOR_JOBPATH}=$APP_DATA_FOLDER \
+    STORAGE_ACCOUNT_KEY=$AZSTORAGEKEY STORAGE_ACCOUNT_NAME=$AZSTORAGENAME STORAGE_SHARE_NAME=$AZSHARENAME 
+    
 
 }
 
@@ -775,15 +768,10 @@ az_logic_app_create ()
     # that are defined above $AZRG etc.  
     # a better solution is to use ARM template and a parameter file for all of these params (sub id, res group, etc)    
       
-# TODO rather than use a template of a template for params, 
-# including them in the az deployment group create command in-lin from vars set here.  
-
-
-# envsubst < azure/az_logicapp_parameters.bash > azure/az_logicapp_parameters.json
-
     arm_template_file='azure/aci_api_connection_template.json'
     connection_name=${PROJECT}acirunner 
     
+    # JOB_URL='https://prod-02.northcentralus.logic.azure.com:443/workflows/d7b7c90d031547fd989687f5b7e66287/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ZO2XtJ8cFUwUmr_rxHU-YbWG8YEDO22M3EtqekhHPHU'
 
     if [[ -f "$arm_template_file" ]]; then
         # create the api connection needed for the logic app
@@ -797,9 +785,15 @@ az_logic_app_create ()
         echo "error, the arm template file for api connection not found : $arm_template_file"
     fi
 
+    # these are hard-coded values that are also in the json template
+    # and must sync with that 
+
     ARM_TEMPLATE_FILE='azure/aci_logicapp_template.json'
     ARM_PARAMETERS_FILE='azure/aci_logicapp_template_parameters.json'
-    WORKFLOW_NAME=geneplexus-runmodel
+    WORKFLOW_NAME="geneplexus-runmodel"
+    TRIGGER_NAME="manual"
+
+
 
     az deployment group create \
     --resource-group $AZRG \
@@ -811,6 +805,26 @@ az_logic_app_create ()
     # now add tags to the logic app using the CLIhere (so we don't send PROJECTENV params to ARM template, keep it simple)
     LOGICAPPID=`az logic workflow show -g $AZRG --name "$WORKFLOW_NAME" --query id`
     az tag create --resource-id $LOGICAPPID --tags created_by=$AZUSER project=$PROJECT enviroment=$PROJECTENV
+
+    # we need to get the Logic app trigger URL to set the config for the flask application.  Only Powershell and REST API are supported (no )
+    # REF https://docs.microsoft.com/en-us/azure/logic-apps/logic-apps-workflow-actions-triggers
+    LOGICAPP_APIVERSION="2016-06-01"  # template says 2017-07-01 but this is the only one that seems to work 
+
+    # reference https://docs.microsoft.com/en-us/rest/api/logic/workflow-triggers/list-callback-url
+    # to get the list of "names" of triggers, use az rest --url "https://management.azure.com/subscriptions/$AZSUBID/resourceGroups/$AZRG/providers/Microsoft.Logic/workflows/$WORKFLOW_NAME/triggers?api-version=$LOGICAPP_APIVERSION"
+
+    # construct the API URL to get our Logic APP URL
+    API_URL_TO_GET_LOGICAPP_URL="https://management.azure.com/subscriptions/$AZSUBID/resourceGroups/$AZRG/providers/Microsoft.Logic/workflows/$WORKFLOW_NAME/triggers/$TRIGGER_NAME/listCallbackUrl?api-version=$LOGICAPP_APIVERSION"
+    # call the rest API with the URL above to get our Logic APP URL
+    LOGICAPP_TRIGGER_URL=$(az rest --method post --url $API_URL_TO_GET_LOGICAPP_URL --output tsv --query "value")  # output tsv required to avoid quoted value
+    # set config so the flask app can use this URL when submitting jobs
+    az webapp config appsettings set --resource-group $AZRG --name $AZAPPNAME --settings JOB_URL=$LOGICAPP_TRIGGER_URL
+
+    # THIS URL IS NOT TIME SENSITIVE AND WILL WORK FOR ANY IP ADDRESS 
+    # example JOB URL
+    # JOB_URL='https://prod-02.northcentralus.logic.azure.com:443/workflows/d7b7c90d03blahblahblah/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ZO2XtJ8cFUwUmr_rxHblahblahblah'
+
+
 
 }
 
