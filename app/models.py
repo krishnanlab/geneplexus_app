@@ -14,6 +14,10 @@ from app import app
 from jinja2 import Environment, FileSystemLoader
 import os
 
+# for serializing output
+from model_output import save_all_output
+
+
 file_loc = app.config.get("FILE_LOC")
 data_path = app.config.get("DATA_PATH")
 max_num_genes = app.config.get("MAX_NUM_GENES")
@@ -330,13 +334,15 @@ def make_results_html(jobname, net_type, features, GSC, avgps, df_probs, df_GO, 
                             
 def run_and_render(input_genes,  
                     net_type='BioGRID', features='Embedding', GSC='GO', 
-                    jobname="jobrunner", logger = app.logger):
+                    jobname="jobrunner", output_path = None, logger = app.logger):
     """generate the output html from input genes to completion, eg combine.  
     Params: 
     input_genes : validated list of genes (as read from file) 
     data_path : location on disk of backend data needed for model
     net_type, features, GSC : model params
     jobname : name of this 'run' to put into output html
+    output_path : optional folder to save the output as we go.  If 'None', then don't save the output
+    logger : optional logging system to use for output.  defaults to the logger for the application, if one
 
     """
     # TODO add a check that the backend data is present in data_path
@@ -355,7 +361,21 @@ def run_and_render(input_genes,
     # run model, assumes data_path global is set correctly
     graph, df_probs, df_GO, df_dis, avgps = run_model(convert_IDs, net_type, GSC, features, logger)
 
-    # TODO : write all of these outputs to  disk etc if we want to re-render the results later (pickle?)
+    # save output if a path was provided, using methods from model_output module
+    if ( output_path and os.path.exists(output_path) ):
+        output_file_name = save_all_output(output_path, jobname, output_data = { 'jobname':jobname, 
+                                'net_type':net_type, 
+                                'features':features, 
+                                'GSC':GSC, 
+                                'avgps':avgps, 
+                                'df_probs':df_probs, 
+                                'df_GO':df_GO, 
+                                'df_dis':df_dis, 
+                                'input_count':input_count, 
+                                'positive_genes':positive_genes, 
+                                'df_convert_out_subset':df_convert_out_subset, 
+                                'graph':graph }
+        )
 
     # generate html visualization/report
     results_html = make_results_html(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis,

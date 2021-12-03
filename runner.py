@@ -74,6 +74,10 @@ if __name__ == "__main__":
 
     ### gather args
     parser = argparse.ArgumentParser()
+    parser.add_argument('-o', '--output_path',
+                        default='.',
+                        type=str,
+                        help='folder to save the output data files')
     parser.add_argument('-n', '--net_type',
                         default='BioGRID',
                         type=str,
@@ -120,6 +124,7 @@ if __name__ == "__main__":
     # in models module, data_path is a global var, so set it here
     models.data_path = args.data_path
     html = models.run_and_render(input_genes, net_type=args.net_type,
-               features=args.features, GSC=args.GSC, jobname=args.jobname)
+               features=args.features, GSC=args.GSC, jobname=args.jobname,
+               output_path=args.output_path)
 
     print(html)
