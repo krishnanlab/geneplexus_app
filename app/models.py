@@ -15,7 +15,7 @@ from jinja2 import Environment, FileSystemLoader
 import os
 
 # for serializing output
-from model_output import save_all_output
+from app.model_output import save_output
 
 
 file_loc = app.config.get("FILE_LOC")
@@ -363,19 +363,8 @@ def run_and_render(input_genes,
 
     # save output if a path was provided, using methods from model_output module
     if ( output_path and os.path.exists(output_path) ):
-        output_file_name = save_all_output(output_path, jobname, output_data = { 'jobname':jobname, 
-                                'net_type':net_type, 
-                                'features':features, 
-                                'GSC':GSC, 
-                                'avgps':avgps, 
-                                'df_probs':df_probs, 
-                                'df_GO':df_GO, 
-                                'df_dis':df_dis, 
-                                'input_count':input_count, 
-                                'positive_genes':positive_genes, 
-                                'df_convert_out_subset':df_convert_out_subset, 
-                                'graph':graph }
-        )
+        output_file_name = save_output(output_path, jobname, net_type, features, GSC, avgps, input_count, positive_genes, 
+    df_probs, df_GO, df_dis, df_convert_out_subset, graph)
 
     # generate html visualization/report
     results_html = make_results_html(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis,
