@@ -8,7 +8,7 @@
 from app import models #.models import intial_ID_convert, run_model, make_results_html, alter_validation_df, make_validation_df
 from app.models import data_path, max_num_genes
 import argparse, warnings
-import os
+import os, sys
 
 # TODO use logging.  Note since we are importing from app, get logging from init py
 # from app import logging
@@ -120,7 +120,7 @@ if __name__ == "__main__":
     # TODO save args in a log file, perhaps from stderr
 
     input_genes = read_input_gene_file(filename=args.gene_file)
-    print(f"processing {len(input_genes)} input genes")
+    print(f"processing {len(input_genes)} input genes", file=sys.stderr)
     # in models module, data_path is a global var, so set it here
     models.data_path = args.data_path
     html = models.run_and_render(input_genes, net_type=args.net_type,
