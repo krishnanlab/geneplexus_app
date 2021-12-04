@@ -5,27 +5,32 @@
 
 # # usage
 # # make sure to activate your python environment prior to running
-# # and have all the backend files that are needed available. 
-# conda activate geneplexus_app
-# # then run this test 
-# ./test_runner_sh.sh
+# # and have all the backend files that are needed available and .env up to date
+# conda activate <env name>
+# test/test_runner_sh.sh
 
 
-
-GPDIR=$HOME/docs/geneplexus_app
+GPDIR=.
 TESTDIR=$GPDIR/test
 
-source $TESTDIR/testenv  # this should have all env vars/config that gets set by the logic app that calls the container
+# this should have all env vars/config that gets set by the logic app that calls the container
+source .env
+# create env vars just like the job launcher would, using random job name
+export DATA_PATH=$DATA_PATH
+export JOBNAME=${RANDOM}_test_job
+export JOB_PATH=$JOB_PATH
+export GENE_FILE=$JOB_PATH/$JOBNAME/input_genes.txt
+export OUTPUT_FILE=$JOB_PATH/$JOBNAME/results.html
 
-# override default env for this test
+# create job folder 
+mkdir $JOB_PATH/$JOBNAME
+# copy test gene set into job folder
+cp $TESTDIR/input_genes_newlines.txt $GENE_FILE
 
-export DATA_PATH=$HOME/tmp/geneplexus_data_backend2/
-export GENE_FILE=$TESTDIR/input_genes_newlines.txt
-export OUTPUT_FILE=$GPDIR/instance/runner_test_output_file.html
-export JOBNAME=test_from_runner_sh
+# set model params 
+export GP_NET_TYPE='BioGRID'
+export GP_FEATURES='Embedding'
+export GP_GSC='GO'
+# optional  --cross_validation
 
-# alternatively, use --cross_validation
-# overwrites any existing results file
 $GPDIR/runner.sh
-
-# python ../runner.py --net_type $GP_NET_TYPE --features $GP_FEATURES --GSC $GP_GSC -d "$DATA_PATH" -j "$JOBNAME" --no-cv  $GENE_FILE  > results.html
