@@ -6,7 +6,6 @@
 # TODO check for existence of each env var
 # TODO trap errors
 
-LOGFILE="$OUTPUT_FILE".log
 
 # required args
 if [ ! -f "$GENE_FILE" ]; then
@@ -29,10 +28,16 @@ if [ -z "$OUTPUT_FILE" ]; then
     exit 1
 fi
 
+LOGFILE="$OUTPUT_FILE".log
+OUTPUT_PATH=`dirname $OUTPUT_FILE`
+
+# get the folder where the output file is to be saved based on output file
+
 # only use args if they have corresponding env var set, otherwise let py script use defaults
 # accumulate ARGS for the vars with default that are set
 # this will be valuable for quick testing
-ARGS=""
+ARGS="--output_path $OUTPUT_PATH "
+
 if [ -n "$GP_NET_TYPE" ]; then 
     ARGS="$ARGS --net_type $GP_NET_TYPE"
 fi
