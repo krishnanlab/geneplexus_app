@@ -269,9 +269,19 @@ def run_model(convert_IDs, net_type, GSC, features, logger = app.logger):
     return graph, df_probs, df_GO, df_dis, avgps
 
 
-def make_results_html(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis, input_count, positive_genes, df_convert_out_subset, graph):
-    # Render the Jinja template, filling fields as appropriate, not relying on Flask app to be loaded
-    # return rendered HTML
+
+
+def make_results_html(jobname, net_type, features, GSC, 
+            avgps, df_probs, df_GO, df_dis, input_count, positive_genes, 
+            df_convert_out_subset, graph,
+            job_info, row_limit = 500):
+
+    """Render the Jinja template, filling fields as appropriate, not relying on Flask app to be loaded
+    params: job details, and outputs data frames from jobs
+    params job_info dictionary of job information as returned from 'model_output.save_output()`
+
+    return rendered HTML
+    If a dictionary of 'job_info' is sent, then use that to add links to download these files"""
     # Find the module absolute path and locate templates
     
     module_root = os.path.join(os.path.dirname(__file__), 'templates')
@@ -307,6 +317,7 @@ def make_results_html(jobname, net_type, features, GSC, avgps, df_probs, df_GO, 
         d3_tip_css = f.read()
 
     template = env.get_template('result_base.html').render(
+        job_info = job_info,
         jobname=jobname,
         network=net_type,
         features=features,
@@ -321,11 +332,11 @@ def make_results_html(jobname, net_type, features, GSC, avgps, df_probs, df_GO, 
         main_css=main_css,
         graph_css=graph_css,
         d3_tip_css=d3_tip_css,
-        probs_table=df_probs.to_html(index=False, classes='table table-striped table-bordered" id = "probstable'),
-        go_table=df_GO.to_html(index=False,
+        probs_table=df_probs.head(row_limit).to_html(index=False, classes='table table-striped table-bordered" id = "probstable'),
+        go_table=df_GO.head(row_limit).to_html(index=False,
                                classes='table table-striped table-bordered nowrap" style="width: 100%;" id = "gotable'),
-        dis_table=df_dis.to_html(index=False, classes='table table-striped table-bordered" id = "distable'),
-        validate_results=df_convert_out_subset.to_html(index=False,
+        dis_table=df_dis.head(row_limit).to_html(index=False, classes='table table-striped table-bordered" id = "distable'),
+        validate_results=df_convert_out_subset.head(row_limit).to_html(index=False,
                                               classes='table table-striped table-bordered" id = "validateresults'),
         graph=graph)
     
@@ -362,13 +373,14 @@ def run_and_render(input_genes,
     graph, df_probs, df_GO, df_dis, avgps = run_model(convert_IDs, net_type, GSC, features, logger)
 
     # save output if a path was provided, using methods from model_output module
+    # 
     if ( output_path and os.path.exists(output_path) ):
-        output_file_name = save_output(output_path, jobname, net_type, features, GSC, avgps, input_count, positive_genes, 
+        job_info = save_output(output_path, jobname, net_type, features, GSC, avgps, input_count, positive_genes, 
     df_probs, df_GO, df_dis, df_convert_out_subset, graph)
 
     # generate html visualization/report
     results_html = make_results_html(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis,
-                                        input_count, positive_genes, df_convert_out_subset, graph)
+                                        input_count, positive_genes, df_convert_out_subset, graph, job_info)
     # return HTML file
     return(results_html)
 
