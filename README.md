@@ -53,6 +53,25 @@ Beneath the "data_backend" folder on the HPCC  are several subfolders (e.g. GSCs
 
 For example, if you want to run the "BioGRID" network with the "Embedding" feature and the "DisGeNet" negative class every file with those attributes in the name of the file will need to be downloaded (in the same folder structure/names) (NOTE: The above example is a good place to start for the minimum files to download) 
 
+## Testing the model run
+
+The model is run from methods in `models.py` which are encapsulated in a wrapper script `runner.py` which accepts command line parameters, and is used by the back-end container.   You can run a test job by sending the parameters like
+```sh
+source .env
+python test/runner.py --output_path $OUTPUT_PATH --net_type BioGRID --features Embedding --GSC GO -j $JOBNAME -d $DATA_PATH  $GENE_FILE > $OUTPUT_FILE
+```
+
+There is a shell script that does all this for you, and as set of test genes, in the `/test` folder.   You must have set `DATA_PATH` and `JOB_PATH` to valide folders in `.env`  (or modify the script).  From the top project folder, run
+
+```sh
+test/test_runner_py.sh
+```
+
+it will create a new folder inside `$JOB_PATH` to hold the job output.  
+
+Note there is (currently) no route/method in that app to run a job locally from inside the apap e.g. in a `flask run` , but there should be~ 
+
+
 ## Run on Cloud
 
 The goal of this project is to run as efficiently (i.e cheaply) as possible and since buillding and running the model against the gene networks is computationally intensive, the cloud architecture runs those like batch jobs away from the web server.   
