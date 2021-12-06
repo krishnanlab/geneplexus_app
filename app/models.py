@@ -373,9 +373,14 @@ def run_and_render(input_genes,
     graph, df_probs, df_GO, df_dis, avgps = run_model(convert_IDs, net_type, GSC, features, logger)
 
     # save output if a path was provided, using methods from model_output module
+<<<<<<< HEAD
     # 
     if ( output_path and os.path.exists(output_path) ):
         job_info = save_output(output_path, jobname, net_type, features, GSC, avgps, input_count, positive_genes, 
+=======
+    if ( output_path and os.path.exists(output_path) ):
+        output_file_name = save_output(output_path, jobname, net_type, features, GSC, avgps, input_count, positive_genes, 
+>>>>>>> main
     df_probs, df_GO, df_dis, df_convert_out_subset, graph)
 
     # generate html visualization/report
