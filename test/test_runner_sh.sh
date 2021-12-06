@@ -17,7 +17,8 @@ TESTDIR=$GPDIR/test
 source .env
 # create env vars just like the job launcher would, using random job name
 export DATA_PATH=$DATA_PATH
-export JOBNAME=${RANDOM}_test_job
+JOB_ID=$(python -c 'import uuid; print(str(uuid.uuid1())[0:8])')
+export JOBNAME=test_job_${JOB_ID}
 export JOB_PATH=$JOB_PATH
 export GENE_FILE=$JOB_PATH/$JOBNAME/input_genes.txt
 export OUTPUT_FILE=$JOB_PATH/$JOBNAME/results.html

@@ -7,7 +7,8 @@ source .env
 export DATA_PATH=$DATA_PATH # from .env
 export JOB_PATH=$JOB_PATH # from .env
 
-export JOBNAME=${RANDOM}_test_job
+JOB_ID=$(python -c 'import uuid; print(str(uuid.uuid1())[0:8])')
+export JOBNAME=test_job_${JOB_ID}
 export OUTPUT_PATH=$JOB_PATH/$JOBNAME
 export GENE_FILE=$OUTPUT_PATH/input_genes.txt
 export OUTPUT_FILE=$OUTPUT_PATH/results.html
@@ -27,5 +28,5 @@ cp $TESTDIR/input_genes_newlines.txt $GENE_FILE
 # THE ACTUAL TEST RUN
 python runner.py --output_path $OUTPUT_PATH --net_type $GP_NET_TYPE --features Embedding --GSC $GP_GSC -j $JOBNAME -d $DATA_PATH  $GENE_FILE > $OUTPUT_FILE
 
-# optional --cross_validation ../jobs/13752_test_job/input_genes.txt
+# optional --cross_validation $GENE_FILE 
 
