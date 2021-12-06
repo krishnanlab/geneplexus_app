@@ -116,6 +116,9 @@ def validate():
         # run all the components of the model and pass to the results form
         convert_IDs, df_convert_out = models.intial_ID_convert(input_genes)
 
+        jobid = str(uuid.uuid1())[0:8]
+        form.jobid.data = jobid
+
         df_convert_out, table_summary, input_count = models.make_validation_df(df_convert_out)
         pos = min([ sub['PositiveGenes'] for sub in table_summary ])
         return render_template("validation.html", form=form, pos=pos, table_summary=table_summary,
@@ -307,3 +310,12 @@ def handle_500(e):
 
     # wrapped unhandled error
     return render_template("/redirects/500_unhandled.html", e=original), 500
+
+@app.context_processor
+def inject_template_scope():
+    injections = dict()
+    def cookies_check():
+        value = request.cookies.get('cookie_consent')
+        return value == 'true'
+    injections.update(cookies_check=cookies_check)
+    return injections
