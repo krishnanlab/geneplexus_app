@@ -264,3 +264,12 @@ def handle_500(e):
 
     # wrapped unhandled error
     return render_template("/redirects/500_unhandled.html", e=original), 500
+
+@app.context_processor
+def inject_template_scope():
+    injections = dict()
+    def cookies_check():
+        value = request.cookies.get('cookie_consent')
+        return value == 'true'
+    injections.update(cookies_check=cookies_check)
+    return injections
