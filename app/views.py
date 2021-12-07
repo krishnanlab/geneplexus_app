@@ -154,14 +154,6 @@ def run_model():
     #    f = request.files['input_genes']  # read in the file
     #    input_genes = models.read_input_file(f)
 
-    
-    # Assign variables to navbar input selections
-    net_type = form.network.data
-    features = form.features.data
-    GSC = form.negativeclass.data
-
-    #jobname = form.job.data
-
     # assign a job id
     jobid = str(uuid.uuid1())[0:8]
 
@@ -179,34 +171,40 @@ def run_model():
 
         # create dictionary for easy parameter passing
         job_config = {}
-        job_config['net_type'] = net_type
-        job_config['features'] = features
-        job_config['GSC'] = GSC
+        job_config['net_type'] = form.network.data
+        job_config['features'] = form.features.data
+        job_config['GSC'] = form.negativeclass.data
         job_config['jobname'] = jobname
         job_config['jobid'] = jobid
-        #TODO add email address to form
-        if  'TEST_EMAIL_RECIPIENT' in app.config : 
-            job_config['email_recipient'] = app.config['TEST_EMAIL_RECIPIENT']
+        job_config['notifyaddress'] = ''  # default is empty string for notification email
+
+        if form.notifyaddress.data != '':   # user has supplied an email address
+           job_config['notifyaddress'] = form.notifyaddress.data
 
         print("launching job with job config =")
         print(job_config)
 
         job_response = launch_job(input_genes, job_config, app.config)
-        app.logger.info(f"job launched with response {job_response}")
+        app.logger.info(f"job {job_config['jobid']} launched with response {job_response}")
 
         job_url = url_for('job', jobname=jobname ,_external=True)
 
         #TODO change email message depending on job launch response
-        if 'email_recipient' in job_config:
-            email_response = notify(job_url, job_email = job_config['email_recipient'], config = app.config)
-            app.logger.info(f"email initiated to {job_config['email_recipient']} with response {email_response}")
+        if 'notifyaddress' in job_config:
+            email_response = notify(job_url, job_email = job_config['notifyaddress'], config = app.config)
+            app.logger.info(f"email initiated to {job_config['notifyaddress']} with response {email_response}")
 
         if 'jobs' in session and session['jobs']:
             session['jobs'] = session['jobs'].append(jobname)
         else:
             session['jobs'] = [jobname]
 
-        flash(Markup(f"Job {jobname} submitted!  The completed job will be available on <a href='{job_url}'>{job_url}</a>"))
+        job_submit_message = f"Job {jobname} submitted!  The completed job will be available on <a href='{job_url}'>{job_url}</a>"
+    
+        if job_config['notifyaddress']:
+            job_submit_message = job_submit_message + f" and notification sent to {job_config['notifyaddress']}"
+
+        flash(Markup(job_submit_message))
 
         return redirect('jobs')
 
