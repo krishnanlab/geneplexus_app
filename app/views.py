@@ -1,9 +1,11 @@
 from app.jobs import path_friendly_jobname, launch_job, list_all_jobs, retrieve_job_folder,check_results, retrieve_results, retrieve_job_info,job_info_list
 
 from werkzeug.exceptions import InternalServerError
-from flask import request, render_template, jsonify, session, redirect, url_for, flash, send_file
+from flask import request, render_template, jsonify, session, redirect, url_for, flash, send_file, Markup
 from app.forms import ValidateForm, JobLookupForm
 from app import app, models
+from app.notifier import notify
+
 import os
 import uuid
 import numpy as np
@@ -182,19 +184,29 @@ def run_model():
         job_config['GSC'] = GSC
         job_config['jobname'] = jobname
         job_config['jobid'] = jobid
+        #TODO add email address to form
+        if  'TEST_EMAIL_RECIPIENT' in app.config : 
+            job_config['email_recipient'] = app.config['TEST_EMAIL_RECIPIENT']
 
         print("launching job with job config =")
         print(job_config)
 
-        response = launch_job(input_genes, job_config, app.config)
-        print("response = ", response)
+        job_response = launch_job(input_genes, job_config, app.config)
+        app.logger.info(f"job launched with response {job_response}")
+
+        job_url = url_for('job', jobname=jobname ,_external=True)
+
+        #TODO change email message depending on job launch response
+        if 'email_recipient' in job_config:
+            email_response = notify(job_url, job_email = job_config['email_recipient'], config = app.config)
+            app.logger.info(f"email initiated to {job_config['email_recipient']} with response {email_response}")
 
         if 'jobs' in session and session['jobs']:
             session['jobs'] = session['jobs'].append(jobname)
         else:
             session['jobs'] = [jobname]
 
-        flash(f"Job {jobname} submitted!  The completed job will be available on {url_for('job', jobname=jobname ,_external=True)}")
+        flash(Markup(f"Job {jobname} submitted!  The completed job will be available on <a href='{job_url}'>{job_url}</a>"))
 
         return redirect('jobs')
 

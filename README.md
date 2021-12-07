@@ -4,7 +4,7 @@ The GenePlexus webserver enables researchers to predict novel genes similar to t
 
 This code is an internal project to run a 'front-end' web application ( python flask application ) that collects a gene set and parameter selections to run the model building code.    The main focus on this application is to run model for producing novel gene probabilities using cloud technology. 
 
-This app is under heavy development  
+This app is under development  
 
 ### Installing the application locally
 
@@ -29,12 +29,23 @@ This app is under heavy development
    mount a SMB connection to 
 
 5.  create a .env file
-    must have two entries to run the front-end (with gene validation): 
+
+    - must have two entries to run the front-end (with gene validation): 
 
 ```
 JOB_PATH=/path/to/job/files
 DATA_PATH=/path/to/backend/datafiles
 ```
+
+    - For the system to send emails, config the email service. See [EMAIL.md](EMAIL.md) documention for details
+
+```
+NOTIFIER_EMAIL_ADDRESS='app@geneplexus.net'  # the address from which the app sends emails, 
+                                             # and that's configured in sendgrid 
+SENDGRID_API_KEY='some key '                 # get this from our sendgrid.com account
+TEST_EMAIL_RECIPIENT='you@youraddress.com'             # the email recipient you'd like to use for testing
+```
+
 
 6.  flask run    
     
