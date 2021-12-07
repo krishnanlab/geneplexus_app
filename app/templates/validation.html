@@ -83,7 +83,13 @@
                                         <i class="fas fa-question-circle"></i></a>
                                <div>
                                    <label>(Optional) Add a prefix to the job</label>
-                                   {{ form.prefix }}
+                                   <div class="row">
+                                        <div class="col">
+                                            {{ form.prefix }}
+                                        </div>
+                                        <div class="col">
+                                            -{{ form.jobid(class_="form-control-plaintext") }}
+                                        </div>
                                </div>
                                <br>
                                <label>
