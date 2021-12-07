@@ -1,9 +1,11 @@
 from app.jobs import path_friendly_jobname, launch_job, list_all_jobs, retrieve_job_folder,check_results, retrieve_results, retrieve_job_info,job_info_list
 
 from werkzeug.exceptions import InternalServerError
-from flask import request, render_template, jsonify, session, redirect, url_for, flash, send_file
+from flask import request, render_template, jsonify, session, redirect, url_for, flash, send_file, Markup
 from app.forms import ValidateForm, JobLookupForm
 from app import app, models
+from app.notifier import notify
+
 import os
 import uuid
 import numpy as np
@@ -117,6 +119,9 @@ def validate():
         # run all the components of the model and pass to the results form
         convert_IDs, df_convert_out = models.intial_ID_convert(input_genes)
 
+        jobid = str(uuid.uuid1())[0:8]
+        form.jobid.data = jobid
+
         df_convert_out, table_summary, input_count = models.make_validation_df(df_convert_out)
         pos = min([ sub['PositiveGenes'] for sub in table_summary ])
         return render_template("validation.html", form=form, pos=pos, table_summary=table_summary,
@@ -160,8 +165,8 @@ def run_model():
 
     #jobname = form.job.data
 
-    # assign a job id
-    jobid = str(uuid.uuid1())[0:8]
+    # grab the assigned job ID
+    jobid = form.jobid.data
 
     # if the optional prefix has been added, concatenate
     # the two fields together.  Otherwise the jobname is the jobid
@@ -182,19 +187,29 @@ def run_model():
         job_config['GSC'] = GSC
         job_config['jobname'] = jobname
         job_config['jobid'] = jobid
+        #TODO add email address to form
+        if  'TEST_EMAIL_RECIPIENT' in app.config : 
+            job_config['email_recipient'] = app.config['TEST_EMAIL_RECIPIENT']
 
         print("launching job with job config =")
         print(job_config)
 
-        response = launch_job(input_genes, job_config, app.config)
-        print("response = ", response)
+        job_response = launch_job(input_genes, job_config, app.config)
+        app.logger.info(f"job launched with response {job_response}")
+
+        job_url = url_for('job', jobname=jobname ,_external=True)
+
+        #TODO change email message depending on job launch response
+        if 'email_recipient' in job_config:
+            email_response = notify(job_url, job_email = job_config['email_recipient'], config = app.config)
+            app.logger.info(f"email initiated to {job_config['email_recipient']} with response {email_response}")
 
         if 'jobs' in session and session['jobs']:
             session['jobs'] = session['jobs'].append(jobname)
         else:
             session['jobs'] = [jobname]
 
-        flash(f"Job {jobname} submitted!  The completed job will be available on {url_for('job', jobname=jobname ,_external=True)}")
+        flash(Markup(f"Job {jobname} submitted!  The completed job will be available on <a href='{job_url}'>{job_url}</a>"))
 
         return redirect('jobs')
 
@@ -264,3 +279,12 @@ def handle_500(e):
 
     # wrapped unhandled error
     return render_template("/redirects/500_unhandled.html", e=original), 500
+
+@app.context_processor
+def inject_template_scope():
+    injections = dict()
+    def cookies_check():
+        value = request.cookies.get('cookie_consent')
+        return value == 'true'
+    injections.update(cookies_check=cookies_check)
+    return injections

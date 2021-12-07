@@ -11,3 +11,4 @@ scikit-learn
 pandas
 python-slugify==4.0.1
 requests
+sendgrid

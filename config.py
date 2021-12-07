@@ -30,6 +30,13 @@ class BaseConfig(object):
     
     JOB_URL = os.getenv('JOB_URL', '')  # the URL for the logic app trigger
 
+    # email config
+    SENDGRID_API_KEY= os.getenv('SENDGRID_API_KEY', '')
+    NOTIFIER_EMAIL_ADDRESS = os.getenv('NOTIFIER_EMAIL_ADDRESS' )
+    # this is the dev address used for testing job notification
+    # TODO remove this from base config, but leave it here until email notification is implemented
+    TEST_EMAIL_RECIPIENT = os.getenv('TEST_EMAIL_RECIPIENT')
+
 class ProdConfig(BaseConfig):
     FLASK_ENV="production"
     FILE_LOC = "local"
@@ -38,3 +45,5 @@ class DevConfig(BaseConfig):
     FLASK_ENV="development"
     FLASK_DEBUG="1"
     FILE_LOC = "local"
+    # this is the dev address used for testing job notification
+    TEST_EMAIL_RECIPIENT = os.getenv('TEST_EMAIL_RECIPIENT')

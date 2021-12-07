@@ -1,0 +1,28 @@
+{% if cookies_check() %}
+{% else %}
+    <div class="fixed-bottom p-4" id="cookie-consent-container">
+        <div class="toast bg-dark text-white w-100 mw-100" role="alert">
+            <div class="toast-body p-4 d-flex flex-column">
+                <h4>Cookie Warning</h4>
+                <p>
+                This website stores data such as cookies to enable site functionality including remembering your jobs submitted. By using this website, you automatically accept that we use cookies. 
+                </p>
+                <div class="ml-auto">
+                <button type="button" class="btn btn-outline-light mr-3" id="btnDeny">
+                    Deny
+                </button>
+                <button type="button" class="btn btn-light" id="btnAccept">
+                    Accept
+                </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+    var fn = function () {
+        document.cookie = "cookie_consent=true";
+        document.getElementById('cookie-consent-container').hidden = true;
+    };
+    document.getElementById('btnAccept').onclick = fn;
+    </script>
+{% endif %}
