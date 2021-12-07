@@ -37,7 +37,7 @@ JOB_PATH=/path/to/job/files
 DATA_PATH=/path/to/backend/datafiles
 ```
 
-    - For the system to send emails, config the email service. See [EMAIL.md](email.md) documention for details
+    - For the system to send emails, config the email service. See [EMAIL.md](EMAIL.md) documention for details
 
 ```
 NOTIFIER_EMAIL_ADDRESS='app@geneplexus.net'  # the address from which the app sends emails, 
