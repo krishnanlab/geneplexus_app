@@ -45,6 +45,7 @@ $(document).ready( function () {
         pagingType: "full_numbers",
         initComplete: function(){
             $("#probstable").show();
+            $('body').removeClass("loading");
         }
     });
 
