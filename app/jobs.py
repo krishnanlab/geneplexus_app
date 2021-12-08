@@ -1,10 +1,24 @@
 import requests
 import json
-import re, os
+import re, os, errno, sys
 from slugify import slugify
 from pandas import DataFrame
 # import pandas as pd
 from datetime import datetime
+
+# job status codes is a simple dictionary mirroring a small subset of http status codes
+# these are status codes sent from the api that creates the job, or via the job itself. 
+# some job status codes are the results of status codes from http trigger of the job launcher (auzre logic app in our case)
+# note that 'timeout' is not 'gateway timeout'
+job_status_codes = {200:"OK", 201:"Created", 202:"Accepted", 404:"Not Found", 500:"Internal Server Error", 504:"Timeout"}
+
+jobs_status_descriptions = { 200:"Job completed successfully", 
+    201:"Job was created and may or may not be running", 
+    202:"Job was accepted and is being created", 
+    404:"There is no job with that specification on this server (ID)", 
+    500:"There was a problem with the job creation or a run-time error",
+    504:"Timeout.  There has been no status updates from the job within the expected time, assumed error"
+    }
 
 def path_friendly_jobname(jobname):
     """ job name must be useable to create file paths and other cloud resources, so remove unuesable or unicode characters"""
@@ -21,6 +35,17 @@ def path_friendly_jobname(jobname):
     cloudfriendly_jobname = slugify(filefriendly_jobname, separator='-', regex_pattern=cloud_container_exclude_pattern)
 
     return(cloudfriendly_jobname)
+
+def valid_results_filename(possible_file_name):
+    """convert user input into value OS filename, strip out most punctuation and spacing, preserve case. 
+    The goal is to reduce risk of security problems from user input but allow what should be a valid
+    results file name.  This does not limit to what we may know as valid file names"""
+
+    file_regex_pattern = r'[^-A-Za-z0-9_\.]+'
+    slugified_file_name = slugify(possible_file_name, lowercase=False,regex_pattern=file_regex_pattern)
+    return(slugified_file_name)
+
+
 
 def create_input_file_name(jobname):
     return('input_genes.txt')
@@ -156,7 +181,7 @@ def launch_job(genes, job_config, app_config):
                             data=job_data,
                             headers=jsonHeaders)
 
-    print(f"Job data sent for {jobname}.  Status code: {response.status_code}")
+    print(f"Job data sent for {jobname}.  Status code: {response.status_code}", file=sys.stderr)
 
     return response
 
@@ -173,7 +198,7 @@ def list_all_jobs(job_path):
 
 
 def retrieve_job_folder(jobname, app_config):
-    """ return the job folder, or empthy string if no job folder exists"""
+    """ return the job folder, or empty string if no job folder exists"""
 
     jobname = path_friendly_jobname(jobname)
     job_folder = os.path.join(app_config["JOB_PATH"], jobname)
@@ -183,14 +208,60 @@ def retrieve_job_folder(jobname, app_config):
         return('')
 
 
-def results_file_path(jobname, app_config):
-    """construct the path to the job (for local/mounted file storage)"""
+def job_exists(jobname, app_config):
     jobname = path_friendly_jobname(jobname)
     jf = retrieve_job_folder(jobname, app_config)
     if jf:
-        return(os.path.join(jf, create_results_file_name(jobname)))
+        return(True)
+    else:
+        return(False) 
+
+def results_file_path(jobname, app_config, results_file = None):
+    """construct the path to the job (for local/mounted file storage)"""
+    
+    jobname = path_friendly_jobname(jobname)
+
+    # use the default name if none given 
+    if not ( results_file) :
+        results_file = create_results_file_name(jobname)
+
+    jf = retrieve_job_folder(jobname, app_config)
+    if jf:
+        return(os.path.join(jf, results_file))
     else:
         return('')
+
+
+def results_file_dir(jobname, app_config, data_file_name = None):
+    """return to flask the absolute patah to a data file to be returned for download, 
+    or nothing if neigher the job path exists, or the file does not exist in the job path
+    (this is different than retrieve_job_folder)
+    parameters
+        jobname = id of job
+        app_config config dictionary used to find the job path
+        data_file_name  output file to look for
+    returns
+        jf directory where files live
+        data_file_name, same data file name (santized)
+
+    """
+    # sanitize the input
+    # use the default name if none given 
+    if not ( data_file_name) :
+        data_file_name = create_results_file_name(jobname)
+    else:
+        data_file_name = valid_results_filename(data_file_name)
+
+    # get the path this job
+    jf = retrieve_job_folder(jobname, app_config) # get path if job exists, or return ''
+
+    if jf:
+        data_file_path = os.path.join(jf, data_file_name)
+        if os.path.exists(data_file_path):
+            return(jf)
+        
+    return(None)
+
 
 
 def check_results(jobname, app_config):
@@ -253,10 +324,11 @@ def retrieve_job_status(jobname, app_config, status_file_suffix = ".log", defaul
 def retrieve_results(jobname, app_config):
     """ retrieve the results file (html) for a given job"""
 
-    fp = results_file_path(jobname, app_config)
+    fp = results_file_path(jobname, app_config, 'results.html')
     
+    print(f"looking up {fp}", file=sys.stderr)
     # look for the path and file and if it's there, read it in
-    if os.path.exists(fp):
+    if fp and os.path.exists(fp):
         # try
         with open(fp) as f:
             content = f.read()
@@ -265,6 +337,38 @@ def retrieve_results(jobname, app_config):
 
     else:
         return ''    
+
+
+def retrieve_results_data(jobname, app_config, data_file_name):
+    """get any one of several of the results data files (TSV, JSON, etc)
+    This does not check if the file name is one of the 'approved' file names to give 
+    flexibility to the job runner during development"""
+
+    data_file_name = valid_results_filename(data_file_name)
+
+    # TODO define standard filenames for various results types and vet data file name as security precaution
+
+
+    jf = retrieve_job_folder(jobname, app_config) # get path if job exists, or return ''
+
+    # if the path, and the file both exists, read it and return the contents
+    if jf:
+        data_file_path = os.path.join(jf, data_file_name)
+        if os.path.exists(data_file_path):
+            try:
+                with open(data_file_path) as f:
+                    content = f.read()
+            except OSError:
+                print(f"OS error trying to read {data_file_path}",file=sys.stderr)
+            except Exception as err:
+                print(f"Unexpected error opening {data_file_path} is",repr(err),file=sys.stderr)
+            else:
+                return(content)
+    
+    # otherwise return none
+    return(None)
+
+
 
 
 def retrieve_job_params(jobname, app_config):
@@ -285,6 +389,18 @@ def retrieve_job_params(jobname, app_config):
     else:
         return('')
 
+def job_status_codes():
+    """ central dics"""
+
+
+def job_status(jobname, app_config):
+    """ use methods above to construct and return the state of the job"""
+    jf = retrieve_job_folder(jobname, app_config)
+    if not jf:
+        return('4o4')
+    
+
+
 def test_job(test_jobname="A_test_job!-A99", input_file='input_genes.txt'):
     from app import app
     # in calling function, Assign variables to navbar input selections
@@ -304,6 +420,6 @@ def test_job(test_jobname="A_test_job!-A99", input_file='input_genes.txt'):
     with open(input_file, 'r') as f:
         genes = f.read()
 
-    print("launching")
+    print("launching",file=sys.stderr)
     response = launch_job(genes, job_config, app.config)
-    print("response = ", response)
+    print("response = ", response,file=sys.stderr) 
