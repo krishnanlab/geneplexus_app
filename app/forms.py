@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
-from wtforms.validators import DataRequired
+from wtforms.validators import DataRequired, Email
 from wtforms import FileField, SelectField, StringField, TextAreaField, SubmitField
+
 
 class ModalForm(FlaskForm):
     genes = TextAreaField('genes')
@@ -12,7 +13,7 @@ class JobLookupForm(FlaskForm):
     lookup = SubmitField(label='Lookup job')
 
 
-
+# form to submit a job from the page validation.html
 class ValidateForm(FlaskForm):
     networks = [
         ('BioGRID','BioGRID'),
@@ -38,9 +39,7 @@ class ValidateForm(FlaskForm):
     network = SelectField('network', choices=networks, default=None, validators=[DataRequired()])
     features = SelectField('features', choices=features, default=None, validators=[DataRequired()])
     negativeclass = SelectField('negativeclass', choices=negativeclass, default=None, validators=[DataRequired()])
-    notifyaddress = StringField('notifyaddress')
-
+    notifyaddress = StringField('notifyaddress',validators=[Email()])
 
     runbatch = SubmitField(label='Submit')
-    # run local was used to run the model on the webserver ,disabled for now
-    #runlocal = SubmitField(label='Run local')
+
