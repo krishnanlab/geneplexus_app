@@ -158,7 +158,7 @@ def run_model():
     #    input_genes = models.read_input_file(f)
 
     if not form.validate():
-        flash("Form validation failed", "error")
+        flash("There was an issue with submitting your request, please make sure all fields are filled out correctly", "error")
         return redirect('index')
 
     
