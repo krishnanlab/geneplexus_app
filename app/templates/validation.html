@@ -119,6 +119,14 @@
                                     {{ form.negativeclass }}
                                 </div>
                                 <br>
+                                6. (Optional) Notification Email Address
+                               </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                                  data-content="Optionally enter an email address for job notifications.  We will never share your email address outside of this application, add you to a mailing list, or send unsolicited communication.">
+                               <i class="fas fa-question-circle"></i></a>
+                                <div class="select">
+                                    {{ form.notifyaddress }}
+                                </div>
+                                <br>
                                 
                                 {{ form.runbatch(class_="btn btn-sm btn-primary") }}
                                 <br/>
