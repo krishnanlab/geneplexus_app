@@ -202,7 +202,7 @@ def run_model():
         job_submit_message = f"Job {jobname} submitted!  The completed job will be available on <a href='{job_url}'>{job_url}</a>"
     
         if job_config['notifyaddress']:
-            job_submit_message = job_submit_message + f" and notification sent to {job_config['notifyaddress']}"
+            job_submit_message = job_submit_message + " and notification sent to {job_config['notifyaddress']}"
 
         flash(Markup(job_submit_message))
 
