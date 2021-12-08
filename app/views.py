@@ -151,11 +151,15 @@ def run_model():
         
     else:  # no genes in session
         # if genes are not in the session, 500 server error? read in genes?        
-        flash("No geneset seems to be selected - please select a geneset to run the model")
+        flash("No geneset seems to be selected - please select a geneset to run the model", "error")
         return redirect('index')
 
     #    f = request.files['input_genes']  # read in the file
     #    input_genes = models.read_input_file(f)
+
+    if not form.validate():
+        flash("Form validation failed", "error")
+        return redirect('index')
 
     
     # Assign variables to navbar input selections
