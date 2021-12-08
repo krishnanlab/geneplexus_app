@@ -8,7 +8,7 @@ export DATA_PATH=$DATA_PATH # from .env
 export JOB_PATH=$JOB_PATH # from .env
 
 JOB_ID=$(python -c 'import uuid; print(str(uuid.uuid1())[0:8])')
-export JOBNAME=test_job_${JOB_ID}
+export JOBNAME=test-job-${JOB_ID}
 export OUTPUT_PATH=$JOB_PATH/$JOBNAME
 export GENE_FILE=$OUTPUT_PATH/input_genes.txt
 export OUTPUT_FILE=$OUTPUT_PATH/results.html
