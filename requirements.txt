@@ -12,3 +12,5 @@ pandas
 python-slugify==4.0.1
 requests
 sendgrid
+email_validator
+
