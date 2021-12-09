@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms.validators import DataRequired, Email
+from wtforms.validators import DataRequired, Optional, Email
 from wtforms import FileField, SelectField, StringField, TextAreaField, SubmitField
 
 
@@ -32,10 +32,10 @@ class ValidateForm(FlaskForm):
         ('GO','Processes / pathways (GO)')
     ]
 
-    job = StringField('job', validators=[DataRequired()], render_kw={'readonly': True})
-    jobid = StringField('jobid', render_kw={'readonly': True})
-    prefix = StringField('prefix', render_kw={'placeholder': 'Optional'})
-    genes = FileField('genes', validators=[DataRequired()])
+    #job = StringField('job', validators=[DataRequired()], render_kw={'readonly': True})
+    jobid = StringField('jobid', render_kw={'readonly': True}, validators=[DataRequired()])
+    prefix = StringField('prefix', render_kw={'placeholder': 'Optional'}, validators=[Optional()])
+    #genes = FileField('genes', validators=[DataRequired()])
     network = SelectField('network', choices=networks, default=None, validators=[DataRequired()])
     features = SelectField('features', choices=features, default=None, validators=[DataRequired()])
     negativeclass = SelectField('negativeclass', choices=negativeclass, default=None, validators=[DataRequired()])

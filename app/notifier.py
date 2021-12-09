@@ -38,6 +38,6 @@ def notify(job_url, job_email, config = app.config):
         return(response.status_code)
 
     except Exception as e:
-        print(e.message)
+        print(e)
         return(None)
 

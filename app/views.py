@@ -97,36 +97,31 @@ def results():
 def validate():
     form = ValidateForm()
 
-    if request.method == 'GET':
+    app.logger.info('validate button')
+    if not 'genes' in session:
+        f = request.files['input_genes'] # read in the file
+        # convert the FileStorage object to a string
+        string = f.stream.read().decode("UTF8")
+        # remove any single quotes if they exist
+        no_quotes = string.translate(str.maketrans({"'": None}))
+        input_genes_list = no_quotes.splitlines()  # turn into a list
+        input_genes_upper = np.array([item.upper() for item in input_genes_list])
+        # remove any whitespace
+        session['genes'] = [x.strip(' ') for x in input_genes_upper]
 
-        return render_template("validation.html")
+    input_genes = session['genes']
 
-    elif request.method == 'POST':
-        app.logger.info('validate button')
-        if not 'genes' in session:
-            f = request.files['input_genes'] # read in the file
-            # convert the FileStorage object to a string
-            string = f.stream.read().decode("UTF8")
-            # remove any single quotes if they exist
-            no_quotes = string.translate(str.maketrans({"'": None}))
-            input_genes_list = no_quotes.splitlines()  # turn into a list
-            input_genes_upper = np.array([item.upper() for item in input_genes_list])
-            # remove any whitespace
-            session['genes'] = [x.strip(' ') for x in input_genes_upper]
+    # run all the components of the model and pass to the results form
+    convert_IDs, df_convert_out = models.intial_ID_convert(input_genes)
 
-        input_genes = session['genes']
+    jobid = str(uuid.uuid1())[0:8]
+    form.jobid.data = jobid
 
-        # run all the components of the model and pass to the results form
-        convert_IDs, df_convert_out = models.intial_ID_convert(input_genes)
-
-        jobid = str(uuid.uuid1())[0:8]
-        form.jobid.data = jobid
-
-        df_convert_out, table_summary, input_count = models.make_validation_df(df_convert_out)
-        pos = min([ sub['PositiveGenes'] for sub in table_summary ])
-        return render_template("validation.html", form=form, pos=pos, table_summary=table_summary,
-                               validate_table=df_convert_out.to_html(index=False,
-                               classes='table table-striped table-bordered" id = "validatetable'))
+    df_convert_out, table_summary, input_count = models.make_validation_df(df_convert_out)
+    pos = min([ sub['PositiveGenes'] for sub in table_summary ])
+    return render_template("validation.html", form=form, pos=pos, table_summary=table_summary,
+                            validate_table=df_convert_out.to_html(index=False,
+                            classes='table table-striped table-bordered" id = "validatetable'))
 
 @app.route('/uploads/<path:filename>', methods=['GET', 'POST'])
 def uploads(filename):
@@ -147,16 +142,13 @@ def run_model():
         input_genes = session['genes']
         # remove the current genelist from session
         # why remove the geneset from session -- what if someone wants to run a second job with same geneset?
-        session.pop('genes')
+        #session.pop('genes')
         
     else:  # no genes in session
         # if genes are not in the session, 500 server error? read in genes?        
-        flash("No geneset seems to be selected - please select a geneset to run the model")
+        flash("No geneset seems to be selected - please select a geneset to run the model", "error")
         return redirect('index')
-
-    #    f = request.files['input_genes']  # read in the file
-    #    input_genes = models.read_input_file(f)
-
+        
     # grab the assigned job ID
     jobid = form.jobid.data
 
@@ -179,10 +171,16 @@ def run_model():
         job_config['GSC'] = form.negativeclass.data
         job_config['jobname'] = jobname
         job_config['jobid'] = jobid
+
+        
         job_config['notifyaddress'] = ''  # default is empty string for notification email
 
         if form.notifyaddress.data != '':   # user has supplied an email address
-           job_config['notifyaddress'] = form.notifyaddress.data
+            # check if the email supplied matched basic pattern
+            if form.notifyaddress.validate(form): 
+                job_config['notifyaddress'] = form.notifyaddress.data
+            else:
+                flash("The job notification email address you provided is not a valid email.  No job notification will be sent", category =  "error")
 
         print("launching job with job config =")
         print(job_config)
@@ -192,22 +190,21 @@ def run_model():
 
         job_url = url_for('job', jobname=jobname ,_external=True)
 
-        #TODO change email message depending on job launch response
-        if 'notifyaddress' in job_config:
-            email_response = notify(job_url, job_email = job_config['notifyaddress'], config = app.config)
-            app.logger.info(f"email initiated to {job_config['notifyaddress']} with response {email_response}")
-
         if 'jobs' in session and session['jobs']:
             session['jobs'] = session['jobs'].append(jobname)
         else:
             session['jobs'] = [jobname]
 
         job_submit_message = f"Job {jobname} submitted!  The completed job will be available on <a href='{job_url}'>{job_url}</a>"
-    
-        if job_config['notifyaddress']:
+
+        #TODO change email message depending on job launch response
+        if 'notifyaddress' in job_config and job_config['notifyaddress'] != '':
+            email_response = notify(job_url, job_email = job_config['notifyaddress'], config = app.config)
+            app.logger.info(f"email initiated to {job_config['notifyaddress']} with response {email_response}")
             job_submit_message = job_submit_message + f" and notification sent to {job_config['notifyaddress']}"
 
-        flash(Markup(job_submit_message))
+
+        flash(Markup(job_submit_message), category = 'success')
 
         return redirect('jobs')
 

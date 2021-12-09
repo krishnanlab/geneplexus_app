@@ -29,21 +29,12 @@
 </div>
 
 <div class="container">
+    
+    {% include 'messages.html' ignore missing %}
+  
+    <h4 >Jobs Submitted for this session</h4>
         
-            {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-info" role="alert">
-                        <strong>{{ message }}</strong>
-                    </div>
-                    {% endfor %}
-            {% endif %}
-            {% endwith %}
-        
-     
-        <h4 >Jobs Submitted for this session</h4>
-        
-        {% if joblist %}
+    {% if joblist %}
         <hr>
         <table class="table w-100" style="width:100%;" id="jobstable">
             <thead>
