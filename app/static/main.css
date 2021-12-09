@@ -210,3 +210,7 @@ div.dt-buttons {
 #validatetable {
     display: none;
 }
+
+#jobid {
+    padding: 0px 0px 10px 0px;
+}
