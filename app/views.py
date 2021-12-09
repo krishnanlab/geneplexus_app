@@ -1,7 +1,7 @@
-from app.jobs import path_friendly_jobname, launch_job, list_all_jobs, retrieve_job_folder,check_results, retrieve_results, retrieve_job_info,job_info_list
+from app.jobs import path_friendly_jobname, launch_job, retrieve_job_folder,retrieve_results,job_info_list,valid_results_filename,results_file_dir
 
 from werkzeug.exceptions import InternalServerError
-from flask import request, render_template, jsonify, session, redirect, url_for, flash, send_file, Markup
+from flask import request, render_template, jsonify, session, redirect, url_for, flash, send_file, Markup, abort,send_from_directory
 from app.forms import ValidateForm, JobLookupForm
 from app import app, models
 from app.notifier import notify
@@ -73,7 +73,7 @@ def job(jobname):
     return render_template("jobresults.html", jobname = jobname)
 
 
-@app.route("/jobs/<jobname>/results")
+@app.route("/jobs/<jobname>/results",methods=['GET'])
 def jobresults_content(jobname):
     """ read the results into memory and return """
     results_content = retrieve_results(jobname, app.config)
@@ -81,6 +81,29 @@ def jobresults_content(jobname):
         return(results_content) # or in future, send this html to a template wrapper        
     else:
         return(f'<html><body><div class="container"><h3 style="padding-top:50px"> No results yet for the job "{jobname}"</h3></div></body><html>')
+
+
+# download results file 
+@app.route("/jobs/<jobname>/results/download/<results_file_name>",methods=['GET'])
+def jobresults_download(jobname,results_file_name):
+    """get the contents of one of the results outputs and iniate a download.  If no file name or results type is sent
+    as a parameter, by default just sent the rendered html.  
+    """
+    # sanitize the filename using a method for job module
+    results_file_name = valid_results_filename(results_file_name)
+
+    # results_file_name = valid_results_filename(request.values.get('resultsfile', ''))
+    # if there is any filename left after sanitizing...
+    if ( results_file_name ):
+        # retrieve the file_path, or nothing if the job or file does not exist
+        results_directory =  results_file_dir(jobname, app.config,results_file_name)
+        if(results_directory):  
+            return send_from_directory(results_directory, results_file_name, as_attachment=True)    
+    
+    # nothing found, return 404
+    abort(404)
+
+
 
 
 @app.route("/results", methods=['GET','POST'])

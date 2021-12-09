@@ -85,7 +85,7 @@
                                     U – gene was not considered at all during training.
                                     Known/Novel indicates whether the gene was part of the input gene list
                                     (therefore ‘Known’) or not (therefore ‘Novel’).<br>
-                                    <a href="{{job_info['df_probs_file']}}">Download Prediction Probablilty Table as tab seperated values</a>                                    
+                                    <a href="/jobs/{{job_info['jobname']}}/results/download/{{job_info['df_probs_file']}}">Download Prediction Probablilty Table as tab seperated values</a>                                    
                                 </p>
                             </div>
                         {{ probs_table|safe }}
@@ -99,7 +99,7 @@
                                     genes associated with Gene Ontology Biological Process terms to the custom model
                                     trained on the input genes. See the Help page for more information about
                                     the similarity measure.<br>
-                                    <a href="{{job_info['df_GO_file']}}">Download table as tab seperated values</a>
+                                    <a href="/jobs/{{job_info['jobname']}}/results/download/{{job_info['df_GO_file']}}">Download table as tab seperated values</a>
                                 </p>
                             </div>
                         {{ go_table|safe }}
@@ -114,7 +114,7 @@
                                     trained on the input genes. See the Help page for more information about
                                     the similarity measure.
                                     <br>
-                                    <a href="{{job_info['df_dis_file']}}">Download table as tab seperated values</a></p>
+                                    <a href="/jobs/{{job_info['jobname']}}/results/download/{{job_info['df_dis_file']}}">Download table as tab seperated values</a></p>
                             </div>
                         {{ dis_table|safe }}
                         </div>
@@ -156,7 +156,7 @@
                                 The number of those genes that were uniquely mapped to an Entrez ID
                                         and were also in the network is {{positive_genes}}.
                                     <br>
-                                    <a href="{{job_info['df_convert_out_subset_file']}}">Download table as tab seperated values</a>
+                                    <a href="/jobs/{{job_info['jobname']}}/results/download/{{job_info['df_convert_out_subset_file']}}">Download table as tab seperated values</a>
                                 </p>
                             </div>
                         {{ validate_results|safe }}
