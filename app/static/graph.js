@@ -125,6 +125,9 @@ function updateForces() {
         .distance(forceProperties.link.distance)
         .iterations(forceProperties.link.iterations)
         .links(forceProperties.link.enabled ? dataset.links : []);
+        simulation.force("center")
+        .x($('#graph').width() / 2)
+        .y($('#graph').height() / 2);
 
     // updates ignored until this is run
     // restarts the simulation (important if simulation has already slowed down)
