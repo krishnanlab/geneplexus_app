@@ -15,4 +15,6 @@ __pycache
 
 # log files
 *.log
-/app/jobs/
+
+# local job folder(s)
+jobs/
