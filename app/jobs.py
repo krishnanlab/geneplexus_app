@@ -1,10 +1,12 @@
 import requests
 import json
-import re, os, errno, sys
+import re, os, errno, sys, subprocess
 from slugify import slugify
 from pandas import DataFrame
 # import pandas as pd
 from datetime import datetime
+from app.models import run_and_render
+
 
 # job status codes is a simple dictionary mirroring a small subset of http status codes
 # these are status codes sent from the api that creates the job, or via the job itself. 
@@ -174,14 +176,25 @@ def launch_job(genes, job_config, app_config):
     with open(json_file_path, 'w') as f:
         f.write(job_vars)
 
-    jsonHeaders = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+    if app_config['RUN_LOCAL']:
+        print("running job locally (may take a while")
+        html_output = run_and_render(genes, net_type=job_config['net_type'], features=job_config['features'], GSC=job_config['GSC'], jobname=jobname, output_path=local_job_folder)
 
-    # launch! 
-    response = requests.post(app_config['JOB_URL'],
+        # TODO find the method here that constructs a results file! 
+        results_file = os.path.join(local_job_folder, 'results.html')
+        with open(results_file, 'w') as f:
+            f.write(html_output)
+        response = "200"
+
+    else:
+        jsonHeaders = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+
+        # launch! 
+        response = requests.post(app_config['JOB_URL'],
                             data=job_data,
                             headers=jsonHeaders)
 
-    print(f"Job data sent for {jobname}.  Status code: {response.status_code}", file=sys.stderr)
+        print(f"Job data sent for {jobname}.  Status code: {response.status_code}", file=sys.stderr)
 
     return response
 

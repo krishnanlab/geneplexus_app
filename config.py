@@ -47,3 +47,6 @@ class DevConfig(BaseConfig):
     FILE_LOC = "local"
     # this is the dev address used for testing job notification
     TEST_EMAIL_RECIPIENT = os.getenv('TEST_EMAIL_RECIPIENT')
+    # set this to force the jobs to run on the same machine
+    RUN_LOCAL = (os.getenv('RUN_LOCAL', 'False').lower() == 'true')
+    DEBUG = (os.getenv('DEBUG', 'False').lower() == 'true')
