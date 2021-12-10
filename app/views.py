@@ -121,16 +121,21 @@ def validate():
     form = ValidateForm()
 
     app.logger.info('validate button')
-    if not 'genes' in session:
-        f = request.files['input_genes'] # read in the file
-        # convert the FileStorage object to a string
-        string = f.stream.read().decode("UTF8")
-        # remove any single quotes if they exist
-        no_quotes = string.translate(str.maketrans({"'": None}))
-        input_genes_list = no_quotes.splitlines()  # turn into a list
-        input_genes_upper = np.array([item.upper() for item in input_genes_list])
-        # remove any whitespace
-        session['genes'] = [x.strip(' ') for x in input_genes_upper]
+
+    string = request.form['genesInput'] # read in the file
+    # convert the FileStorage object to a string
+    #string = f.stream.read().decode("UTF8")
+    # remove any single quotes if they exist
+    no_quotes = string.translate(str.maketrans({"'": None}))
+    input_genes_list = no_quotes.splitlines()  # turn into a list
+    if len(input_genes_list) == 0:
+        flash("You need to input at least one positive gene", "error")
+        return redirect('index')
+    if len(input_genes_list) < 5:
+        flash("Using less than 5 positive genes might not produce useful results", "error")
+    input_genes_upper = np.array([item.upper() for item in input_genes_list])
+    # remove any whitespace
+    session['genes'] = [x.strip(' ') for x in input_genes_upper]
 
     input_genes = session['genes']
 
@@ -142,7 +147,7 @@ def validate():
 
     df_convert_out, table_summary, input_count = models.make_validation_df(df_convert_out)
     pos = min([ sub['PositiveGenes'] for sub in table_summary ])
-    return render_template("validation.html", form=form, pos=pos, table_summary=table_summary,
+    return render_template("validation.html", form=form, pos=pos, table_summary=table_summary, existing_genes=input_genes,
                             validate_table=df_convert_out.to_html(index=False,
                             classes='table table-striped table-bordered" id = "validatetable'))
 
@@ -282,6 +287,17 @@ def uploadgenes():
         pass
 
     file = request.files['formData'].filename
+    try:
+        string = request.files['formData'].stream.read().decode("UTF8")
+        no_quotes = string.translate(str.maketrans({"'": None}))
+        input_genes_list = no_quotes.splitlines()  # turn into a list
+        input_genes_upper = np.array([item.upper() for item in input_genes_list])
+        # remove any whitespace
+        toReturn = [x.strip(' ') for x in input_genes_upper]
+        return jsonify(success=True, data=toReturn)
+    except Exception as e:
+        print(e)
+        return jsonify(success=False, filename=None)
 
     return jsonify(success=True, filename=file)
 

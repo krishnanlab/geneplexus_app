@@ -141,7 +141,7 @@ div.input-item-content{
     padding-bottom: 0ox;
     margin-right: 0px;
     width: 100%;
-    marginL 0px;
+    margin 0px;
     display: block;
     box-sizing: border-box;
     float: left;
@@ -209,6 +209,21 @@ div.dt-buttons {
 
 #validatetable {
     display: none;
+}
+
+.modal-lg {
+    width: 460px !important;
+}
+
+.smaller-button {
+    width: 150px !important;
+}
+
+#insertGeneButton {
+    width: 250px;
+    height: 30px;
+    text-align: center;
+    background-color: #efefef;
 }
 
 #jobid {

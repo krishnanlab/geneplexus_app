@@ -1,21 +1,24 @@
 $('[data-toggle="popover"]').popover();
 
-$('#geneButton').click(function(){
-   $("input[type='file']").trigger('click');
-})
+$('#insertGeneButton').click(function(){
+    $("input[type='file']").trigger('click');
+ });
 
-
-$('input:file').change(
+ $('#insertGenesInput').change(
     function(){
         if ($(this).val()) {
-            $('#filename').text(this.value.replace(/C:\\fakepath\\/i, ''))
-            $('input:submit').attr('disabled',false);
-            $('#geneBtn').prop('disabled',true);
+            //$('#insert_filename').text(this.value.replace(/C:\\fakepath\\/i, ''))
+            //$('input:submit').attr('disabled',false);
+            //$('#geneBtn').prop('disabled',true);
             console.log()
             var file = this.files[0];
             uploadFile(file);
     }
 });
+
+$('#clearButton').click(function(){
+    $('#enterGenes').val('');
+})
 
 function uploadFile(file){
     var formData = new FormData();
@@ -25,11 +28,10 @@ function uploadFile(file){
         type: 'POST',
         data: formData,
         contentType: false,
-        processData: false
-        //Ajax events
-        //success: function(html){
-        //    alert(html);
-        //}
+        processData: false,
+        success: function(jsonReturn){
+            $('#enterGenes').val(jsonReturn['data'].join('\n'));
+        }
     });
 }
 

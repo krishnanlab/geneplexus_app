@@ -4,17 +4,20 @@ $('#geneButton').click(function(){
     $("input[type='file']").trigger('click');
 })
 
-// when model form submitted, show spinner (both for local run and remote trigger)
-$("#model-form").on("submit", function () {
-    $('#divLoading').show();
-});
+$('#insertGeneButton').click(function(){
+    $("input[type='file']").trigger('click');
+ });
 
-$('input:file').change(
+ $('#clearButton').click(function(){
+    $('#enterGenes').val('');
+})
+
+ $('#insertGenesInput').change(
     function(){
         if ($(this).val()) {
-            $('#filename').text(this.value.replace(/C:\\fakepath\\/i, ''))
-            $('input:submit').attr('disabled',false);
-            $('#geneBtn').prop('disabled',true);
+            //$('#insert_filename').text(this.value.replace(/C:\\fakepath\\/i, ''))
+            //$('input:submit').attr('disabled',false);
+            //$('#geneBtn').prop('disabled',true);
             console.log()
             var file = this.files[0];
             uploadFile(file);
@@ -29,13 +32,11 @@ function uploadFile(file){
         type: 'POST',
         data: formData,
         contentType: false,
-        processData: false
-        //Ajax events
-        //success: function(html){
-        //    alert(html);
-        //}
+        processData: false,
+        success: function(jsonReturn){
+            $('#enterGenes').val(jsonReturn['data'].join('\n'));
+        }
     });
-    event.preventDefault();
 }
 
 function sampleGenes(){
@@ -64,8 +65,8 @@ function saveGenes(){
             $("#geneButton").css("pointer-events", "none");
             $('#filename').empty();
         }
+
     });
-    event.preventDefault();
 }
 
 function clearInput(){
@@ -75,12 +76,11 @@ function clearInput(){
         success: function(data) {
             console.log(data.success);
             $('input:submit').attr('disabled',true);
-            $('#filename').val("");
+            $('#filename').empty();
             $('#geneBtn').prop('disabled', false);
             $("#geneButton").css("pointer-events", "auto");
         }
     });
-    event.preventDefault();
 }
 
 
