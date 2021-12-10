@@ -17,53 +17,12 @@
                    <span>
                        <br>
                        <fieldset class="border box_padding fieldset">
-                           <label>
-                               1. Enter Input Genes
-                           </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                                  data-content="Upload of file of Gene IDs or input them manually.
-                                  Acceptable Gene IDs are; Entrez, ENSG, Symbol, ENSP, ENST.
-                                  The format is delimited by newline (i.e. each gene is on a separate line)">
-                           <i class="fas fa-question-circle"></i></a>
-                           <div>
-                                <span id="geneButton" class="btn btn-sm">Input Genes from File</span>
-                                <span id="filename" class="text-center"></span>
-                                <input class="btn btn-sm btn-outline-primary py-0" style="font-size: 0.0em;"
-                                       type="file"
-                                       title=" "
-                                       name="input_genes"
-                                       accept="txt/csv"
-                                       />
-                           </div>
-                           <div class="button_padding">
-                               <button type="button"
-                                       id="sampleBtn"
-                                       class="btn btn-sm"
-                                       onclick="window.location.href='/uploads/DOID-9562-STRING-Adjacency-DisGeNet-Symbols.txt'">
-                                  Download Sample Gene File
-                                </button>
-                           </div>
-                           <label>Or</label>
                            <div class="button_padding">
                                <!-- Button trigger modal -->
                                 <button type="button" id="geneBtn" class="btn btn-sm"  data-toggle="modal" data-target="#geneModal">
-                                  Enter / Paste Genes
+                                  Add Genes
                                 </button>
                            </div>
-                           <div class="button_padding">
-                                <button type="button" id="geneClear" class="btn btn-sm"  onclick="clearInput()">
-                                  Clear Input
-                                </button>
-                           </div>
-                           <br>
-                           <label>
-                               2. Check if IDs are Valid
-                           </label>&nbsp;<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                                  data-content="All IDs will be converted to Entrez IDs to be used in the machine learning model.
-                                  The resulting spreadsheet shows how the input genes were converted and if they were in the molecular networks.">
-                           <i class="fas fa-question-circle"></i></a>
-                            <div class="button_padding">
-                                <input type="submit" disabled name="submit_button" class="btn btn-sm border dark" value="Check if IDs are Valid">
-                            </div>
                        </fieldset>
                    </span>
                 </div>
@@ -140,8 +99,13 @@
                     <textarea class="form-control rounded-0" id="enterGenes" rows="25" name="genesInput"></textarea>
                   </div>
                   <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Validate</button>
+                    <div class="mr-auto">
+                      <button type="button" id="clearButton" class="btn btn-secondary">Clear Input</button>
+                  </div>
+                  <div>
+                      <button type="button" class="btn btn-secondary p-2" data-dismiss="modal">Cancel</button>
+                      <button type="submit" class="btn btn-primary p-2">Validate</button>
+                  </div>
                   </div>
                 </form>
             </div>

@@ -121,7 +121,6 @@ def validate():
     form = ValidateForm()
 
     app.logger.info('validate button')
-    print(dir(request))
 
     string = request.form['genesInput'] # read in the file
     # convert the FileStorage object to a string
@@ -143,7 +142,7 @@ def validate():
 
     df_convert_out, table_summary, input_count = models.make_validation_df(df_convert_out)
     pos = min([ sub['PositiveGenes'] for sub in table_summary ])
-    return render_template("validation.html", form=form, pos=pos, table_summary=table_summary,
+    return render_template("validation.html", form=form, pos=pos, table_summary=table_summary, existing_genes=input_genes,
                             validate_table=df_convert_out.to_html(index=False,
                             classes='table table-striped table-bordered" id = "validatetable'))
 
