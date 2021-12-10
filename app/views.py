@@ -121,16 +121,17 @@ def validate():
     form = ValidateForm()
 
     app.logger.info('validate button')
-    if not 'genes' in session:
-        f = request.files['input_genes'] # read in the file
-        # convert the FileStorage object to a string
-        string = f.stream.read().decode("UTF8")
-        # remove any single quotes if they exist
-        no_quotes = string.translate(str.maketrans({"'": None}))
-        input_genes_list = no_quotes.splitlines()  # turn into a list
-        input_genes_upper = np.array([item.upper() for item in input_genes_list])
-        # remove any whitespace
-        session['genes'] = [x.strip(' ') for x in input_genes_upper]
+    print(dir(request))
+
+    string = request.form['genesInput'] # read in the file
+    # convert the FileStorage object to a string
+    #string = f.stream.read().decode("UTF8")
+    # remove any single quotes if they exist
+    no_quotes = string.translate(str.maketrans({"'": None}))
+    input_genes_list = no_quotes.splitlines()  # turn into a list
+    input_genes_upper = np.array([item.upper() for item in input_genes_list])
+    # remove any whitespace
+    session['genes'] = [x.strip(' ') for x in input_genes_upper]
 
     input_genes = session['genes']
 
