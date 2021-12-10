@@ -282,6 +282,17 @@ def uploadgenes():
         pass
 
     file = request.files['formData'].filename
+    try:
+        string = request.files['formData'].stream.read().decode("UTF8")
+        no_quotes = string.translate(str.maketrans({"'": None}))
+        input_genes_list = no_quotes.splitlines()  # turn into a list
+        input_genes_upper = np.array([item.upper() for item in input_genes_list])
+        # remove any whitespace
+        toReturn = [x.strip(' ') for x in input_genes_upper]
+        return jsonify(success=True, data=toReturn)
+    except Exception as e:
+        print(e)
+        return jsonify(success=False, filename=None)
 
     return jsonify(success=True, filename=file)
 

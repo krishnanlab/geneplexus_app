@@ -210,3 +210,18 @@ div.dt-buttons {
 #validatetable {
     display: none;
 }
+
+.modal-lg {
+    width: 460px !important;
+}
+
+.smaller-button {
+    width: 150px !important;
+}
+
+#insertGeneButton {
+    width: 250px;
+    height: 30px;
+    text-align: center;
+    background-color: #efefef;
+}
