@@ -128,6 +128,11 @@ def validate():
     # remove any single quotes if they exist
     no_quotes = string.translate(str.maketrans({"'": None}))
     input_genes_list = no_quotes.splitlines()  # turn into a list
+    if len(input_genes_list) == 0:
+        flash("You need to input at least one positive gene", "error")
+        return redirect('index')
+    if len(input_genes_list) < 5:
+        flash("Using less than 5 positive genes might not produce useful results", "error")
     input_genes_upper = np.array([item.upper() for item in input_genes_list])
     # remove any whitespace
     session['genes'] = [x.strip(' ') for x in input_genes_upper]
