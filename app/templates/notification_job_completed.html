@@ -1,0 +1,15 @@
+{% extends "notification_base.html" %}
+
+{% block message_content %}
+
+<p>Your job {{job_config['jobname']}} is complete:</p>
+
+<ul>
+<li>Results link: <a href="{{job_url}}">{{job_url}}</a></li>
+<li>Job name:  {{job_config['jobname']}}</li>
+<li>Network: {{job_config['net_type']}}</li>
+<li>Features: {{job_config['features']}}</li>
+<li>Negative Selection: {{job_config['GSC']}}</li>
+
+</ul>
+{% endblock %}
