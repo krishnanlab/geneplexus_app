@@ -50,7 +50,7 @@ class Notifier():
         
         self.api_key = app_config.get('SENDGRID_API_KEY')
         self.sender_email = app_config.get('NOTIFIER_EMAIL_ADDRESS')
-        self.app_config = app_config # What else do we really need from app_config??
+        self.app_config = app_config # What else do we really need from app_config??  app_name to make this generic
         self.job_status_codes = job_status_codes
         module_root = os.path.join(os.path.dirname(__file__), template_folder)
         self.template_env = Environment(loader=FileSystemLoader(module_root))
@@ -105,39 +105,45 @@ class Notifier():
             print("notification mailer error", e, file=sys.stderr)
             return(None)
 
-    def notify(self, to_address, job_config, event, subject_line = "Geneplexus: job information"):
+    def notify(self, to_address, job_config, event, subject_line = None):
         """create and deliver a message based on standard job status codes"""
         message_content = self.render_message(job_config, event)
+        if not subject_line:
+            event_name = self.job_status_codes[event]
+            subject_line = "Geneplexus job information : {event_name}"
+
         mail_status_code = self.send_email(to_address, message_content, subject_line)
         return(mail_status_code)
             
-    def notify_create(self, job_config):
+    def notify_accepted(self, job_config):
         """ standard create job notification"""
-        if ('jobname' in job_config )and ('notifyaddress' in job_config):
-            return(self.notify(job_config['notifyaddress'], job_config, 202, subject_line = f"Geneplexus: job '{job_config['jobname'] }' created"))
+        event = 202 # based on standard job config
+        if ('jobname' in job_config )and (job_config.get('notifyaddress')):
+            # if job config has minimal info, fire notifiy
+            subject_line = f"Geneplexus: job '{job_config['jobname'] }' {self.job_status_codes[event]}"
+            return self.notify(job_config['notifyaddress'], job_config, event, subject_line)
         else:
-            print('job info missing notifyaddress and.or jobname', file=sys.stderr)
+            print('job info missing notifyaddress and/or jobname', file=sys.stderr)
             return(None)
 
-    def notify_completed(self, to_address, job_config):
+    def notify_completed(self, job_config):
         """ standard job completed message"""
-        if ('jobname' in job_config) and ('notifyaddress' in job_config):
-            return(self.notify(job_config['notifyaddress'], job_config, 202, subject_line = f"Geneplexus: job '{job_config['jobname']}' completed"))
+        event = 200 # based on standard job config
+        if ('jobname' in job_config )and (job_config.get('notifyaddress')):
+            # if job config has minimal info, fire notifiy
+            subject_line = f"Geneplexus: job '{job_config['jobname'] }' {self.job_status_codes[event]}"
+            return self.notify(job_config['notifyaddress'], job_config, event, subject_line)
         else:
-            print('job info missing notifyaddress and.or jobname', file=sys.stderr)
+            print('job info missing notifyaddress and/or jobname', file=sys.stderr)
             return(None)
 
 
 def test_notifier(app, address='mail@billspat.com'):
     """ send test message, requires an app object (e.g. run from Flask shell ) """
-        
-    ex_job_config = {'net_type' : 'BioGRID', 'features':'Embedding','GSC':'GO','jobname':"example_job_12345",'notifyaddress':address}
+    ex_job_config = {'net_type' : 'BioGRID', 'features':'Embedding','GSC':'GO','jobname':"example_job_12345",'notifyaddress':address, 'job_url':"http://localhost:5000"}
+    print("testing with ", ex_job_config)
     notifier = Notifier(app.config)
-    notifier_response = notifier.notify_create(ex_job_config)
-    if notifier_response:
-        print(notifier_response)
-    else:
-        print(" notifier did not respond")
+    print("job completed notifier_response: ", notifier.notify_accepted(ex_job_config))
 
 
 
