@@ -9,6 +9,10 @@ from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 from jinja2 import Environment, FileSystemLoader
 
+# TODO find a way to import from jobs with circular imports
+default_job_status_codes = {200:"Completed", 201:"Created", 202:"Accepted", 404:"Not Found", 500:"Internal Server Error", 504:"Timeout"}
+
+
 
 class Notifier():
     """Send Notification emails based on job events using standard templates defined in a template folder
@@ -42,7 +46,7 @@ class Notifier():
 
     """
 
-    def __init__(self, app_config, job_status_codes = {202:"Accepted", 200:"Completed"},template_folder = 'templates'):
+    def __init__(self, app_config, job_status_codes = default_job_status_codes, template_folder = 'templates'):
 
         if 'SENDGRID_API_KEY' not in app_config:
             print("The 'SENDGRID_API_KEY' was not found in application configuration", file = sys.stderr)

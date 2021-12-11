@@ -1,11 +1,11 @@
 import requests
 import json
-import re, os, errno, sys, subprocess
+import os, sys #, re, errno
 from slugify import slugify
-from pandas import DataFrame
+# from pandas import DataFrame
 # import pandas as pd
 from datetime import datetime
-# from app.models import run_and_render
+from app.models import run_and_render
 
 
 # job status codes is a simple dictionary mirroring a small subset of http status codes
@@ -178,12 +178,12 @@ def launch_job(genes, job_config, app_config):
 
     if app_config['RUN_LOCAL']:
         print("running job locally (may take a while")
-        # html_output = run_and_render(genes, net_type=job_config['net_type'], features=job_config['features'], GSC=job_config['GSC'], jobname=jobname, output_path=local_job_folder)
+        html_output = run_and_render(genes, net_type=job_config['net_type'], features=job_config['features'], GSC=job_config['GSC'], jobname=jobname, output_path=local_job_folder)
 
-        # # TODO find the method here that constructs a results file! 
-        # results_file = os.path.join(local_job_folder, 'results.html')
-        # with open(results_file, 'w') as f:
-        #     f.write(html_output)
+        # TODO find the method here that constructs a results file! 
+        results_file = os.path.join(local_job_folder, 'results.html')
+        with open(results_file, 'w') as f:
+            f.write(html_output)
         response = "200"
 
     else:

@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 import logging
 from pathlib import Path
 from app.notifier import Notifier
-from app.jobs import job_status_codes
 
 # note : if using 'flask run' from command line this is unecessary as flask autoamtiaclly read .flaskenv
 load_dotenv('.flaskenv')
@@ -33,7 +32,6 @@ job_folder = Path(app.config.get('JOB_PATH'))
 if not job_folder.exists():
     job_folder.mkdir()
 
-app.notifier = Notifier(app.config, job_status_codes, template_folder = 'templates')
+app.notifier = Notifier(app.config, template_folder = 'templates')
 
-#TODO do we need this here?
-from app import views, models
+from app import views
