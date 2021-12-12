@@ -56,8 +56,8 @@ class Notifier():
         self.sender_email = app_config.get('NOTIFIER_EMAIL_ADDRESS')
         self.app_config = app_config # What else do we really need from app_config??  app_name to make this generic
         self.job_status_codes = job_status_codes
-        module_root = os.path.join(os.path.dirname(__file__), template_folder)
-        self.template_env = Environment(loader=FileSystemLoader(module_root))
+        template_path = os.path.join(os.path.dirname(__file__), template_folder)
+        self.template_env = Environment(loader=FileSystemLoader(template_path))
 
     def render_message(self, job_config, event=None):
         """ using standard job status codes, find template file and build jinja template"""

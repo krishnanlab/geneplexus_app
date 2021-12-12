@@ -1,0 +1,72 @@
+FROM ubuntu:18.04
+# Geneplexus Job Runner
+# this is the Dockerfile to build an image that will run the model and save html results
+# it uses the same Python code as the application
+# but is a different Python and set of libs for speed
+# the main difference is that this image/container does not run a webserver, 
+# it only runs the "runner.sh" shell script that uses environment variables to 
+# the parameters for the model 
+# those environment variables are set when the docker container is run 
+ARG CONDA_VERSION=4.9.2
+ARG PYTHON_VERSION=3.8
+
+ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
+ENV PATH /opt/miniconda/bin:$PATH
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update --fix-missing && \
+    apt-get install -y apt-utils wget bzip2 && \
+    apt-get install -y fuse && \
+    apt-get clean -y && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN useradd --create-home dockeruser
+WORKDIR /home/dockeruser
+USER dockeruser
+
+# install anaconda python
+# using anaconda because it's numpy built with Intel MKL for speed
+RUN wget --quiet     https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
+    -O ~/miniconda.sh && \
+    /bin/bash ~/miniconda.sh -b -p ~/miniconda && \
+    rm ~/miniconda.sh && \
+    ~/miniconda/bin/conda clean -tipsy 
+
+# add anaconda to the front of the path
+ENV PATH="/home/dockeruser:/home/dockeruser/miniconda/bin:${PATH}"
+
+COPY requirements.txt .
+
+# install packages using conda, one at a time
+RUN conda install -y conda=${CONDA_VERSION} python=${PYTHON_VERSION} pip && \
+    conda install -y -c conda-forge --file requirements.txt && \
+    conda clean -aqy && \
+    rm -rf ~/miniconda/pkgs && \
+    find ~/miniconda/ -type d -name __pycache__ -prune -exec rm -rf {} \;
+
+# optional alternative install, one package at a time for troubleshooting and saved for reference
+#    for p in `cat requirements.txt`; do conda install -y -c conda-forge $p; done && \
+
+# copy Python scripts needed into the image
+# since this will not be run by the app service, but as a stand-alone container
+
+COPY app app
+COPY config.py .
+COPY .flaskenv .
+COPY runner.py .
+COPY runner.sh .
+
+# note about back-end data files
+# the data files needed by the model are not copied into this container
+# but the scripts assume the files are mounted and available to the container
+# based on the DATA_PATH env variable, set when the the container is run
+
+# RUN CMD
+# this command launches the python model runner shell script 
+# which reads environment variables 
+# invoking this container requires setting env variables on the command line
+# see runner.sh for those
+CMD cd /home/dockeruser && ./runner.sh
+
+# no entry point is needed since the container runs a single script ('job')
+ENTRYPOINT []

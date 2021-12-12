@@ -2,10 +2,8 @@ import requests
 import json
 import os, sys #, re, errno
 from slugify import slugify
-# from pandas import DataFrame
-# import pandas as pd
 from datetime import datetime
-from app.models import run_and_render
+from mljob.geneplexus import run_and_render
 
 
 # job status codes is a simple dictionary mirroring a small subset of http status codes

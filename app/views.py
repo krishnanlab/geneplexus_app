@@ -1,9 +1,11 @@
-from app.jobs import path_friendly_jobname, launch_job, retrieve_job_folder,retrieve_results,job_info_list,valid_results_filename,results_file_dir
+from mljob.jobs import path_friendly_jobname, launch_job, retrieve_job_folder,retrieve_results,job_info_list,valid_results_filename,results_file_dir
 
 from werkzeug.exceptions import InternalServerError
 from flask import request, render_template, jsonify, session, redirect, url_for, flash, send_file, Markup, abort,send_from_directory
 from app.forms import ValidateForm, JobLookupForm
-from app import app, models
+from app import app 
+from mljob import geneplexus  # models
+geneplexus.data_path = app.config.get("DATA_PATH")
 
 import os
 import uuid
@@ -139,12 +141,12 @@ def validate():
     input_genes = session['genes']
 
     # run all the components of the model and pass to the results form
-    convert_IDs, df_convert_out = models.intial_ID_convert(input_genes)
+    convert_IDs, df_convert_out = geneplexus.intial_ID_convert(input_genes)
 
     jobid = str(uuid.uuid1())[0:8]
     form.jobid.data = jobid
 
-    df_convert_out, table_summary, input_count = models.make_validation_df(df_convert_out)
+    df_convert_out, table_summary, input_count = geneplexus.make_validation_df(df_convert_out)
     pos = min([ sub['PositiveGenes'] for sub in table_summary ])
     return render_template("validation.html", form=form, pos=pos, table_summary=table_summary, existing_genes=input_genes,
                             validate_table=df_convert_out.to_html(index=False,
@@ -233,12 +235,12 @@ def run_model():
         return redirect('jobs')
 
     # this option is for testing, and not usually available as a button on the website
-    if form.runlocal.data : 
-        # this runs the model on the spot and simply returns the results as HTML file
-        app.logger.info('running model, jobname %s', jobname)
-        results_html = models.run_and_render(input_genes, net_type, features, GSC, jobname)
-        app.logger.info('model complete, rendering template')
-        return(results_html)
+    # if form.runlocal.data : 
+    #     # this runs the model on the spot and simply returns the results as HTML file
+    #     app.logger.info('running model, jobname %s', jobname)
+    #     results_html = geneplexus.run_and_render(input_genes, net_type, features, GSC, jobname)
+    #     app.logger.info('model complete, rendering template')
+    #     return(results_html)
 
     # we reach here if the submit button value is neither possibility
     return("invalid form data ")
