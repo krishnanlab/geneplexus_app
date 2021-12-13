@@ -1,0 +1,89 @@
+<div class="sidenav">
+    <form id="model-form" action="{{ url_for('validate') }}" method="POST", enctype="multipart/form-data">
+        <div class="item-content">
+           <span>
+               <br>
+               <fieldset class="border box_padding fieldset">
+                   <div class="button_padding">
+                       <!-- Button trigger modal -->
+                       <label>
+                           1. Enter/Load Gene Set
+                       </label>
+                        <button type="button" id="geneBtn" class="btn btn-sm"  data-toggle="modal" data-target="#geneModal">
+                          Add Genes
+                        </button>
+                   </div>
+               </fieldset>
+           </span>
+        </div>
+    </form>
+    {% if valid_form is defined %}
+    <form id="model-form" action="{{ url_for('run_model') }}" method="POST", enctype="multipart/form-data">
+        <div class="item-content">
+            <span>
+            {{ valid_form.csrf_token }}
+            <br>
+                <fieldset class="border box_padding fieldset">
+                    <label>
+                        2. Job Name
+                    </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                        data-content="The default job name is a unique identifier that will be assigned
+                        once the model is run.  Optionally, a prefix can be added for easier identification
+                            by typing text into the box below">
+                            <i class="fas fa-question-circle"></i></a>
+                    <div>
+                        <label>(Optional) Add a prefix to the job</label>
+                        <div class="d-flex justify-content-left">
+                            <span>{{ valid_form.prefix }}</span>   -   <span>{{ valid_form.jobid(class_="form-control-plaintext") }}</span>
+                        </div>
+                    </div>
+                    <br>
+                    <label>
+                        3. Select Molecular Network
+                    </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                        data-content="Select the molecular network that will be used in training the model.">
+                    <i class="fas fa-question-circle"></i></a>
+                    <div>
+                    {{ valid_form.network }}
+                    </div>
+                    <br>
+                    <label>
+                        4. Select Feature Type
+                    </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                    data-content="Select how the connections of chosen network will be represented as features in the machine learning model.">
+                    <i class="fas fa-question-circle"></i></a>
+                    <div class="select">
+                        {{ valid_form.features }}
+                    </div>
+                    <br>
+                    <label>
+                        5. Select Negative Gene Class
+                    </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                    data-content="Select the type of genes in the negative class – genes annotated to Gene Ontology Biological Processes or to disease in the DisGeNet database – based on whether the input genes represent a process/pathway or a disease.">
+                    <i class="fas fa-question-circle"></i></a>
+                    <div class="select">
+                        {{ valid_form.negativeclass }}
+                    </div>
+                    <br>
+                    6. (Optional) Notification Email Address
+                    </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                    data-content="Optionally enter an email address for job notifications.  We will never share your email address outside of this application, add you to a mailing list, or send unsolicited communication.">
+                    <i class="fas fa-question-circle"></i></a>
+                    <div class="select">
+                        {{ valid_form.notifyaddress }}
+                    </div>
+                    <br>
+                    
+                    {{ valid_form.runbatch(class_="btn btn-sm btn-primary") }}
+                    <br/>
+                    <a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                    data-content="Hitting this button will launch a process in the cloud to train the machine learning model.
+                    The link to view the results will be available in the Jobs tab when completed.">
+                    <i class="fas fa-question-circle"></i></a>
+                </fieldset>
+            </span>
+        </div>
+    </form>
+    {% else %}
+    {% endif %}
+</div>

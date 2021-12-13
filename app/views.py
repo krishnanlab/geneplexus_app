@@ -9,15 +9,16 @@ from app.notifier import notify
 import os
 import uuid
 import numpy as np
-
-
+import pandas as pd
 
 @app.route("/", methods=['GET'])
 @app.route("/index", methods=['GET'])
 def index():
 
     if request.method == 'GET':
-
+        session_args = create_sidenav_kwargs()
+        if session_args is not None:
+            return render_template("validation.html", **session_args)
         return render_template("index.html")
 
 
@@ -131,8 +132,6 @@ def validate():
     if len(input_genes_list) == 0:
         flash("You need to input at least one positive gene", "error")
         return redirect('index')
-    if len(input_genes_list) < 5:
-        flash("Using less than 5 positive genes might not produce useful results", "error")
     input_genes_upper = np.array([item.upper() for item in input_genes_list])
     # remove any whitespace
     session['genes'] = [x.strip(' ') for x in input_genes_upper]
@@ -147,7 +146,14 @@ def validate():
 
     df_convert_out, table_summary, input_count = models.make_validation_df(df_convert_out)
     pos = min([ sub['PositiveGenes'] for sub in table_summary ])
-    return render_template("validation.html", form=form, pos=pos, table_summary=table_summary, existing_genes=input_genes,
+
+    session['jobid'] = jobid
+    session['pos'] = pos
+    session['df_convert_out'] = df_convert_out.to_dict()
+    session['table_summary'] = table_summary
+
+
+    return render_template("validation.html", valid_form=form, pos=pos, table_summary=table_summary, existing_genes=input_genes,
                             validate_table=df_convert_out.to_html(index=False,
                             classes='table table-striped table-bordered" id = "validatetable'))
 
@@ -322,3 +328,16 @@ def inject_template_scope():
         return value == 'true'
     injections.update(cookies_check=cookies_check)
     return injections
+
+def create_sidenav_kwargs():
+    if  'genes' in session and \
+        'jobid' in session and \
+        'pos' in session and \
+        'df_convert_out' in session and \
+        'table_summary' in session:
+        form = ValidateForm()
+        form.jobid.data = session['jobid']
+        validate_html = pd.DataFrame(session['df_convert_out']).to_html(index=False,
+                            classes='table table-striped table-bordered" id = "validatetable')
+        return {'existing_genes': session['genes'], 'pos': session['pos'], 'table_summary': session['table_summary'], 'validate_table': validate_html, 'valid_form': form}
+    return None

@@ -10,24 +10,8 @@
     <body>
        <header>
         {% include 'navbar.html'  ignore missing  %}
-        </header>
-       <div class="sidenav">
-            <form id="model-form" action="{{ url_for('validate') }}" method="POST", enctype="multipart/form-data">
-                <div class="item-content">
-                   <span>
-                       <br>
-                       <fieldset class="border box_padding fieldset">
-                           <div class="button_padding">
-                               <!-- Button trigger modal -->
-                                <button type="button" id="geneBtn" class="btn btn-sm"  data-toggle="modal" data-target="#geneModal">
-                                  Add Genes
-                                </button>
-                           </div>
-                       </fieldset>
-                   </span>
-                </div>
-            </form>
-       </div>
+       </header>
+       {% include 'sidenav.html' ignore missing %}
         <div class="container">
           {% include 'messages.html' ignore missing %}
             <div id="content-padding" class="pl-4 pt-4">
