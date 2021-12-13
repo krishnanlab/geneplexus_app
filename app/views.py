@@ -17,7 +17,7 @@ def index():
 
     if request.method == 'GET':
         session_args = create_sidenav_kwargs()
-        if session_args is not None:
+        if len(session_args) > 0:
             return render_template("validation.html", **session_args)
         return render_template("index.html")
 
@@ -26,20 +26,21 @@ def index():
 def about():
 
     if request.method == 'GET':
-
-        return render_template("about.html")
+        session_args = create_sidenav_kwargs()
+        return render_template("about.html", **session_args)
 
 
 @app.route("/help", methods=['GET'])
 def help():
 
     if request.method == 'GET':
-
-        return render_template("help.html")
+        session_args = create_sidenav_kwargs()
+        return render_template("help.html", **session_args)
 
 @app.route("/contact", methods=['GET'])
 def contact():
-    return render_template("contact.html")
+    session_args = create_sidenav_kwargs()
+    return render_template("contact.html", **session_args)
 
 
 @app.route("/jobs/", methods=['GET', 'POST'])
@@ -340,4 +341,4 @@ def create_sidenav_kwargs():
         validate_html = pd.DataFrame(session['df_convert_out']).to_html(index=False,
                             classes='table table-striped table-bordered" id = "validatetable')
         return {'existing_genes': session['genes'], 'pos': session['pos'], 'table_summary': session['table_summary'], 'validate_table': validate_html, 'valid_form': form}
-    return None
+    return {}
