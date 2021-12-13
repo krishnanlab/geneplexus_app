@@ -9,9 +9,11 @@
                        <label>
                            1. Enter/Load Gene Set
                        </label>
+                       <div class="mb-2">
                         <button type="button" id="geneBtn" class="btn btn-sm"  data-toggle="modal" data-target="#geneModal">
-                          Add Genes
+                          {% if valid_form is defined %}Edit Loaded Genes{% else %}Add Genes{% endif %}
                         </button>
+                       </div>
                    </div>
                </fieldset>
            </span>
@@ -87,8 +89,10 @@
     {% else %}
     {% endif %}
 </div>
+
+<!-- Modal -->
 <div class="modal fade" id="geneModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-dialog" role="document">
       <div class="modal-content">
           <form id="modal-form" method="POST", enctype="multipart/form-data" action="{{ url_for('validate') }}">
             <div class="modal-header">
@@ -97,21 +101,30 @@
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
-            <!--<div style="padding-left:20px" onclick="sampleGenes()"><button>Click to load a Sample Gene Set</button></div>-->
-            <div id="button-body" class="d-flex justify-content-between">
-              <div style="padding-left:20px" onclick="sampleGenes()">
-                <button type="button" class="btn btn-sm">Click to load a Sample Gene Set</button>
-              </div>
-              <div style="padding-left:20px">
-                <span id="insertGeneButton" class="btn btn-sm smaller-button">Select Gene File</span>
-                <span id="insert_filename" class="text-center"></span>
-                <input id="insertGenesInput" class="btn btn-sm py-0" style="font-size: 0.0em;"
-                        type="file"
-                        title=" "
-                        name="insert_genes"
-                        accept="txt/csv"
-                        />
-              </div>
+            <div>
+                <div class="row justify-content-center mb-0 pd-0">
+                    <div  class="col-4" onclick="sampleGenes()">
+                        <button type="button" class="btn btn-sm">Click to load a Sample Gene Set</button>
+                    </div>
+                    <div class="col-3"></div>
+                    <div class="col-4">
+                        <span id="insertGeneButton" class="btn btn-sm smaller-button col">Select Gene File</span>
+                        <span id="insert_filename" class="text-center"></span>
+                        <input id="insertGenesInput" class="btn btn-sm py-0" style="font-size: 0.0em;"
+                                type="file"
+                                title=" "
+                                name="insert_genes"
+                                accept="txt/csv"
+                                />
+                    </div>
+                </div>
+                <div class="row mt-0 pt-0 justify-content-center">
+                    <div  class="col-4" onclick="sampleGenes()">
+                        <button type="button" class="btn btn-sm">Click to load a Sample Gene Set</button>
+                    </div>
+                    <div class="col-3"></div>
+                    <div class="col-4"></div>
+                </div>
             </div>
             <div class="modal-body">
               <textarea class="form-control rounded-0" id="enterGenes" rows="25" name="genesInput">{{ '\n'.join(existing_genes) }}</textarea>
@@ -129,4 +142,3 @@
       </div>
     </div>
   </div>
-<script src="{{url_for('static', filename='sidenav.js')}}" defer></script>

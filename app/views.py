@@ -118,10 +118,15 @@ def results():
 
         return render_template("results.html")
 
+@app.route("/cleargenes", methods=['POST'])
+def cleargenes():
+    session.pop('genes')
+    session.pop('pos')
+    session.pop('df_convert_out')
+    session.pop('table_summary')
 
 @app.route("/validate", methods=['GET','POST'])
 def validate():
-    clear_sidenav_session()
     form = ValidateForm()
 
     app.logger.info('validate button')
@@ -340,63 +345,7 @@ def create_sidenav_kwargs():
         'table_summary' in session:
         form = ValidateForm()
         form.jobid.data = session['jobid']
-        if 'prefix' in session:
-            form.prefix.data = session['prefix']
-        if 'notifyaddress' in session:
-            form.notifyaddress.data = session['notifyaddress']
-        if 'network' in session:
-            form.network.data = session['network']
-        if 'features' in session:
-            form.features.data = session['features']
-        if 'negativeclass' in session:
-            form.negativeclass.data = session['negativeclass']
         validate_html = pd.DataFrame(session['df_convert_out']).to_html(index=False,
                             classes='table table-striped table-bordered" id = "validatetable')
         return {'existing_genes': session['genes'], 'pos': session['pos'], 'table_summary': session['table_summary'], 'validate_table': validate_html, 'valid_form': form}
     return {}
-
-def clear_sidenav_session(include_genes=False, include_email=False):
-    if include_genes:
-        session.pop('genes', None)
-    if include_email:
-        session.pop('notifyaddress', None)
-    session.pop('prefix', None)
-    session.pop('network', None)
-    session.pop('features', None)
-    session.pop('negativeclass', None)
-    session.pop('jobid', None)
-    session.pop('pos', None)
-    
-
-
-
-# For security reasons we are going to have helper functions to ONLY set what session variables we want
-@app.route("/set_prefix", methods=['POST'])
-def set_prefix():
-    value = request.get_json()['value']
-    session['prefix'] = value
-    return jsonify(success=True)
-
-@app.route("/set_notifyaddress", methods=['POST'])
-def set_notifyaddress():
-    value = request.get_json()['value']
-    session['notifyaddress'] = value
-    return jsonify(success=True)
-
-@app.route("/set_network", methods=['POST'])
-def set_network():
-    value = request.get_json()['value']
-    session['network'] = value
-    return jsonify(success=True)
-
-@app.route("/set_features", methods=['POST'])
-def set_features():
-    value = request.get_json()['value']
-    session['features'] = value
-    return jsonify(success=True)
-
-@app.route("/set_negativeclass", methods=['POST'])
-def set_negativeclass():
-    value = request.get_json()['value']
-    session['negativeclass'] = value
-    return jsonify(success=True)
