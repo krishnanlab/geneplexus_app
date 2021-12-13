@@ -14,17 +14,19 @@ import pandas as pd
 @app.route("/", methods=['GET'])
 @app.route("/index", methods=['GET'])
 def index():
-
     if request.method == 'GET':
         session_args = create_sidenav_kwargs()
-        if len(session_args) > 0:
-            return render_template("validation.html", **session_args)
-        return render_template("index.html")
+        return render_template("index.html", **session_args)
+
+@app.route("/geneset", methods=['GET'])
+def geneset():
+    if request.method == 'GET':
+        session_args = create_sidenav_kwargs()
+        return render_template("validation.html", **session_args)
 
 
 @app.route("/about", methods=['GET'])
 def about():
-
     if request.method == 'GET':
         session_args = create_sidenav_kwargs()
         return render_template("about.html", **session_args)
@@ -32,7 +34,6 @@ def about():
 
 @app.route("/help", methods=['GET'])
 def help():
-
     if request.method == 'GET':
         session_args = create_sidenav_kwargs()
         return render_template("help.html", **session_args)
@@ -120,6 +121,7 @@ def results():
 
 @app.route("/validate", methods=['GET','POST'])
 def validate():
+    clear_sidenav_session()
     form = ValidateForm()
 
     app.logger.info('validate button')
@@ -153,10 +155,12 @@ def validate():
     session['df_convert_out'] = df_convert_out.to_dict()
     session['table_summary'] = table_summary
 
+    return redirect('geneset')
 
-    return render_template("validation.html", valid_form=form, pos=pos, table_summary=table_summary, existing_genes=input_genes,
-                            validate_table=df_convert_out.to_html(index=False,
-                            classes='table table-striped table-bordered" id = "validatetable'))
+
+    #return render_template("validation.html", valid_form=form, pos=pos, table_summary=table_summary, existing_genes=input_genes,
+    #                        validate_table=df_convert_out.to_html(index=False,
+    #                        classes='table table-striped table-bordered" id = "validatetable'))
 
 @app.route('/uploads/<path:filename>', methods=['GET', 'POST'])
 def uploads(filename):
@@ -306,9 +310,6 @@ def uploadgenes():
         print(e)
         return jsonify(success=False, filename=None)
 
-    return jsonify(success=True, filename=file)
-
-
 
 @app.errorhandler(InternalServerError)
 def handle_500(e):
@@ -331,6 +332,7 @@ def inject_template_scope():
     return injections
 
 def create_sidenav_kwargs():
+    negative_gene_mapper = {'Diseases (DisGeNet)': 'DisGeNet', 'Processes / pathways (GO)': 'GO'}
     if  'genes' in session and \
         'jobid' in session and \
         'pos' in session and \
@@ -338,7 +340,63 @@ def create_sidenav_kwargs():
         'table_summary' in session:
         form = ValidateForm()
         form.jobid.data = session['jobid']
+        if 'prefix' in session:
+            form.prefix.data = session['prefix']
+        if 'notifyaddress' in session:
+            form.notifyaddress.data = session['notifyaddress']
+        if 'network' in session:
+            form.network.data = session['network']
+        if 'features' in session:
+            form.features.data = session['features']
+        if 'negativeclass' in session:
+            form.negativeclass.data = session['negativeclass']
         validate_html = pd.DataFrame(session['df_convert_out']).to_html(index=False,
                             classes='table table-striped table-bordered" id = "validatetable')
         return {'existing_genes': session['genes'], 'pos': session['pos'], 'table_summary': session['table_summary'], 'validate_table': validate_html, 'valid_form': form}
     return {}
+
+def clear_sidenav_session(include_genes=False, include_email=False):
+    if include_genes:
+        session.pop('genes', None)
+    if include_email:
+        session.pop('notifyaddress', None)
+    session.pop('prefix', None)
+    session.pop('network', None)
+    session.pop('features', None)
+    session.pop('negativeclass', None)
+    session.pop('jobid', None)
+    session.pop('pos', None)
+    
+
+
+
+# For security reasons we are going to have helper functions to ONLY set what session variables we want
+@app.route("/set_prefix", methods=['POST'])
+def set_prefix():
+    value = request.get_json()['value']
+    session['prefix'] = value
+    return jsonify(success=True)
+
+@app.route("/set_notifyaddress", methods=['POST'])
+def set_notifyaddress():
+    value = request.get_json()['value']
+    session['notifyaddress'] = value
+    return jsonify(success=True)
+
+@app.route("/set_network", methods=['POST'])
+def set_network():
+    value = request.get_json()['value']
+    session['network'] = value
+    return jsonify(success=True)
+
+@app.route("/set_features", methods=['POST'])
+def set_features():
+    value = request.get_json()['value']
+    session['features'] = value
+    return jsonify(success=True)
+
+@app.route("/set_negativeclass", methods=['POST'])
+def set_negativeclass():
+    value = request.get_json()['value']
+    session['negativeclass'] = value
+    return jsonify(success=True)

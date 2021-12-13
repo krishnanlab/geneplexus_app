@@ -17,6 +17,7 @@
         {% include 'sidenav.html' ignore missing %}
         <div class="container">
             {% include 'messages.html' ignore missing %}
+            {% if valid_form is defined %}
             <div class="border border-dark">
                 <div class="box_padding">
                     <h4>Summary</h4>
@@ -67,6 +68,12 @@
                 </div>
             </div>
         </div>
+        {% else %}
+        <div class="container">
+            <h2>Please enter a geneset</h2>
+            <p>You can do so by clicking on the "Add Genes" button to the left!</p>
+        </div>
+        {% endif %}
         <!-- Modal -->
         <div class="modal fade" id="geneModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg" role="document">
