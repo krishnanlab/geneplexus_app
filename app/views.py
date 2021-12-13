@@ -63,10 +63,10 @@ def jobs():
     else:
         jobnames = []
         joblist = {}
-
+    session_args = create_sidenav_kwargs()
     return render_template("jobs.html", jobs = jobnames, 
                             joblist = joblist, 
-                            form=form)
+                            form=form, **session_args)
 
 
 @app.route("/jobs/<jobname>", methods=['GET'])

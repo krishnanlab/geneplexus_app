@@ -6,7 +6,12 @@
 
 </style>
 
-<div class="sidenav">
+{% include 'sidenav.html' ignore missing %}
+
+<div class="container">
+    
+    {% include 'messages.html' ignore missing %}
+
     <div class="item-content">
         <h4>Job Lookup</h4>
         <hr>
@@ -26,12 +31,6 @@
         </fieldset>
         </form>      
     </div>
-</div>
-
-<div class="container">
-    
-    {% include 'messages.html' ignore missing %}
-  
     <h4 >Jobs Submitted for this session</h4>
         
     {% if joblist %}
