@@ -147,4 +147,7 @@
       </div>
     </div>
   </div>
+
+  {% block scripts %}
   <script type='text/javascript' src="{{url_for('static', filename='sidebar.js')}}" defer></script>
+  {% endblock %}

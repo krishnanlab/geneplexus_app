@@ -20,6 +20,9 @@
         {% include 'navbar.html'  ignore missing  %}
         </header>
 
+        {% include 'cookies.html' %}
+        {% include 'sidenav.html' %}
+
         {% block app_content %}
         {% endblock %}
         
@@ -40,15 +43,13 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
         <script src="https://cdn.datatables.net/buttons/1.6.4/js/buttons.html5.min.js"></script>
         <script src="https://cdn.datatables.net/buttons/1.6.4/js/buttons.print.min.js"></script>
+        <script src="https://kit.fontawesome.com/e6f3faaa40.js" crossorigin="anonymous"></script>
         <script src="https://d3js.org/d3.v4.min.js"></script>
         <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
         <script src="{{url_for('static', filename='d3-v4-contextmenu.js')}}"></script>
         <script src="{{url_for('static', filename='d3-tip.js')}}"></script>
         <!-- <script src="{{url_for('static', filename='graph.js')}}"></script> -->
-        <script src="{{url_for('static', filename='datatable.js')}}"></script>
-
-        {% include 'cookies.html' %}
-        {% include 'sidenav.html' %}
+        <script src="{{url_for('static', filename='base.js')}}"></script>
 
         
         {% block scripts %}

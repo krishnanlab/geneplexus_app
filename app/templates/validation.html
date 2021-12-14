@@ -63,6 +63,9 @@
 </div>
 {% endif %}
 
+{% block scripts %}
 <script src="{{url_for('static', filename='validation.js')}}"></script>
+<script src="{{url_for('static', filename='datatable.js')}}"></script>
+{% endblock %}
 
 {% endblock %}

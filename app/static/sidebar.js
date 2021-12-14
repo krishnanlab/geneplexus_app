@@ -1,5 +1,3 @@
-$('[data-toggle="popover"]').popover();
-
 $('#insertGeneButton').click(function(){
     $("input[type='file']").trigger('click');
  });
