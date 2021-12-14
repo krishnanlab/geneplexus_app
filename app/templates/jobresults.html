@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% block title %}{% if jobexists %}Job: {{ jobname }}%}{% else %}Job {{ jobname }} does not exist{% endif %}{% endblock %}
+
 {% block app_content %}
 
 <div>
