@@ -1,4 +1,4 @@
-from mljob.jobs import path_friendly_jobname, launch_job, retrieve_job_folder,retrieve_results,job_info_list,valid_results_filename,results_file_dir
+from mljob.jobs import path_friendly_jobname, launch_job, retrieve_job_folder,retrieve_results,job_info_list,valid_results_filename,results_file_dir, job_exists
 
 from werkzeug.exceptions import InternalServerError
 from flask import request, render_template, jsonify, session, redirect, url_for, flash, send_file, Markup, abort,send_from_directory
@@ -73,8 +73,9 @@ def jobs():
 
 @app.route("/jobs/<jobname>", methods=['GET'])
 def job(jobname):
+    jobexists = job_exists(jobname, app.config)
     """ """
-    return render_template("jobresults.html", jobname = jobname)
+    return render_template("jobresults.html", jobname = jobname, jobexists = jobexists)
 
 
 @app.route("/jobs/<jobname>/results",methods=['GET'])
@@ -85,6 +86,7 @@ def jobresults_content(jobname):
         return(results_content) # or in future, send this html to a template wrapper        
     else:
         return(f'<html><body><div class="container"><h3 style="padding-top:50px"> No results yet for the job "{jobname}"</h3></div></body><html>')
+
 
 
 # download results file 
