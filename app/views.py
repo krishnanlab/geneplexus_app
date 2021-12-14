@@ -334,7 +334,6 @@ def inject_template_scope():
     return injections
 
 def create_sidenav_kwargs():
-    negative_gene_mapper = {'Diseases (DisGeNet)': 'DisGeNet', 'Processes / pathways (GO)': 'GO'}
     if  'genes' in session and \
         'jobid' in session and \
         'pos' in session and \
@@ -342,7 +341,8 @@ def create_sidenav_kwargs():
         'table_summary' in session:
         form = ValidateForm()
         form.jobid.data = session['jobid']
-        validate_html = pd.DataFrame(session['df_convert_out']).to_html(index=False,
+        validate_df = pd.DataFrame(session['df_convert_out'])[['Original ID', 'Entrez ID', 'In BioGRID?', 'In STRING?', 'In STRING-EXP?', 'In GIANT-TN?']]
+        validate_html = validate_df.to_html(index=False,
                             classes='table table-striped table-bordered" id = "validatetable')
         return {'existing_genes': session['genes'], 'pos': session['pos'], 'table_summary': session['table_summary'], 'validate_table': validate_html, 'valid_form': form}
     return {}

@@ -8,14 +8,15 @@
         <p>The help page provides various help, advice, and interpretation of the various inputs and outputs on the GenePlexus webserver. </p>
         <h2 id="inputs">Inputs</h2>
         <ul>
-        <li><a href="#supplying-input-genes">Supplying input genes</a></li>
+        <li><a class="anchor" href="#supplying-input-genes">Supplying input genes</a></li>
         <li><a href="#choosing-a-molecular-network">Choosing a molecular network</a></li>
         <li><a href="#choosing-a-way-to-represent-network-features">Choosing a way to represent network features</a></li>
         <li><a href="#choosing-negative-genes">Choosing negative genes</a></li>
         </ul>
-        <h3 id="supplying-input-genes">Supplying input genes</h3>
+        <div style="margin-top: -55px; position: absolute;" id="supplying-input-genes"></div>
+        <h3>Supplying input genes</h3>
         <p>The user can supply a list of genes by either uploading a file of genes or manually entering the genes in a text box. In both cases, each gene needs to be on a new line. 
-        <p>Here is an example gene list file : <a href="{{url_for('static',filename='example-geneplexus-file.txt')}}" download>download example-geneplexus-file.txt</a> </p>    
+        <p>Here is an example gene list file : <a href="/uploads/DOID-9562-STRING-Adjacency-DisGeNet-Symbols.txt" download>download DOID-9562-STRING-Adjacency-DisGeNet-Symbols.txt</a> </p>    
         <p>The following types of gene IDs are allowed as inputs:</p>
         <ul>
         <li>Entrez</li>
@@ -26,28 +27,31 @@
         </ul>
         <p>Note: The <a href="https://useast.ensembl.org/index.html">Ensembl</a> IDs (ENSG, ESNP, ENST) cannot contain any version numbers.</p>
         <p>The genes supplied by the user will be converted to <a href="https://www.ncbi.nlm.nih.gov/Web/Search/entrezfs.html">Entrez</a> gene identifiers using gene ID mappings obtained from 60,000 locally downloaded human gene files from <a href="https://mygene.info/">mygene.info</a>.</p>
-        <p>After uploading/entering the genes, users can validate their input list by clicking the <code>Check if IDs are Valid</code> button. This will pop up two tables:</p>
+        <p>After uploading/entering the genes, users can validate their input list by clicking the <code>Validate</code> button. This will pop up two tables:</p>
         <ul>
         <li>A table that shows the original gene IDs the user supplied and their corresponding Entrez gene IDs. The last four columns indicate whether or not the gene is present in each of the networks in GenePlexus.</li>
         <li>A table that shows for each network, the total number of genes in that network and how many among them are also part of the user supplied gene list.</li>
         </ul>
-        <h3 id="choosing-a-molecular-network">Choosing a molecular network</h3>
-        <p>The user can choose between four human genome-scale molecular networks. For each network, the node are mapped into Entrez gene IDs. For the GIANT-TN network, the original network was additionally filtered to remove edges with scores below the prior probability (0.01). </p>
+        <div style="margin-top: -55px; position: absolute;" id="choosing-a-molecular-network"></div>
+        <h3>Choosing a molecular network</h3>
+        <p>The user can choose between four human genome-scale molecular networks. For each network, the nodes are mapped into Entrez gene IDs. For the GIANT-TN network, the original network was additionally filtered to remove edges with scores below the prior probability (0.01). </p>
         <ul>
         <li><strong><a href="https://thebiogrid.org/">BioGRID</a></strong> (19,022 genes, 484,356 edges). This network is a relatively sparse unweighted network with high gene coverage. The edges in the network are only from verified experimental results.</li>
         <li><strong><a href="https://string-db.org/">STRING</a></strong> (18,582 genes, 5,521,113 edges). This network is a moderately well-connected weighted network that integrates information from multiple sources (experimental results, homology, annotation databases, etc).</li>
         <li><strong><a href="https://string-db.org/">STRING-EXP</a></strong> (17,417 genes, 2,121,428 edges). This network contains only the &quot;experimental&quot; edges from the STRING network.</li>
         <li><strong><a href="http://giant.princeton.edu/">GIANT-TN</a></strong> (25,689 genes, 38,904,929 edges). This is a nearly fully-connected weighted network that is derived from combining data from co-expression networks generated across 1000s of gene expression experiments along with gene interaction information from a few other sources including protein interactions. In this webserver, we use the tissue-naive GIANT network.</li>
         </ul>
-        <h3 id="choosing-a-way-to-represent-network-features">Choosing a way to represent network features</h3>
+        <div style="margin-top: -55px; position: absolute;" id="choosing-a-way-to-represent-network-features"></div>
+        <h3>Choosing a way to represent network features</h3>
         <p>When a network is to be used in a supervised machine learning model, the network connections can be represented as features in one of three ways:</p>
         <ul>
         <li><strong>Adjacency</strong>. This method uses the network edges directly from the molecular networks. This feature type might work best for the <code>STRING</code> and <code>STRING-EXP</code> networks.</li>
         <li><strong>Influence</strong>. The edge information in the original network is diffused over all edges using a random walk with restart technique. This feature type works best for dense networks where many edges may be a bit “noisy”, so here it might be best to use with <code>GIANT-TN</code>.</li>
         <li><strong>Embedding</strong>. The connectivity of a given gene in the network to all the other genes is represented with a low dimensional numerical vector using the <a href="https://arxiv.org/abs/1607.00653">node2vec</a> algorithm. This feature type works best with sparse networks, so here it might be best to use with <code>BioGRID</code>.</li>
         </ul>
-        <h3 id="choosing-negative-genes">Choosing negative genes</h3>
-        <p>In the supervised machine learning model, any gene from the user-supplied gene list that is able to be converted to an Entrez ID and is also in the network is considered part of the positive class. The user can then choose if they want to define genes in the negative class based on one of two geneset collections; <a href="http://geneontology.org/">Gene Ontology Biological Processes</a> or <a href="https://www.disgenet.org/">DisGeNet</a> based on whether the input genes represent a cellular process/pathway or a disease.</p>
+        <div style="margin-top: -55px; position: absolute;" id="choosing-negative-genes"></div>
+        <h3>Choosing negative genes</h3>
+        <p>In the supervised machine learning model, any gene from the user-supplied gene list that is able to be converted to an Entrez ID and is also in the network is considered part of the positive class. The user can then choose if they want to define genes in the negative class based on one of two geneset collections, <a href="http://geneontology.org/">Gene Ontology Biological Processes</a> or <a href="https://www.disgenet.org/">DisGeNet</a>, based on whether the input genes represent a cellular process/pathway or a disease.</p>
         <p>GenePlexus then automatically selects the genes in the negative class by:</p>
         <ol>
         <li>Retaining all terms in the selected geneset collection that have between 10 and 200 genes annotated to them.</li>
@@ -58,7 +62,7 @@
         </ol>
         <p>Looking at the score for the cross-validation on the top of the results page may also help the user choose which network, feature type, and negative class is best for their gene list. Below is a figure showing a summary of results generated from our recent <a href="https://academic.oup.com/bioinformatics/article/36/11/3457/5780279">work</a> benchmarking this method.</p>
         <p><img src="{{url_for('static', filename='help_page_fig.png')}}" alt="help_page_fig" style="width:1100px;height:550px;" />
-        <em>This figure displays results from the paper <a href="https://academic.oup.com/bioinformatics/article/36/11/3457/5780279?login=true">Supervised learning is an accurate method for network-based gene classification</a> where the parameters are options in the GenePlexus webserver. The left panel is for models trained for Gene Ontology biological prcoesses and the right panel is for modles trained for DisGeNet diseases. Each boxplot contains the results of anywhere between 89 and 160 models. Each model was trained using the study-bias holdout method, where for each geneset in a geneset collection, the most well studied genes were used to train the model and the least studied genes were used for testing. This figure can be used to help users pick the network, feature type and negative selection class that best suits their input gene list. It is worth noting that the STRING network is built in part by using Gene Ontology and DisGeNet annotations, and this circualriy could be the reason for the enhanced performance of the STRING network in this evaluation.</em>  </p>
+        <em>This figure displays results from the paper <a href="https://academic.oup.com/bioinformatics/article/36/11/3457/5780279?login=true">Supervised learning is an accurate method for network-based gene classification</a> where the parameters are options in the GenePlexus webserver. The left panel is for models trained for Gene Ontology biological prcoesses and the right panel is for models trained for DisGeNet diseases. Each boxplot contains the results of anywhere between 89 and 160 models. Each model was trained using the study-bias holdout method, where for each geneset in a geneset collection, the most well studied genes were used to train the model and the least studied genes were used for testing. This figure can be used to help users pick the network, feature type and negative selection class that best suits their input gene list. It is worth noting that the STRING network is built in part by using Gene Ontology and DisGeNet annotations, and this circularity could be the reason for the enhanced performance of the STRING network in this evaluation.</em>  </p>
         <h2 id="outputs">Outputs</h2>
         <ul>
         <li><a href="#information-at-the-top">Information at the top</a></li>
