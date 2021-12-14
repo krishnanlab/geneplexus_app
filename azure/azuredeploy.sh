@@ -96,7 +96,9 @@
 # 7. test
 # manually run a sample job 
 
-build_all ()
+echo "Azure Deployment Bash Functions.  To use thi script you must have th az command line instlled, and be "
+echo "Logged in with az login ; set the variable AZSUBID ; run the bash function az_set_vars, and check value of \$TAG "
+az_build_all ()
 {
   # build all the resources needed to run the gene plexus application
   # to run these manually stepy by step (e.g. copy/paste to terminaal), you must manually run the command
@@ -105,7 +107,7 @@ build_all ()
     az_check_account
     if [ -z "$AZSUBID" ]; then 
         echo "No Azure Subscription Found - perhaps you need to use az login first?" >&2 
-        exit 1
+        return 1
     fi
 
     if [ -n "$1" ]; then
@@ -113,12 +115,12 @@ build_all ()
     else
         echo "project environment name requireed (dev, test, prod for production, etc, eg"
         echo 'e.g., $ build_all test'
-        exit 1
+        return 1
     fi
     
     az_set_vars $PROJECTENV   # or other environment name
     # add variable overrides here! e.g use 
-    export TAG=2021.11 # for the docker container tag
+    
     echo "creating resources for app $AZAPPNAME in $AZRG..."
     az_create_group
 
@@ -127,14 +129,14 @@ build_all ()
     # copy files from HPCC to this new storage created
     HPCC_FOLDER=/mnt/ufs18/rs-027/compbio/krishnanlab/projects/GenePlexus/repos/GenePlexusBackend/data_backend2
     az_copy_hpcc_to_files $HPCC_FOLDER
-    read -n 1 -p "Confirm the azcopy command worked (y) to continue  or any key to stop script (y/)" CMDCONFIRM
-    if [[ "$CMDCONFIRM" == "y" || "$CMDCONFIRM" == "Y" ]]
-    then
-        echo "continuing app deployment"
-    else 
-        "command completion not confirmed, exiting..."
-        exit 1
-    fi
+    #read -n 1 -p "Confirm the azcopy command worked (y) to continue  or any key to stop script (y/)" CMDCONFIRM
+    #if [[ "$CMDCONFIRM" == "y" || "$CMDCONFIRM" == "Y" ]]
+    #then
+    #    echo "continuing app deployment"
+    #else 
+    #    "command completion not confirmed, exiting..."
+    #    exit 1
+    #fi
 
 
     # Containerized web application Service
@@ -301,11 +303,11 @@ az_create_app_registry()
     # az acr task run -n build_$AZDOCKERIMAGE -r $AZCR -c <github url> -f Dockerfile
 
     az acr repository list -n $AZCR
-    read -n1 -r -p "is the image $AZDOCKERIMAGE on this list? Press n to exit script" key
-    if [ "$key" = 'n' ]; then
-        echo "repository error, exiting"
-        return 1
-    fi
+    #read -n1 -r -p "is the image $AZDOCKERIMAGE on this list? Press n to exit script" key
+    #if [ "$key" = 'n' ]; then
+    #    echo "repository error, exiting"
+    #    return 1
+    #fi
 }
 
 
@@ -612,6 +614,25 @@ az_local_docker_build ()
     #     echo "docker couldnt' run app, exiting"
     #     return 1
     # fi
+}
+
+
+az_local_docker_build_backend ()
+{
+    # this is a function to use local docker to build local image for testing
+    # this isn't needed for Azure deploy other than for testing
+
+    export JOB_DOCKERFILE="Dockerfile-backend"  # the name of the file in this project
+
+    echo "Building docker $BACKEND_IMAGE:$TAG  from $JOB_DOCKERFILE"
+    docker build -t $BACKEND_IMAGE:$TAG --file $JOB_DOCKERFILE .
+
+    docker images 
+    echo "Did the docker image $BACKEND_IMAGE:$TAG build? "
+
+    echo "to run, copy and past this... "
+    "docker run -d -v $DATA_PATH:$OUTPUT_PATH -e DATA_PATH=$DATA_PATH --name ${AZDOCKERIMAGE}_container $BACKEND_IMAGE:$TAG"
+    
 }
 
 az_app_delete ()
