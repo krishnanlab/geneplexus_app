@@ -295,14 +295,12 @@ def postgenes():
 def uploadgenes():
 
     # remove genes from session
-    try:
-        session.pop('genes')
-    except KeyError:
-        pass
+    session.pop('genes', None)
 
     file = request.files['formData'].filename
     try:
         string = request.files['formData'].stream.read().decode("UTF8")
+        print(string)
         no_quotes = string.translate(str.maketrans({"'": None}))
         input_genes_list = no_quotes.splitlines()  # turn into a list
         input_genes_upper = np.array([item.upper() for item in input_genes_list])

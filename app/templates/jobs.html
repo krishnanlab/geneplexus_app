@@ -6,8 +6,6 @@
 
 </style>
 
-{% include 'sidenav.html' ignore missing %}
-
 <div class="container">
     
     {% include 'messages.html' ignore missing %}
@@ -73,15 +71,11 @@
             </form>      
         </div>
     </div>
-
-
 {% endblock %}
 
 
 
 {% block scripts %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
-
 <script>
 
 $(document).ready( function () {

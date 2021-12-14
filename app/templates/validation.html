@@ -1,97 +1,68 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.6.4/css/buttons.bootstrap4.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.6/css/responsive.dataTables.min.css">
-    <script src="https://kit.fontawesome.com/e6f3faaa40.js" crossorigin="anonymous"></script>
+{% extends "base.html" %}
+
+{% block app_content %}
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='main.css') }}">
-    <title>GenePlexus</title>
-</head>
-    <body>
-       <header>
-        {% include 'navbar.html'  ignore missing  %}
-        </header>
-        {% include 'sidenav.html' ignore missing %}
-        <div class="container">
-            {% include 'messages.html' ignore missing %}
-            {% if valid_form is defined %}
-            <div class="border border-dark">
-                <div class="box_padding">
-                    <h4>Summary</h4>
-                    <p>The table below shows how many of the input genes were converted to Entrez gene IDs and how many
-                        of them are present in the various molecular networks.</p>
-                    <table style="width: 85%">
-                            <colgroup>
-                               <col span="1" style="width: 15%;">
-                               <col span="1" style="width: 37%;">
-                               <col span="1" style="width: 48%;">
-                            </colgroup>
-                        <thead>
-                            <tr>
-                                <th>Network</th>
-                                <th style="text-align: right">Total Number of Genes in the Network</th>
-                                <th style="text-align: right">Number of User-Supplied Genes in the Network</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        {% for dict_item in table_summary %}
-                            <tr>
-                                {% for key, value in dict_item.items() %}
-                                    {%- if key == 'Network' -%}
-                                        <td style="text-align: left; vertical-align: middle;">{{ value }}</td>
-                                    {%- else -%}
-                                        <td style="text-align: right; vertical-align: middle;">{{ '{0:,}'.format(value | int) }}</td>
-                                    {%- endif -%}
-                                {% endfor %}
-                            </tr>
+
+<div class="container">
+    {% include 'messages.html' ignore missing %}
+    {% if valid_form is defined %}
+    <div class="border border-dark">
+        <div class="box_padding">
+            <h4>Summary</h4>
+            <p>The table below shows how many of the input genes were converted to Entrez gene IDs and how many
+                of them are present in the various molecular networks.</p>
+            <table style="width: 85%">
+                    <colgroup>
+                        <col span="1" style="width: 15%;">
+                        <col span="1" style="width: 37%;">
+                        <col span="1" style="width: 48%;">
+                    </colgroup>
+                <thead>
+                    <tr>
+                        <th>Network</th>
+                        <th style="text-align: right">Total Number of Genes in the Network</th>
+                        <th style="text-align: right">Number of User-Supplied Genes in the Network</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for dict_item in table_summary %}
+                    <tr>
+                        {% for key, value in dict_item.items() %}
+                            {%- if key == 'Network' -%}
+                                <td style="text-align: left; vertical-align: middle;">{{ value }}</td>
+                            {%- else -%}
+                                <td style="text-align: right; vertical-align: middle;">{{ '{0:,}'.format(value | int) }}</td>
+                            {%- endif -%}
                         {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <br class="mt-5">
-            <h4>Input genes</h4>
-            <p>The table below shows the input genes, their corresponding Entrez gene IDs, and if they are present
-                in the various molecular networks. Use this table to select a molecular network to train your model
-                (in the panel on the left).</p>
-            {% if pos < 5 %}
-                <p style="color:red;">One or more networks has less than 5 positive genes.
-                    Consider adding additional genes before running the model</p>
-            {% endif %}
-            {{ validate_table|safe }}
-            <div class="fill_container">
-                <div id="divLoading">
-                    <div id="loading" class="fa-5x"><i class="fas fa-spinner fa-spin"></i></div>
-                </div>
-            </div>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
         </div>
-        {% else %}
-        <div class="container">
-            <h2>Please enter a geneset</h2>
-            <p>You can do so by clicking on the "Add Genes" button to the left!</p>
+    </div>
+    <br class="mt-5">
+    <h4>Input genes</h4>
+    <p>The table below shows the input genes, their corresponding Entrez gene IDs, and if they are present
+        in the various molecular networks. Use this table to select a molecular network to train your model
+        (in the panel on the left).</p>
+    {% if pos < 5 %}
+        <p style="color:red;">One or more networks has less than 5 positive genes.
+            Consider adding additional genes before running the model</p>
+    {% endif %}
+    {{ validate_table|safe }}
+    <div class="fill_container">
+        <div id="divLoading">
+            <div id="loading" class="fa-5x"><i class="fas fa-spinner fa-spin"></i></div>
         </div>
-        {% endif %}
-        <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-        <!--<script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>-->
-        <script src="https://cdn.datatables.net/v/dt/dt-1.10.22/datatables.min.js"></script>
-        <script src="https://cdn.datatables.net/1.10.22/js/dataTables.bootstrap.min.js"></script>
-        <script src="https://cdn.datatables.net/buttons/1.6.4/js/dataTables.buttons.min.js"></script>
-        <script src="https://cdn.datatables.net/buttons/1.6.4/js/buttons.bootstrap4.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
-        <script src="https://cdn.datatables.net/buttons/1.6.4/js/buttons.html5.min.js"></script>
-        <script src="https://cdn.datatables.net/buttons/1.6.4/js/buttons.print.min.js"></script>
-        <script src="https://cdn.datatables.net/responsive/2.2.6/js/dataTables.responsive.min.js"></script>
-        <script src="https://cdn.datatables.net/responsive/2.2.6/js/responsive.bootstrap.min.js"></script>
-        <script src="https://d3js.org/d3.v4.min.js"></script>
-        <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
-        <script src="{{url_for('static', filename='datatable.js')}}"></script>
-        <script src="{{url_for('static', filename='validation.js')}}"></script>
-    </body>
-</html>
+    </div>
+</div>
+{% else %}
+<div class="container">
+    <h2>Please enter a geneset</h2>
+    <p>You can do so by clicking on the "Add Genes" button to the left!</p>
+</div>
+{% endif %}
+
+<script src="{{url_for('static', filename='validation.js')}}"></script>
+
+{% endblock %}
