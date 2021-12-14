@@ -20,11 +20,13 @@
     <h4>Example</h4>
     <p>You can visit
     <a href="{{url_for('job', jobname='primary-ciliary-dyskinesia-example')}}">this page</a>
-    to see the results of an example run where GenePlexus was used to train a model and predict novel genes associated with the disease <i>primary ciliary dyskinesia (PCD)</i></p>.
+    to see the results of an example run where GenePlexus was used to train a model and predict novel genes associated with the disease <i>primary ciliary dyskinesia (PCD)</i>.</p>
     <p>This run used the adjacency matrix representation of the human STRING network. Since the input genes correspond to a disease, the negative genes were selected based on genes associated with other diseases (from the DisGeNet database).
         The predicted genes are under the “Gene Predictions” tab. It is notable that the gene DNALI1 (dynein axonemal light intermediate chain 1), which was not included in the original gene list, is strongly predicted to be associated with PCD.</p>
     <p>The “Similar to…” tabs show that the model trained for PCD is similar to those trained for other diseases such as ciliopathy as well as models trained for biological processes that deal with dynein complex and arm assembly.</p>
     <img class="img-fluid" src="{{ url_for('static',filename='geneplexus_example_screenshot.png')}}">
+    <hr class="mt-5">
+    <h4>Underlying Model</h4>
     <p style="margin:0">The network-based approach implemented in GenePlexus has been extensively benchmarked in</p>
     <a href="https://academic.oup.com/bioinformatics/article/36/11/3457/5780279">Supervised learning is an accurate method for network-based gene classification</a>
     <p style="margin:0">R Liu*, CA Mancuso*, A Yannakopoulos, KA Johnson, A Krishnan</p>
@@ -36,12 +38,6 @@
         <li style="margin:0">See the <a href="{{ url_for('about') }}">About</a> page for a high-level overview of how GenePlexus works.</li>
         <li>See the <a href="{{ url_for('help') }}">Help</a> page for detailed help on the various inputs or outputs.</li>
     </ul>
-
-    <div class="fill_container">
-        <div id="divLoading">
-            <div id="loading" class="fa-5x"><i class="fas fa-spinner fa-spin"></i></div>
-        </div>
-    </div>
     </div> <!-- content wrapper-->
 </div> <!-- container-->
 
