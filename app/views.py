@@ -1,10 +1,11 @@
-from app.jobs import path_friendly_jobname, launch_job, retrieve_job_folder,retrieve_results,job_info_list,valid_results_filename,results_file_dir
+from mljob.jobs import path_friendly_jobname, launch_job, retrieve_job_folder,retrieve_results,job_info_list,valid_results_filename,results_file_dir
 
 from werkzeug.exceptions import InternalServerError
 from flask import request, render_template, jsonify, session, redirect, url_for, flash, send_file, Markup, abort,send_from_directory
 from app.forms import ValidateForm, JobLookupForm
-from app import app, models
-from app.notifier import notify
+from app import app 
+from mljob import geneplexus  # models
+geneplexus.data_path = app.config.get("DATA_PATH")
 
 import os
 import uuid
@@ -147,12 +148,12 @@ def validate():
     input_genes = session['genes']
 
     # run all the components of the model and pass to the results form
-    convert_IDs, df_convert_out = models.intial_ID_convert(input_genes)
+    convert_IDs, df_convert_out = geneplexus.intial_ID_convert(input_genes)
 
     jobid = str(uuid.uuid1())[0:8]
     form.jobid.data = jobid
 
-    df_convert_out, table_summary, input_count = models.make_validation_df(df_convert_out)
+    df_convert_out, table_summary, input_count = geneplexus.make_validation_df(df_convert_out)
     pos = min([ sub['PositiveGenes'] for sub in table_summary ])
 
     session['jobid'] = jobid
@@ -209,20 +210,20 @@ def run_model():
     if form.runbatch.data :
 
         # create dictionary for easy parameter passing
-        job_config = {}
-        job_config['net_type'] = form.network.data
-        job_config['features'] = form.features.data
-        job_config['GSC'] = form.negativeclass.data
-        job_config['jobname'] = jobname
-        job_config['jobid'] = jobid
-
-        
-        job_config['notifyaddress'] = ''  # default is empty string for notification email
+        job_config = {
+            'net_type' : form.network.data,
+            'features' : form.features.data,
+            'GSC': form.negativeclass.data,
+            'jobname': jobname,
+            'jobid': jobid,
+            'job_url': url_for('job', jobname=jobname ,_external=True),
+            'notifyaddress': ''  # default is empty string for notification email
+        }
 
         if form.notifyaddress.data != '':   # user has supplied an email address
             # check if the email supplied matched basic pattern
             if form.notifyaddress.validate(form): 
-                job_config['notifyaddress'] = form.notifyaddress.data
+                job_config['notifyaddress']  = form.notifyaddress.data
             else:
                 flash("The job notification email address you provided is not a valid email.  No job notification will be sent", category =  "error")
 
@@ -232,18 +233,15 @@ def run_model():
         job_response = launch_job(input_genes, job_config, app.config)
         app.logger.info(f"job {job_config['jobid']} launched with response {job_response}")
 
-        job_url = url_for('job', jobname=jobname ,_external=True)
-
         if 'jobs' in session and session['jobs']:
             session['jobs'] = session['jobs'].append(jobname)
         else:
             session['jobs'] = [jobname]
 
-        job_submit_message = f"Job {jobname} submitted!  The completed job will be available on <a href='{job_url}'>{job_url}</a>"
+        job_submit_message = f"Job {jobname} submitted!  The completed job will be available on <a href='{job_config['job_url'] }'>{job_config['job_url']}</a>"
 
-        #TODO change email message depending on job launch response
-        if 'notifyaddress' in job_config and job_config['notifyaddress'] != '':
-            email_response = notify(job_url, job_email = job_config['notifyaddress'], config = app.config)
+        if job_config.get('notifyaddress'):
+            email_response = app.notifier.notify_accepted(job_config)   # notify(job_url, job_email = job_config['notifyaddress'], config = app.config)
             app.logger.info(f"email initiated to {job_config['notifyaddress']} with response {email_response}")
             job_submit_message = job_submit_message + f" and notification sent to {job_config['notifyaddress']}"
 
@@ -253,12 +251,12 @@ def run_model():
         return redirect('jobs')
 
     # this option is for testing, and not usually available as a button on the website
-    if form.runlocal.data : 
-        # this runs the model on the spot and simply returns the results as HTML file
-        app.logger.info('running model, jobname %s', jobname)
-        results_html = models.run_and_render(input_genes, net_type, features, GSC, jobname)
-        app.logger.info('model complete, rendering template')
-        return(results_html)
+    # if form.runlocal.data : 
+    #     # this runs the model on the spot and simply returns the results as HTML file
+    #     app.logger.info('running model, jobname %s', jobname)
+    #     results_html = geneplexus.run_and_render(input_genes, net_type, features, GSC, jobname)
+    #     app.logger.info('model complete, rendering template')
+    #     return(results_html)
 
     # we reach here if the submit button value is neither possibility
     return("invalid form data ")

@@ -3,6 +3,7 @@ from config import ProdConfig, DevConfig
 from dotenv import load_dotenv
 import logging
 from pathlib import Path
+from mljob.notifier import Notifier
 
 # note : if using 'flask run' from command line this is unecessary as flask autoamtiaclly read .flaskenv
 load_dotenv('.flaskenv')
@@ -31,5 +32,9 @@ job_folder = Path(app.config.get('JOB_PATH'))
 if not job_folder.exists():
     job_folder.mkdir()
 
+app.notifier = Notifier(app.config, template_folder = 'templates')
 
-from app import views, models
+from mljob import geneplexus
+geneplexus.set_config(app.config)
+
+from app import views

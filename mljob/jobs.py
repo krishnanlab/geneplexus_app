@@ -1,18 +1,16 @@
 import requests
 import json
-import re, os, errno, sys, subprocess
+import os, sys #, re, errno
 from slugify import slugify
-from pandas import DataFrame
-# import pandas as pd
 from datetime import datetime
-from app.models import run_and_render
+from mljob.geneplexus import run_and_render
 
 
 # job status codes is a simple dictionary mirroring a small subset of http status codes
 # these are status codes sent from the api that creates the job, or via the job itself. 
 # some job status codes are the results of status codes from http trigger of the job launcher (auzre logic app in our case)
 # note that 'timeout' is not 'gateway timeout'
-job_status_codes = {200:"OK", 201:"Created", 202:"Accepted", 404:"Not Found", 500:"Internal Server Error", 504:"Timeout"}
+job_status_codes = {200:"Completed", 201:"Created", 202:"Accepted", 404:"Not Found", 500:"Internal Server Error", 504:"Timeout"}
 
 jobs_status_descriptions = { 200:"Job completed successfully", 
     201:"Job was created and may or may not be running", 
@@ -401,9 +399,6 @@ def retrieve_job_params(jobname, app_config):
         return(params_vars['envvars'])
     else:
         return('')
-
-def job_status_codes():
-    """ central dics"""
 
 
 def job_status(jobname, app_config):
