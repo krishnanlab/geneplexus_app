@@ -22,7 +22,7 @@ from mljob.model_output import save_output
 # to keep this module independent from the flask app, they
 # are declared here, but set_config is called when the app is created. 
 file_loc = "local"
-data_path = "../data_backend2" 
+data_path = "../data_backend2/" 
 max_num_genes = 50 
 
 def set_config(app_config):

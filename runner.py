@@ -79,19 +79,16 @@ if __name__ == "__main__":
     print(f"processing {len(input_genes)} input genes", file=sys.stderr)
     # in models module, data_path is a global var, so set it here
 
-    # set config for geneplexus ML
+    # set additional config (if needed) available for geneplexus ML
     from dotenv import load_dotenv
     load_dotenv()
-    runner_config = {
-        "FILE_LOC" : os.getenv("FILE_LOC", 'local'),
-        'DATA_PATH' : args.data_path,
-        'MAX_NUM_GENES' : os.getenv("MAX_NUM_GENES", 50)
-    }
 
-    geneplexus.set_config(runner_config)
-    
+    # this is a module-level var that must be set prior to running
+    geneplexus.data_path = args.data_path
+    # run and save the html.  this command has by-product of also saving data files
     html = geneplexus.run_and_render(input_genes, net_type=args.net_type,
                features=args.features, GSC=args.GSC, jobname=args.jobname,
                output_path=args.output_path)
+               
 
     print(html)
