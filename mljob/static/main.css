@@ -219,12 +219,6 @@ div.dt-buttons {
     width: 150px !important;
 }
 
-#insertGeneButton {
-    width: 250px;
-    height: 30px;
-    text-align: center;
-    background-color: #efefef;
-}
 
 #jobid {
     padding: 0px 0px 10px 0px;
