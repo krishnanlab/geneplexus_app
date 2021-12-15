@@ -3,10 +3,6 @@ var svg = d3.select("svg"),
     w = +svg.node().getBoundingClientRect().width,
     h = +svg.node().getBoundingClientRect().height
 
-width = $('#graph').width();
-height = $('#graph').height();
-initialScale = 0.75
-
 //////// g holds zoom, nodes and links
 var g = svg.append('g')
     .attr("class", "everything");
@@ -14,6 +10,7 @@ var g = svg.append('g')
 // define scale variable and range for node sizing
 var nodescale = d3.scaleLinear().domain([0, .3]).range([1, 10])
 
+var initialScale = 0.5
 
 var items = [
     {
@@ -240,7 +237,7 @@ function initializeDisplay() {
 
     zoom_handler(svg);
 
-    svg.call(zoom_handler.transform, d3.zoomIdentity.scale(0.5));
+    svg.call(zoom_handler.transform, d3.zoomIdentity.scale(initialScale));
 
   // visualize the graph
   updateDisplay();
