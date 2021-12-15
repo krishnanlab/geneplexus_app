@@ -50,7 +50,7 @@ var tool_tip = d3.tip()
   .html(function(d) {
       return "<strong>Symbol: " + d.Symbol + "</strong><br>" +
       "<strong>Entrez: " + d.id + "</strong><br>" +
-      "<strong>Probability: " + d.Probability + "</strong><br>" +
+      "<strong>Probability: " + d.Probability.toFixed(2) + "</strong><br>" +
       "<strong>Class-Label: " + d.Class + "</strong><br>";
   });
 
