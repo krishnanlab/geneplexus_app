@@ -3,6 +3,10 @@ var svg = d3.select("svg"),
     w = +svg.node().getBoundingClientRect().width,
     h = +svg.node().getBoundingClientRect().height
 
+width = $('#graph').width();
+height = $('#graph').height();
+initialScale = 0.75
+
 //////// g holds zoom, nodes and links
 var g = svg.append('g')
     .attr("class", "everything");
@@ -16,16 +20,11 @@ var items = [
       label: function (d) {
         return d.id;
       },
-      items: [
-        {
-          label: "Entrez Lookup",
-          onClick: function (d) {
-          console.log(d.id)
-            window.open('https://www.ncbi.nlm.nih.gov/gene/' + d.id, '_blank');
+      onClick: function (d) {
+        console.log(d.id)
+          window.open('https://www.ncbi.nlm.nih.gov/gene/' + d.id, '_blank');
 
-          }
         }
-      ]
     }
   ];
 
@@ -60,7 +59,7 @@ svg.call(tool_tip);
 // Color the nodes by Class
 var data = ['P','U','N']
 var myColor = d3.scaleOrdinal().domain(data)
-    .range(["#00ccbc","#2c7bb6","#CC333F"]);
+    .range(["#00ccbc","#6598bf","#CC333F"]);
 
 
 //////////// FORCE SIMULATION ////////////
@@ -81,7 +80,7 @@ forceProperties = {
     },
     charge: {
         enabled: true,
-        strength: -1500,
+        strength: -1000,
         distanceMin: 1,
         distanceMax: 150
     },
@@ -224,7 +223,8 @@ function initializeDisplay() {
 
     node.append("text")
         .attr("text-anchor", "middle")
-        .text(function(d) { return d.Symbol; });
+        .text(function(d) { return d.Symbol; })
+        .attr('alignment-baseline', 'middle');
 
     //add drag capabilities
     var drag_handler = d3.drag()
@@ -239,6 +239,8 @@ function initializeDisplay() {
         .on("zoom", zoom_actions);
 
     zoom_handler(svg);
+
+    svg.call(zoom_handler.transform, d3.zoomIdentity.scale(0.5));
 
   // visualize the graph
   updateDisplay();
