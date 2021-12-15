@@ -140,6 +140,7 @@ def validate():
     # remove any single quotes if they exist
     no_quotes = string.translate(str.maketrans({"'": None}))
     input_genes_list = no_quotes.splitlines()  # turn into a list
+    input_genes_list = list(filter(lambda x: x != '', input_genes_list))
     if len(input_genes_list) == 0:
         flash("You need to input at least one positive gene", "error")
         return redirect('index')
