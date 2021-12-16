@@ -4,6 +4,7 @@
 
 {% block app_content %}
     <div class="container">
+        <div id="content-padding" class="pl-4 pt-4">
         <h1 id="geneplexus-help-page">GenePlexus <sup>&beta;eta</sup> Help Page</h1>
         <p>The help page provides various help, advice, and interpretation of the various inputs and outputs on the GenePlexus webserver. </p>
         <h2 id="inputs">Inputs</h2>
@@ -15,7 +16,7 @@
         </ul>
         <div style="margin-top: -55px; position: absolute;" id="supplying-input-genes"></div>
         <h3>Supplying input genes</h3>
-        <p>The user can supply a list of genes by either uploading a file of genes or manually entering the genes in a text box. In both cases, each gene needs to be on a new line. 
+        <p>The user can supply a list of genes by either uploading a file of genes or manually entering the genes in a text box. In both cases, each gene needs to be on a new line. </p>
         <p>Here is an example gene list file : <a href="/uploads/DOID-9562-STRING-Adjacency-DisGeNet-Symbols.txt" download>download DOID-9562-STRING-Adjacency-DisGeNet-Symbols.txt</a> </p>    
         <p>The following types of gene IDs are allowed as inputs:</p>
         <ul>
@@ -146,5 +147,6 @@
         <li><a href="http://www.disgenet.org/legal">DiGeNet</a></li>
         <li><a href="https://mygene.info/terms">MyGene.info</a></li>
         </ul>
+        </div>
     </div>
 {% endblock %}

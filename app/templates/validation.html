@@ -6,6 +6,7 @@
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='main.css') }}">
 
 <div class="container">
+    <div id="content-padding" class="pl-4 pt-4">
     {% include 'messages.html' ignore missing %}
     {% if valid_form is defined %}
     <div class="border border-dark">
@@ -57,11 +58,14 @@
             <div id="loading" class="fa-5x"><i class="fas fa-spinner fa-spin"></i></div>
         </div>
     </div>
+    </div>
 </div>
 {% else %}
 <div class="container">
+    <div id="content-padding" class="pl-4 pt-4">
     <h2>Please enter a geneset</h2>
     <p>You can do so by clicking on the "Add Genes" button to the left!</p>
+    </div>
 </div>
 {% endif %}
 

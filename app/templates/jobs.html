@@ -9,9 +9,15 @@
 </style>
 
 <div class="container">
-    
+    <div id="content-padding" class="pl-4 pt-4">
     {% include 'messages.html' ignore missing %}
-    <h4 >Jobs Submitted for this session</h4>
+
+    <h4>Job Runtime</h4>
+    <p>While many jobs will only take a few minutes to complete, some networks and feature types require training machine learning models that use 10s of GBs of memory, have more that 25,000 features and use thousands of positive and negative labeled genes. Therefore, some jobs may take up to 10 minutes or more and this time can vary due to latency speeds on Microsoft Azure.</p>
+    
+    <hr class="mt-3">
+
+    <h4 class="mt-4">Jobs submitted ( for this session ) </h4>
         
     {% if joblist %}
         <hr>
@@ -47,39 +53,45 @@
                 {% endfor %}
             </tbody>
         </table>
-        {% else %}
-        
-        <p style="padding-top:1em;">No recent jobs in session. You search for one on the left, or start a new one on our <a href="{{url_for('index')}}">home page</a>  </p>
-        {% endif %}
-    
-        <div class="item-content">
-            <h4>Job Lookup</h4>
-            <hr>
-            <form class="form" method="post">
-                <fieldset class="border box_padding fieldset">
-                    <div class="row">
-                    <label class="col-md-3" for="jobname">
-                    Recall job results by name
-                    </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                           data-content="Only jobs from this browser session are available in this list. Enter the job name (name only) to find a previous job (exact match)
-                           or copy and paste the job url in your browser.">
-                             <i class="fas fa-question-circle"></i></a>
-                
-            {{ form.jobname(class="form-control col", placeholder="job name") }}
 
-            {{ form.lookup(class_="btn btn-sm btn-primary col")}}
-                    </div>
-            </fieldset>
-            </form>      
-        </div>
+        {% else %}        
+            <p class="mt-1">No recent jobs have been saved in this session.  Search by full job name below, 
+                or <a href="{{url_for('geneset')}}">upload a geneset and start a new one</a><br>
+            For more information see our <a href="{{ url_for('help') }}">Help</a> page.</p>
+
+        {% endif %}
+
+        <hr class="mt-3">
+
+        <h4 class="mt-3">Job Lookup</h4>
+        <form class="form-inline" method="post">
+            <div class="form-group">
+                <label class="m-2 for="jobname">                    
+                    Recall job results by name
+                    &nbsp;
+                    <a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                    data-content="Only jobs from this browser session are available in this list. Enter the job name (name only) to find a previous job (exact match)
+                    or copy and paste the job url in your browser.">
+                    <i class="fas fa-question-circle"></i></a>                      
+                </label>
+                
+                {{ form.jobname(class="form-control ml-4", placeholder="job name") }}                    
+            </div>
+            <div class="form-group mx-3">
+                {{ form.lookup(class="btn btn-sm btn-primary m-3")}}
+            </div>    
+        </form>             
+
     </div>
+</div>
 {% endblock %}
 
 
 
 {% block scripts %}
 <script>
-
+/*
+Commenting out in case we want to use later with the same formatting
 $(document).ready( function () {
     $('#jobstable').DataTable({
         "lengthChange": false,
@@ -91,7 +103,7 @@ $(document).ready( function () {
     });
 
 });
-
+*/
 // 
 </script>
 

@@ -109,25 +109,27 @@
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
-            <div style="margin-top: 0px !important; margin-bottom: 0px !important;">
-                <div class="row justify-content-center">
-                    <div  class="col-4" onclick="sampleGenes()">
-                        <button type="button" class="btn btn-sm">Click to load a Sample Gene Set</button>
-                    </div>
-                    <div class="col-3"></div>
-                    <div class="col-4">
-                        <span id="insertGeneButton" class="btn btn-sm smaller-button col">Select Gene File</span>
+            <div class="container-fluid">
+                <div class="row justify-content-center mt-2">
+                    <div class="col">
+                        <span id="insertGeneButton" class="btn btn-sm smaller-button">Select Gene File</span>
                         <span id="insert_filename" class="text-center"></span>
-                        <input id="insertGenesInput" class="btn btn-sm py-0" style="font-size: 0.0em;"
+                        <input id="insertGenesInput" class="btn py-0" style="font-size: 0.0em;"
                                 type="file"
                                 title=" "
                                 name="insert_genes"
                                 accept="txt/csv"
                                 />
                     </div>
+                    <div  class="col" onclick="sampleGenes()">
+                        <button type="button" class="btn btn-sm">Click to load a Sample Gene Set</button>
+                    </div>
+                    
                 </div>
                 <div class="row justify-content-center">
-                    <div  class="col-4">
+                    <div  class="col">
+                    </div>
+                    <div class="col">
                         <button type="button"
                                        id="sampleBtn"
                                        class="btn btn-sm"
@@ -135,12 +137,10 @@
                                   Download Sample Gene File
                                 </button>
                     </div>
-                    <div class="col-3"></div>
-                    <div class="col-4"></div>
                 </div>
             </div>
             <div class="modal-body">
-              <textarea class="form-control rounded-0" id="enterGenes" rows="25" name="genesInput">{{ '\n'.join(existing_genes) }}</textarea>
+              <textarea class="form-control rounded-0" id="enterGenes" rows="18" name="genesInput">{{ '\n'.join(existing_genes) }}</textarea>
             </div>
             <div class="modal-footer">
                 <div class="mr-auto">

@@ -5,9 +5,6 @@ $('#insertGeneButton').click(function(){
  $('#insertGenesInput').change(
     function(){
         if ($(this).val() != '') {
-            //$('#insert_filename').text(this.value.replace(/C:\\fakepath\\/i, ''))
-            //$('input:submit').attr('disabled',false);
-            //$('#geneBtn').prop('disabled',true);
             console.log()
             var file = this.files[0];
             uploadFile(file);

@@ -123,10 +123,11 @@ def results():
 
 @app.route("/cleargenes", methods=['POST'])
 def cleargenes():
-    session.pop('genes')
-    session.pop('pos')
-    session.pop('df_convert_out')
-    session.pop('table_summary')
+    session.pop('genes', None)
+    session.pop('pos', None)
+    session.pop('df_convert_out', None)
+    session.pop('table_summary', None)
+    session.pop('jobid', None)
 
 @app.route("/validate", methods=['GET','POST'])
 def validate():
@@ -140,6 +141,7 @@ def validate():
     # remove any single quotes if they exist
     no_quotes = string.translate(str.maketrans({"'": None}))
     input_genes_list = no_quotes.splitlines()  # turn into a list
+    input_genes_list = list(filter(lambda x: x != '', input_genes_list))
     if len(input_genes_list) == 0:
         flash("You need to input at least one positive gene", "error")
         return redirect('index')
@@ -198,6 +200,9 @@ def run_model():
         
     # grab the assigned job ID
     jobid = form.jobid.data
+
+    # Avoid collisions if someone immediately resubmits a job
+    session['jobid'] = str(uuid.uuid1())[0:8]
 
     # if the optional prefix has been added, concatenate
     # the two fields together.  Otherwise the jobname is the jobid

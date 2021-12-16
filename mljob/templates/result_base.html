@@ -21,15 +21,16 @@
             <div class="border border-dark">
                 <div class="box_padding">
                     <div class="row">
-                        <div class="col-xs-3 text-left col-sm-3">
-                            <b>Parameters:</b>
-                        </div>
-                        <div class="col-xs-3 text-left col-sm-3">
+                        <div class="col text-left">
                             <label><b>Job Name:</b>&nbsp</label>{{( jobname )}}<br>
+                        </div>
+                        <div class="col text-left">
                             <label><b>Network:</b>&nbsp</label>{{( network )}}<br>
                         </div>
-                        <div class="col-xs-3 text-left col-sm-3">
+                        <div class="col text-left">
                             <label><b>Features:</b>&nbsp</label>{{( features )}}<br>
+                        </div>
+                        <div class="col text-left">
                             <label><b>Negative Class:</b>&nbsp</label>{{( negativeclass )}}<br>
                         </div>
                     </div>
@@ -50,6 +51,7 @@
                     </div>
                 </div>
             </div>
+            <br>
             <div role="tabpanel">
                 <!-- Nav tabs -->
                 <ul class="nav nav-tabs" role="tablist">
@@ -75,17 +77,15 @@
                     <div role="tabpanel" class="tab-pane fade show active" id="predictions">
                         <div class="table_container">
                             <div class="box_padding">
-                                <p>The table below contains the prediction probability for all the genes in the
-                                    selected network indicating each gene’s functional similarity to the input genes.
-                                    The Probability of each gene is bounded between 0 and 1, and is displayed upto 2
-                                    decimal places for clarity. The Rank column indicates the rank of the gene when
-                                    sorted by the full probability value (up to several decimals). The Class-Labels are:
-                                    P – gene was considered in positive class during training,
-                                    N – gene was considered in negative class during training, and
-                                    U – gene was not considered at all during training.
-                                    Known/Novel indicates whether the gene was part of the input gene list
-                                    (therefore ‘Known’) or not (therefore ‘Novel’).<br>
-                                    <a href="/jobs/{{job_info['jobname']}}/results/download/{{job_info['df_probs_file']}}">Download Prediction Probablilty Table as tab seperated values</a>                                    
+                                <p>The table below shows the top 500 genes with the highest prediction probability. 
+                                    The <b>Probability</b> of each gene is bounded between 0 and 1, and indicates the gene’s functional similarity 
+                                    to the input genes in the selected network. The <b>Rank</b> column indicates the rank of the gene when sorted by 
+                                    the full probability value (up to several decimals). The <b>Class-Labels</b> are: P – gene was considered in 
+                                    positive class during training, N – gene was considered in negative class during training, 
+                                    and U – gene was not considered at all during training. <b>Known/Novel</b> indicates whether the gene was part of 
+                                    the input gene list (therefore ‘Known’) or not (therefore ‘Novel’).
+                                    <br><br>
+                                    <a href="/jobs/{{job_info['jobname']}}/results/download/{{job_info['df_probs_file']}}">Download the full prediction probability table of all genes in the network as tab separated values</a>                                    
                                 </p>
                             </div>
                         {{ probs_table|safe }}
@@ -98,8 +98,9 @@
                                 <P>The table below shows the similarity of machine learning models trained on sets of
                                     genes associated with Gene Ontology Biological Process terms to the custom model
                                     trained on the input genes. See the Help page for more information about
-                                    the similarity measure.<br>
-                                    <a href="/jobs/{{job_info['jobname']}}/results/download/{{job_info['df_GO_file']}}">Download table as tab seperated values</a>
+                                    the similarity measure.
+                                    <br><br>
+                                    <a href="/jobs/{{job_info['jobname']}}/results/download/{{job_info['df_GO_file']}}">Download the full biological process similarities table of all genes in the network as tab separated values</a>
                                 </p>
                             </div>
                         {{ go_table|safe }}
@@ -113,7 +114,7 @@
                                     genes associated with diseases in the DisGeNET database to the custom model
                                     trained on the input genes. See the Help page for more information about
                                     the similarity measure.
-                                    <br>
+                                    <br><br>
                                     <a href="/jobs/{{job_info['jobname']}}/results/download/{{job_info['df_dis_file']}}">Download table as tab seperated values</a></p>
                             </div>
                         {{ dis_table|safe }}
@@ -155,7 +156,7 @@
                                 <p>The number of genes in the input file was {{ input_count }}.
                                 The number of those genes that were uniquely mapped to an Entrez ID
                                         and were also in the network is {{positive_genes}}.
-                                    <br>
+                                    <br><br>
                                     <a href="/jobs/{{job_info['jobname']}}/results/download/{{job_info['df_convert_out_subset_file']}}">Download table as tab seperated values</a>
                                 </p>
                             </div>
