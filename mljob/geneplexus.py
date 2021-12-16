@@ -242,6 +242,23 @@ def make_small_edgelist(df_probs, net_type, Entrez_to_Symbol):
 
     return df_edge, isolated_genes, df_edge_sym, isolated_genes_sym
 
+def make_small_edgelist_2021(df_probs,net_type,Entrez_to_Symbol, max_num_genes = 50, file_loc='local'):
+    # This will set the max number of genes to look at to a given number
+ 
+    df_edge = load_df('edgelist',file_loc,net_type_=net_type)
+    df_edge = df_edge.astype({'Node1':str,'Node2':str})
+    top_genes = df_probs['Entrez'].to_numpy()[0:max_num_genes]
+    df_edge = df_edge[(df_edge['Node1'].isin(top_genes)) & (df_edge['Node2'].isin(top_genes))]
+    # add an edge between a node and itself (enusres all unconnected nodes present in edgelist)
+    self_edges = []
+    for agene in top_genes:
+        self_edges.append([agene,agene,1.0])
+        df_self = pd.DataFrame(self_edges,columns=['Node1','Node2','Weight'])
+        df_edge = pd.concat([df_edge,df_self])
+        
+    return df_edge
+
+
 def make_graph(df_edge, df_probs):
     df_edge.fillna(0)
     df_edge.columns = ['source', 'target', 'weight']
