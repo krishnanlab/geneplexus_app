@@ -4,24 +4,52 @@
 
 {% block app_content %}
 
-<link rel="stylesheet" type= "text/css" href= "{{ url_for('static',filename='main.css') }}">
+<style >
+    /* index.html css tweaks.  fas & far are for font awesome */
+    .fas { padding-right:1em }
+    .far { padding-right:1em }
+    h4 { margin-top: 1em;}
+    /* the main text on the top of the page */
+    .lead-in { font-size:1.4em;font-weight: 300; }
 
-<div class="container">
+</style>
+
+<div class="container pl-4">
+
+
     {% include 'messages.html' ignore missing %}
-    <div id="content-padding" class="pl-4 pt-4">
-    <h1 id="geneplexus-help-page" class="text-center">GenePlexus <sup>&beta;eta</sup></h1>
 
-    <p style="font-size:20px;">The GenePlexus webserver enables researchers to predict novel genes similar to their genes of interest based on their patterns of connectivity in human genome-scale molecular interaction networks.</p>
-    <p>GenePlexus works by training a machine learning model that captures the patterns of network connectivity of the user-defined genes in contrast to other genes in the network.  Based on this model Geneplexus will: 1) predict other genes in the network that are similar to the input genes based on their network connectivity, 2) enable users to interpret the custom trained machine-learning model by comparing it to pre-trained models for various biological processes and diseases, and 3) provide a visualization of the top predictions in the form a interactive network graph. All the results can be downloaded/exported in multiple convenient formats.</p>
-    <p>Use the panel on the left to run GenePlexus on your own genes of interest!</p>
-    <img class="img-fluid" src="{{ url_for('static',filename='geneplexus_summary_v2.png')}}" style="border: 1px;">
-    <hr class="mt-5">
-    <h4>Video Tutorial</h4>
-    Watch the GenePlexus tutorial <a href="https://academic.oup.com/bioinformatics/article/36/11/3457/5780279">here</a>
-    <hr class="mt-5">
-    <h4>Job Runtime</h3>
+    <div class="row container-fluid bg-secondary text-white  rounded p-3">
+    
+        <div class="col-12">
+            <h1 class="text-light" id="geneplexus-help-page" >GenePlexus <sup>&beta;eta</sup></h1><!-- class="text-center" -->
+            <p class="lead-in">The GenePlexus webserver enables researchers to predict novel genes similar to their genes of interest based on their patterns of connectivity in human genome-scale molecular interaction networks.</p>
+        </div>
+        <!-- <div class="col-8">
+            
+        </div>
+     -->
+    </div>
+    
+    
+    <img class="ml-n2 img-fluid" src="{{ url_for('static',filename='geneplexus_summary_v2.png')}}" >
+    
+    <h4>Using GenePlexus <sup>&beta;eta</sup></h4>
+    <ul class="list-group fa-ul" style="margin-left:0;margin-top:1em;">
+        <li><i class="fas fa-table"></i>Use the panel on the left to run GenePlexus on your own genes of interest!</li>
+        <li><a href="https://academic.oup.com/bioinformatics/article/36/11/3457/5780279"><i class="fas fa-video"></i>Watch the GenePlexus tutorial</a></li>
+        <li><a href="{{ url_for('about') }}"><i class="fas fa-info-circle"></i>See the About page</a>  for a high-level overview of how GenePlexus works.</li>
+        <li><a href="{{ url_for('help') }}"><i class="far fa-question-circle"></i>See the Help page</a> for detailed help on the various inputs or outputs.</li>
+        <li><a href="http://localhost:5000/jobs/primary-ciliary-dyskinesia-example"><i class="fas fa-project-diagram"></i>See an example run </a>where GenePlexus was used to train a model and predict novel genes associated with the disease</li>
+    </ul>
+   
+    <h4>About GenePlexus <sup>&beta;eta</sup></h4>
+
+    <p >GenePlexus works by training a machine learning model that captures the patterns of network connectivity of the user-defined genes in contrast to other genes in the network.  Based on this model Geneplexus will: 1) predict other genes in the network that are similar to the input genes based on their network connectivity, 2) enable users to interpret the custom trained machine-learning model by comparing it to pre-trained models for various biological processes and diseases, and 3) provide a visualization of the top predictions in the form a interactive network graph. All the results can be downloaded/exported in multiple convenient formats.</p>
+    <!-- <hr class="mt-4"> -->
+    <h4>Job Runtime</h4>
     <p>While many jobs will only take a few minutes to complete, some networks and feature types require training machine learning models that use 10s of GBs of memory, have more that 25,000 features and use thousands of positive and negative labeled genes. Therefore, some jobs may take up to 10 minutes or more and this time can vary due to latency speeds on Microsoft Azure.</p>
-    <hr class="mt-5">
+    <!-- <hr class="mt-4"> -->
     <h4>Example</h4>
     <p>You can visit
     <a href="{{url_for('job', jobname='primary-ciliary-dyskinesia-example')}}">this page</a>
@@ -30,19 +58,14 @@
         The predicted genes are under the “Gene Predictions” tab. It is notable that the gene DNALI1 (dynein axonemal light intermediate chain 1), which was not included in the original gene list, is strongly predicted to be associated with PCD.</p>
     <p>The “Similar to…” tabs show that the model trained for PCD is similar to those trained for other diseases such as ciliopathy as well as models trained for biological processes that deal with dynein complex and arm assembly.</p>
     <img class="img-fluid" src="{{ url_for('static',filename='geneplexus_example_screenshot.png')}}">
-    <hr class="mt-5">
+    <!-- <hr class="mt-4"> -->
     <h4>Underlying Model</h4>
     <p style="margin:0">The network-based approach implemented in GenePlexus has been extensively benchmarked in</p>
     <a href="https://academic.oup.com/bioinformatics/article/36/11/3457/5780279">Supervised learning is an accurate method for network-based gene classification</a>
     <p style="margin:0">R Liu*, CA Mancuso*, A Yannakopoulos, KA Johnson, A Krishnan</p>
     <p style="margin:0">Bioinformatics 36 (11), 3457-3465.</p>
 
-    <hr class="mt-5">
-    <h4>Using GenePlexus <sup>&beta;eta</sup></h4>
-    <ul>
-        <li style="margin:0">See the <a href="{{ url_for('about') }}">About</a> page for a high-level overview of how GenePlexus works.</li>
-        <li>See the <a href="{{ url_for('help') }}">Help</a> page for detailed help on the various inputs or outputs.</li>
-    </ul>
+
     </div> <!-- content wrapper-->
 </div> <!-- container-->
 
