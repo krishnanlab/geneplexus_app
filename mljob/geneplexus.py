@@ -350,10 +350,10 @@ def make_results_html(jobname, net_type, features, GSC,
         d3_tip_css=d3_tip_css,
         probs_table=df_probs.head(row_limit).to_html(index=False, classes='table table-striped table-bordered" style="width: 100%;" id = "probstable"'),
         go_table=df_GO.head(row_limit).to_html(index=False,
-                               classes='table table-striped table-bordered nowrap" style="width: 100%;" id = "gotable'),
-        dis_table=df_dis.head(row_limit).to_html(index=False, classes='table table-striped table-bordered" id = "distable'),
+                               classes='table table-striped table-bordered nowrap" style="width: 100%;" id = "gotable"'),
+        dis_table=df_dis.head(row_limit).to_html(index=False, classes='table table-striped table-bordered" style="width: 100%;" id = "distable"'),
         validate_results=df_convert_out_subset.head(row_limit).to_html(index=False,
-                                              classes='table table-striped table-bordered" id = "validateresults'),
+                                              classes='table table-striped table-bordered" style="width: 100%;" id = "validateresults"'),
         graph=graph)
     
     # return utf-8 string
