@@ -6,6 +6,7 @@ $(document).ready( function () {
         order: [[ 3, "desc" ]],
         columnDefs: [
             {
+                width: "6%",
                 targets: [0],
                 className: "dt-left",
                 render: function (data, type, row, meta) {
@@ -17,10 +18,12 @@ $(document).ready( function () {
 
             },
             {
+                width: "45%",
                 targets: [1, 2],
                 className: "dt-left"
             },
             {
+                width: "1%",
                 targets: [ 3 ],
                 className: "dt-right",
                 defaultOrder: true,
@@ -30,14 +33,17 @@ $(document).ready( function () {
                 }
             },
             {
+                width: "1%",
                 targets: [ 4 ],
                 className: "dt-center"
             },
             {
+                width: "1%",
                 targets: [ 5 ],
                 className: "dt-center"
             }  ,
             {
+                width: "1%",
                 targets: [ 6 ],
                 className: "dt-right"
             }
