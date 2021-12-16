@@ -10,22 +10,18 @@ var g = svg.append('g')
 // define scale variable and range for node sizing
 var nodescale = d3.scaleLinear().domain([0, .3]).range([1, 10])
 
+var initialScale = 0.5
 
 var items = [
     {
       label: function (d) {
         return d.id;
       },
-      items: [
-        {
-          label: "Entrez Lookup",
-          onClick: function (d) {
-          console.log(d.id)
-            window.open('https://www.ncbi.nlm.nih.gov/gene/' + d.id, '_blank');
+      onClick: function (d) {
+        console.log(d.id)
+          window.open('https://www.ncbi.nlm.nih.gov/gene/' + d.id, '_blank');
 
-          }
         }
-      ]
     }
   ];
 
@@ -51,7 +47,7 @@ var tool_tip = d3.tip()
   .html(function(d) {
       return "<strong>Symbol: " + d.Symbol + "</strong><br>" +
       "<strong>Entrez: " + d.id + "</strong><br>" +
-      "<strong>Probability: " + d.Probability + "</strong><br>" +
+      "<strong>Probability: " + d.Probability.toFixed(2) + "</strong><br>" +
       "<strong>Class-Label: " + d.Class + "</strong><br>";
   });
 
@@ -60,7 +56,7 @@ svg.call(tool_tip);
 // Color the nodes by Class
 var data = ['P','U','N']
 var myColor = d3.scaleOrdinal().domain(data)
-    .range(["#00ccbc","#2c7bb6","#CC333F"]);
+    .range(["#00ccbc","#6598bf","#CC333F"]);
 
 
 //////////// FORCE SIMULATION ////////////
@@ -81,7 +77,7 @@ forceProperties = {
     },
     charge: {
         enabled: true,
-        strength: -1500,
+        strength: -1000,
         distanceMin: 1,
         distanceMax: 150
     },
@@ -224,7 +220,8 @@ function initializeDisplay() {
 
     node.append("text")
         .attr("text-anchor", "middle")
-        .text(function(d) { return d.Symbol; });
+        .text(function(d) { return d.Symbol; })
+        .attr('alignment-baseline', 'middle');
 
     //add drag capabilities
     var drag_handler = d3.drag()
@@ -239,6 +236,8 @@ function initializeDisplay() {
         .on("zoom", zoom_actions);
 
     zoom_handler(svg);
+
+    svg.call(zoom_handler.transform, d3.zoomIdentity.scale(initialScale));
 
   // visualize the graph
   updateDisplay();
