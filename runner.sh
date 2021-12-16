@@ -56,20 +56,21 @@ fi
 
 
 # get system stats in logfile
-echo "System Memory State " >> $LOGFILE
-# vmstat -s -S M >>$LOGFILE
+#echo "System Memory State " | tee -a  $LOGFILE
+#vmstat -s -S M  | tee -a $LOGFILE
 # also send it to the error log?
 # >&2 vmstat -s -S g
 RUNCMD="runner.py $ARGS -d $DATA_PATH --cross_validation $GENE_FILE "
-echo $RUNCMD >>$LOGFILE
-echo "STARTED `date +'%d/%m/%Y %H:%M:%S'`" >>$LOGFILE
-python $RUNCMD > "$OUTPUT_FILE" 2>> "$LOGFILE"
+echo $RUNCMD | tee -a $LOGFILE
+echo "STARTED `date +'%d/%m/%Y %H:%M:%S'`" | tee -a $LOGFILE
+python $RUNCMD > "$OUTPUT_FILE" 2>  $LOGFILE
+cat $LOGFILE
 PYTHON_EXITCODE=$?
 if [ $PYTHON_EXITCODE -eq 0 ]
 then
-  echo "COMPLETED `date +'%d/%m/%Y %H:%M:%S'`" >>$LOGFILE
+  echo "COMPLETED `date +'%d/%m/%Y %H:%M:%S'`"  2>&1 | tee -a $LOGFILE
 else
-  echo "ERROR `date +'%d/%m/%Y %H:%M:%S'` exit code $PYTHON_EXITCODE" >>$LOGFILE
+  echo "ERROR `date +'%d/%m/%Y %H:%M:%S'` exit code $PYTHON_EXITCODE"  | tee -a  $LOGFILE
 fi
 
 
