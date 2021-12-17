@@ -1,3 +1,7 @@
+var allNodes = dataset.nodes.sort((a, b) => (a.Probability - b.Probability))
+console.log(allNodes);
+console.log(dataset.links);
+
 //Create SVG element
 var svg = d3.select("svg"),
     w = +svg.node().getBoundingClientRect().width,
@@ -403,3 +407,71 @@ d3.select("#download_as_svg")
     // Get the d3js SVG element and save using saveSvgAsPng.js
     saveSvg(document.getElementsByTagName("svg")[0], "plot.svg", {scale: 2, backgroundColor: "#FFFFFF"});
 });
+
+$('#node_slider').slider({
+    value: 50,
+    max: 50,
+    min: 1,
+    step: 1,
+    slide: function( event, ui ) {
+        $( "#node_count" ).val( ui.value );
+        modifyNodeCount(ui.value);
+      }
+});
+
+function modifyNodeCount(nodeCount) {
+    d3.selectAll('g.nodes').remove();
+    d3.selectAll('g.links').remove();
+    allNodes = dataset.nodes.sort((a, b) => (b.Probability - a.Probability))
+    newNodes = allNodes.slice(0, nodeCount);
+    oldNodes = dataset.nodes.slice(nodeCount);
+    newLinks = dataset.links.filter(
+        function(l) {
+            for(let i = 0; i < oldNodes.count; i++){
+                if (l.source.id == oldNodes[id].id || l.target.id == oldNodes[i].id) {
+                    console.log(l.source);
+                    console.log(l.target);
+                    console.log(oldNodes[i].id);
+                    return false;
+                }
+            }
+            return true;
+        }
+    )
+    link = g.append("g")
+        .attr("class", "links")
+        .selectAll("line")
+        .data(newLinks)
+        .enter().append("line")
+        .style("stroke", "#ADA9A8")
+        .style("stroke-width", function(d) { return (d.weight); })
+        //.on('mouseout.fade', fade(1));
+    node = g.append("g")
+        .attr("class", "nodes")
+        .selectAll("circle")
+        .data(newNodes)
+        .enter()
+        // add note g element for each node here.
+        .append("g")
+        // position the g element like the circle element use to be.
+    node.append("circle")
+        .attr("r", function(d){return nodescale(d.Probability)})
+        //.attr("r", function(d){ return Math.exp(d.Probability)*10})
+        .attr("fill", function(d){return myColor(d.Class) })
+        .on('mouseover', tool_tip.show)
+        //.on('mouseover.fade', fade(0.1))
+        .on('mouseout', tool_tip.hide)
+  	    //.on('mouseout.fade', fade(1))
+        .on('contextmenu', d3.contextmenu(items));
+    node.append("text")
+        .attr("text-anchor", "middle")
+        .text(function(d) { return d.Symbol; })
+        .attr('alignment-baseline', 'middle');
+    var drag_handler = d3.drag()
+    .on("start", dragstarted)
+    .on("drag", dragged)
+    .on("end", dragended);
+
+    drag_handler(node);
+    simulation.alpha(1).restart();
+}

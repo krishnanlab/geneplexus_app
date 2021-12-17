@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.6.4/css/buttons.bootstrap4.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.6/css/responsive.dataTables.min.css">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.13.0/themes/base/jquery-ui.css">
     <script src="https://kit.fontawesome.com/e6f3faaa40.js" crossorigin="anonymous"></script>
     <style>{{ main_css }}</style>
     <style>{{ graph_css }}</style>
@@ -179,6 +180,13 @@
                                     <div class="force">
                                         <p style=margin:0>Right-click on node to look up gene at NCBI</p>
                                     </div>
+                                    <div class="force">
+                                        <p style="margin:0">This slider controls number of nodes shown</p>
+                                        <label for="node_count">Node count:</label>
+                                        <input type="text" id="node_count" value="50" readonly>
+                                        <br>
+                                        <div id="node_slider"></div>
+                                    </div>
                                 </div>
                                 <div class="col-9">
                                     <svg width="1080" height="600" id="graph"></svg>
@@ -220,6 +228,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
         <script src="https://cdn.datatables.net/buttons/1.6.4/js/buttons.html5.min.js"></script>
         <script src="https://cdn.datatables.net/buttons/1.6.4/js/buttons.print.min.js"></script>
+        <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"></script>
         <script src="https://d3js.org/d3.v4.min.js"></script>
         <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
         <script>
