@@ -5,7 +5,7 @@ import os, sys
 import json
 
 def save_output(output_path, jobname, net_type, features, GSC, avgps, input_count, positive_genes, 
-    df_probs, df_GO, df_dis, df_convert_out_subset, graph):
+    df_probs, df_GO, df_dis, df_convert_out_subset, graph, df_edgelist):
 
     # save all data frames to files in standard format
     df_probs_file = save_df_output(output_path, jobname, 'df_probs', df_probs)
@@ -19,12 +19,15 @@ def save_output(output_path, jobname, net_type, features, GSC, avgps, input_coun
     with open(graph_file_path, 'w') as gf:
         json.dump(graph, gf)
 
+    # data frame edgelist
+    df_edgelist_file = save_df_output(output_path, jobname, 'df_edgelist', df_edgelist )
+    
     # copy the results file names into this dictionary (without path) 
     job_info = {
-        'jobname': jobname, 
-        'net_type': net_type, 
-        'features': features, 
-        'GSC': GSC, 
+        'jobname': jobname,
+        'net_type': net_type,
+        'features': features,
+        'GSC': GSC,
         'avgps': avgps, 
         'input_count': input_count, 
         'positive_genes': positive_genes,
@@ -32,7 +35,8 @@ def save_output(output_path, jobname, net_type, features, GSC, avgps, input_coun
         'df_GO_file': df_GO_file, 
         'df_dis_file': df_dis_file, 
         'df_convert_out_subset_file': df_convert_out_subset_file, 
-        'graph_file':  graph_file
+        'graph_file':  graph_file,
+        'df_edgelist_file' : df_edgelist_file
         }
 
     print(job_info, file=sys.stderr)
