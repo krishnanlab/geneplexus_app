@@ -206,20 +206,16 @@ az_set_vars ()
     # NOTE from Azure: 'registry_name' must conform to the following pattern: '^[a-zA-Z0-9]*$'  eg no hypens etc
     export AZCR=${CLIENT}${PROJECTENV}cr  #  in future use a department-wide container registry for all projects
 
-
-    # if this is the production version, 
-    if [ "$PROJECTENV" == "prod" ]
-    then
-        export AZAPPNAME=${PROJECT}
-    else
-        export AZAPPNAME=${PROJECT}${PROJECTENV}   # modify this if there are multiple/different apps per project
-    fi
+     export AZAPPNAME=${PROJECT}${PROJECTENV}   # modify this if there are multiple/different apps per project
+   
 
     # docker container names and tags
     export AZDOCKERIMAGE=$PROJECT
     export BACKEND_IMAGE=${AZDOCKERIMAGE}-backend
-    export TAG=latest  # TODO => rename to AZDOCKERTAG
-    
+    # if the tag is already set, it will use that.  
+    DEFAULT_TAG=latest
+    export TAG="${TAG:-$DEFAULT_TAG}"
+    echo "using docker container name and tag ${AZDOCKERIMAGE}:${TAG}"
     export AZPLAN=${PROJECT}-plan
     export AZLOCATION=centralus # centralus may not have Container Instances needed 
     export ENVFILE=azure/.env
