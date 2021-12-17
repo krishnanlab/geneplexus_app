@@ -78,7 +78,8 @@ def jobs():
 def job(jobname):
     """ show info about job: results if there are some but otherwise basic job information"""
     job_info = retrieve_job_info(jobname, app.config)
-    return render_template("jobresults.html", jobname = jobname, jobexists = job_exists(jobname, app.config), job_info = job_info)
+    session_args = create_sidenav_kwargs()
+    return render_template("jobresults.html", jobname = jobname, jobexists = job_exists(jobname, app.config), job_info = job_info, **session_args)
 
 @app.route("/jobs/<jobname>", methods = ["POST"])
 def update_job(jobname):
