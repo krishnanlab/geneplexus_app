@@ -242,6 +242,26 @@ def make_small_edgelist(df_probs, net_type, Entrez_to_Symbol):
 
     return df_edge, isolated_genes, df_edge_sym, isolated_genes_sym
 
+def export_small_edgelist(df_probs,net_type, max_num_genes = 50, file_loc='local'):
+    """export the output from the graph edge list and top 50 nodes in probability list
+        export as an edgelist with disconnected nodes connected only to themselves (loop back)"""
+
+    # This will set the max number of genes to look at to a given number, used to provide a file to save
+ 
+    df_edge = load_df('edgelist',file_loc,net_type_=net_type)
+    df_edge = df_edge.astype({'Node1':str,'Node2':str})
+    top_genes = df_probs['Entrez'].to_numpy()[0:max_num_genes]
+    df_edge = df_edge[(df_edge['Node1'].isin(top_genes)) & (df_edge['Node2'].isin(top_genes))]
+    # add an edge between a node and itself (enusres all unconnected nodes present in edgelist)
+    self_edges = []
+    for agene in top_genes:
+        self_edges.append([agene,agene,1.0])
+        df_self = pd.DataFrame(self_edges,columns=['Node1','Node2','Weight'])
+        df_edge = pd.concat([df_edge,df_self])
+        
+    return df_edge
+
+
 def make_graph(df_edge, df_probs):
     df_edge.fillna(0)
     df_edge.columns = ['source', 'target', 'weight']
@@ -282,9 +302,10 @@ def run_model(convert_IDs, net_type, GSC, features, logger = logging.getLogger(_
     logger.info('8. make_graph...')
     graph = make_graph(df_edge, df_probs)
 
-    return graph, df_probs, df_GO, df_dis, avgps
+    logger.info('9. make an exported edge list ')
+    df_edgelist = export_small_edgelist(df_probs, net_type)
 
-
+    return graph, df_probs, df_GO, df_dis, avgps, df_edgelist
 
 
 def make_results_html(jobname, net_type, features, GSC, 
@@ -393,13 +414,13 @@ def run_and_render(input_genes,
     df_convert_out_subset, positive_genes = alter_validation_df(df_convert_out,table_summary,net_type)
     
     # run model, assumes data_path global is set correctly
-    graph, df_probs, df_GO, df_dis, avgps = run_model(convert_IDs, net_type, GSC, features, logger)
+    graph, df_probs, df_GO, df_dis, avgps, df_edgelist = run_model(convert_IDs, net_type, GSC, features, logger)
 
     # save output if a path was provided, using methods from model_output module
     # 
     if ( output_path and os.path.exists(output_path) ):
         job_info = save_output(output_path, jobname, net_type, features, GSC, avgps, input_count, positive_genes, 
-    df_probs, df_GO, df_dis, df_convert_out_subset, graph)
+    df_probs, df_GO, df_dis, df_convert_out_subset, graph, df_edgelist)
 
     # generate html visualization/report
     results_html = make_results_html(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis,

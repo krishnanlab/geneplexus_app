@@ -1,4 +1,6 @@
-from mljob.jobs import path_friendly_jobname, launch_job, retrieve_job_folder,retrieve_results,job_info_list,valid_results_filename,results_file_dir, job_exists
+from flask.helpers import make_response
+from mljob.jobs import path_friendly_jobname, launch_job, retrieve_job_folder,retrieve_results,job_info_list,valid_results_filename,results_file_dir,job_exists,retrieve_job_info,job_status_codes
+
 
 from werkzeug.exceptions import InternalServerError
 from flask import request, render_template, jsonify, session, redirect, url_for, flash, send_file, Markup, abort,send_from_directory
@@ -58,13 +60,14 @@ def jobs():
             else:
                 flash(f"Sorry, the job '{jobname}'' was not found")
 
-    if 'jobs' in session and session['jobs']:
+    jobnames = []
+    joblist = {}
+    if 'jobs' in session:
         jobnames = session['jobs']
         # jobnames = list_all_jobs(app.config.get('JOB_PATH'))
-        joblist = job_info_list(jobnames, app.config)
-    else:
-        jobnames = []
-        joblist = {}
+        if jobnames:
+            joblist = job_info_list(jobnames, app.config)  
+
     session_args = create_sidenav_kwargs()
     return render_template("jobs.html", jobs = jobnames, 
                             joblist = joblist, 
@@ -73,9 +76,34 @@ def jobs():
 
 @app.route("/jobs/<jobname>", methods=['GET'])
 def job(jobname):
-    jobexists = job_exists(jobname, app.config)
-    """ """
-    return render_template("jobresults.html", jobname = jobname, jobexists = jobexists)
+    """ show info about job: results if there are some but otherwise basic job information"""
+    job_info = retrieve_job_info(jobname, app.config)
+    return render_template("jobresults.html", jobname = jobname, jobexists = job_exists(jobname, app.config), job_info = job_info)
+
+@app.route("/jobs/<jobname>", methods = ["POST"])
+def update_job(jobname):
+    """ update the job info and possibly notify of new jobs status"""
+
+    request_data = request.get_json()
+    job_status = request_data.get('status')
+    
+    # sanitize.  if this is an actual jobname this will be idempotent
+    jobname = path_friendly_jobname(jobname)
+    # TODO read the data that was posted! to see the event code
+    job_config = retrieve_job_info(jobname, app.config)
+    job_config['job_url'] =  url_for('job', jobname=jobname ,_external=True)
+    
+    notifyaddress = job_config.get('notifyaddress')
+    if notifyaddress:    
+        if job_status_codes.get(job_status ).lower() == "completed":
+            resp = app.notifier.notify_completed(job_config)
+        else:
+            resp = app.notifier.notify(notifyaddress, job_config, job_status)         
+        app.logger.info(f"job completed email initiated to {job_config['notifyaddress']} with response {resp}")
+        return  {'notification response': resp}, resp
+    else:
+        return  {'notifiation response': 202}, 202
+
 
 
 @app.route("/jobs/<jobname>/results",methods=['GET'])
@@ -85,7 +113,7 @@ def jobresults_content(jobname):
     if results_content:
         return(results_content) # or in future, send this html to a template wrapper        
     else:
-        return(f'<html><body><div class="container"><h3 style="padding-top:50px"> No results yet for the job "{jobname}"</h3></div></body><html>')
+        return(f'<html><body><h3 style="padding-top:50px"> No results yet for the job "{jobname}"</h3></body><html>')
 
 
 
@@ -240,10 +268,15 @@ def run_model():
         job_response = launch_job(input_genes, job_config, app.config)
         app.logger.info(f"job {job_config['jobid']} launched with response {job_response}")
 
-        if 'jobs' in session and session['jobs']:
-            session['jobs'] = session['jobs'].append(jobname)
+        if 'jobs' in session:
+            sessionjobs = session['jobs']
         else:
-            session['jobs'] = [jobname]
+            sessionjobs = []
+
+        sessionjobs.append(jobname)
+        session['jobs'] = sessionjobs
+
+
 
         job_submit_message = f"Job {jobname} submitted!  The completed job will be available on <a href='{job_config['job_url'] }'>{job_config['job_url']}</a>"
 

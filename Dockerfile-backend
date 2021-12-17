@@ -15,7 +15,7 @@ ENV PATH /opt/miniconda/bin:$PATH
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update --fix-missing && \
-    apt-get install -y apt-utils wget bzip2 && \
+    apt-get install -y apt-utils wget bzip2 curl zip && \
     apt-get install -y fuse && \
     apt-get clean -y && \
     rm -rf /var/lib/apt/lists/*
@@ -55,6 +55,9 @@ RUN conda install -y conda=${CONDA_VERSION} python=${PYTHON_VERSION} pip && \
 COPY mljob mljob
 COPY runner.py .
 COPY runner.sh .
+
+# this needs to be set for the runner to know how to POST status updates.  
+ENV APP_POST_URL="https://geneplexusdev.azurewebsites.net/jobs"
 
 # note about back-end data files
 # the data files needed by the model are not copied into this container

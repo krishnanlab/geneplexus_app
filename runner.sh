@@ -55,22 +55,53 @@ if [ -n "$JOBNAME" ]; then
 fi
 
 
+function post_status ()
+{
+  # post-job status update
+  # APP_POST_URL is set by the OS or Dockerfile
+  url=$APP_POST_URL/$JOBNAME
+
+  STATUS_DATA='{"status":'$1'}'
+
+  curl --header "Content-Type: application/json" \
+    --request POST \
+    --data $STATUS_DATA \
+    $url
+
+}
+
+function make_zip ()
+{
+ # post-job combine all files into a zip file. 
+ cd $OUTPUT_PATH/..
+ zip -r -9 $OUTPUT_PATH/$JOBNAME.zip `basename $OUTPUT_PATH`
+
+}
 # get system stats in logfile
-echo "System Memory State " >> $LOGFILE
-# vmstat -s -S M >>$LOGFILE
+#echo "System Memory State " | tee -a  $LOGFILE
+#vmstat -s -S M  | tee -a $LOGFILE
 # also send it to the error log?
 # >&2 vmstat -s -S g
 RUNCMD="runner.py $ARGS -d $DATA_PATH --cross_validation $GENE_FILE "
-echo $RUNCMD >>$LOGFILE
-echo "STARTED `date +'%d/%m/%Y %H:%M:%S'`" >>$LOGFILE
-python $RUNCMD > "$OUTPUT_FILE" 2>> "$LOGFILE"
+echo $RUNCMD | tee -a $LOGFILE
+echo "STARTED `date +'%d/%m/%Y %H:%M:%S'`" | tee -a $LOGFILE
+python $RUNCMD > "$OUTPUT_FILE" 2>  $LOGFILE
+cat $LOGFILE
 PYTHON_EXITCODE=$?
 if [ $PYTHON_EXITCODE -eq 0 ]
 then
-  echo "COMPLETED `date +'%d/%m/%Y %H:%M:%S'`" >>$LOGFILE
+
+  make_zip 2>&1 | tee -a $LOGFILE
+  post_status 200 2>&1 | tee -a $LOGFILE
+  echo "COMPLETED `date +'%d/%m/%Y %H:%M:%S'`"  2>&1 | tee -a $LOGFILE
+ 
 else
-  echo "ERROR `date +'%d/%m/%Y %H:%M:%S'` exit code $PYTHON_EXITCODE" >>$LOGFILE
+
+  post_status 500 2>&1 | tee -a $logfile
+  echo "ERROR `date +'%d/%m/%Y %H:%M:%S'` exit code $PYTHON_EXITCODE"  | tee -a  $LOGFILE
+
 fi
+
 
 
 # testing example

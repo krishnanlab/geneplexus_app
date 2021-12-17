@@ -58,7 +58,7 @@ export GP_FEATURES='Embedding'
 export GP_GSC='GO'
 
 # optional  --cross_validation
-TAG=latest
+# TAG=latest
 
 
 test_docker_shell () 
