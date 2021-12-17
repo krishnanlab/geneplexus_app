@@ -1,5 +1,6 @@
 from flask.helpers import make_response
-from mljob.jobs import path_friendly_jobname, launch_job, retrieve_job_folder,retrieve_results,job_info_list,valid_results_filename,results_file_dir, job_exists,retrieve_job_info,job_status_codes
+from mljob.jobs import path_friendly_jobname, launch_job, retrieve_job_folder,retrieve_results,job_info_list,valid_results_filename,results_file_dir,job_exists,retrieve_job_info,job_status_codes
+
 
 from werkzeug.exceptions import InternalServerError
 from flask import request, render_template, jsonify, session, redirect, url_for, flash, send_file, Markup, abort,send_from_directory
@@ -75,9 +76,9 @@ def jobs():
 
 @app.route("/jobs/<jobname>", methods=['GET'])
 def job(jobname):
-    jobexists = job_exists(jobname, app.config)
-    """ """
-    return render_template("jobresults.html", jobname = jobname, jobexists = jobexists)
+    """ show info about job: results if there are some but otherwise basic job information"""
+    job_info = retrieve_job_info(jobname, app.config)
+    return render_template("jobresults.html", jobname = jobname, jobexists = job_exists(jobname, app.config), job_info = job_info)
 
 @app.route("/jobs/<jobname>", methods = ["POST"])
 def update_job(jobname):
@@ -112,7 +113,7 @@ def jobresults_content(jobname):
     if results_content:
         return(results_content) # or in future, send this html to a template wrapper        
     else:
-        return(f'<html><body><div class="container"><h3 style="padding-top:50px"> No results yet for the job "{jobname}"</h3></div></body><html>')
+        return(f'<html><body><h3 style="padding-top:50px"> No results yet for the job "{jobname}"</h3></body><html>')
 
 
 

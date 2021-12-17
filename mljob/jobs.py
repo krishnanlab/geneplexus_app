@@ -334,14 +334,13 @@ def retrieve_job_info(jobname, app_config):
     # create default empty dict for consistent rows
     job_info = { 
         'jobname': jobname, 
-        'is_job' : '',
+        'is_job' : False,
         'submit_time' : '',
-        'has_results' : '',
+        'has_results' : False,
         'params' : '',
-        'status' : '',
+        'status' : 404,
         'notifyaddress' : '',
         'job_url' : ''
-
     }
 
     jf = retrieve_job_folder(jobname, app_config)
@@ -353,10 +352,6 @@ def retrieve_job_info(jobname, app_config):
         job_info['status'] = retrieve_job_status(jobname, app_config)
         job_info['notifyaddress'] = get_notifyaddress(jobname, app_config)
         job_info['job_url'] = '' # this is a placeholder until I find non-clunky way to get use url_for without importing all of flask
-    else:
-        job_info['is_job'] = False
-        job_info['status'] = 'NOT FOUND'
-
     
     return(job_info)
   

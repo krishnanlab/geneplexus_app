@@ -3,19 +3,50 @@
 {% block title %}{% if jobexists %}Job: {{ jobname }}{% else %}Job {{ jobname }} does not exist{% endif %}{% endblock %}
 
 {% block app_content %}
-<!-- disabling the sidebar the results.html from jobs looks best at 100&% of screen (currently), the sidebar takes up significant blank space  -->
-<style>
-    .sidenav {
-        display:none !important
-    }
-</style>
 
 <div> 
 <!-- this is not class container, as that currently floats right to avoid the sidenav, which we are hiding on this page --> 
-    <iframe 
-        style="position: absolute; width: 100%; height: 100%; border: none" 
-        src="{{url_for('jobresults_content', jobname=jobname)}}">
-    </iframe>
+{% if jobexists %}
+    {% if job_info['has_results'] %}
+    <!-- disabling the sidebar the results.html from jobs looks best at 100&% of screen (currently), the sidebar takes up significant blank space  -->
+
+        <style>
+            .sidenav {
+                display:none !important
+            }
+        </style>
+
+        <iframe 
+            style="position: absolute; width: 100%; height: 100%; border: none" 
+            src="{{url_for('jobresults_content', jobname=jobname)}}">
+        </iframe>
+
+    {% else %}
+    <!-- job not completed yet -->
+    <div class="container">
+        <div id="content-padding" class="pl-4 pt-4">
+            <h4>Job Status for {{ jobname }}</h4>
+            <p> The job has not completed or otherwise has not produced results.  </p>
+            <ul>                
+                <li>Submit Time: {{job_info['submit_time']}}</li>
+                <li>Parameters:  {{job_info['params']}}</li>
+            </ul> 
+        </div>
+    </div>
+    {% endif %}
+
+{% else %}
+
+    <!-- no job found-->
+    <div class="container">
+        <div id="content-padding" class="pl-4 pt-4">
+            <h4>No job Found</h4>
+            <p>Sorry, but no GenePlexus job with that name exists on our server. ( {{ jobname }} )  </p>
+        </div>
+    </div>
+    
+{% endif %}
 
 </div>
+
 {% endblock %}
