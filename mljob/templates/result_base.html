@@ -139,41 +139,53 @@
                         </div>
                     </div>
                     <div class="tab-pane fade" id="netgraph">
-                        <div class="controls">
-                            <div class="force">
-                                <p style=margin:0><label>Network Interpretation:</label></p>
+                        <div>
+                            <div class="row">
+                                <div class="box_padding m-3">
+                                    <p>The graph below shows the network connectivity of the top 50 genes based on prediction probability. The edges used in the graph come 
+                                        from the adjacency matrix representation of the network used to train the machine learning model. 
+                                        For a description of the graph features, see the panel on the left.
+                                        <br><br>
+                                        The current view of the graph can be exported as a PNG, SVG file or the entire edgelist can be downloaded as a tab separated file:
+                                        <a id="download_as_png" class="btn btn-sm btn-primary m-1" style="width: 5%" href="#">PNG</a>
+                                        <a id="download_as_svg" class="btn btn-sm btn-primary m-1" style="width: 5%" href="#">SVG</a>
+                                        <a class="btn btn-sm btn-primary m-1" style="width: 8%" href="/jobs/{{job_info['jobname']}}/results/download/{{job_info['df_edgelist_file']}}" >Edgelist</a>                               
+                                    </p>
+                                </div>
                             </div>
-                            <div class="force">
-                                <p style=margin:0>The graph shows the top 50 nodes based on highest prediction probability</p>
-                            </div>
-                            <div class="force">
-                                <p style=margin:0>Node size is based on the prediction probability</p>
-                            </div>
-                            <div class="force">
-                                <p style=margin:0>Node color is based on the Class-Label</p>
-                            </div>
-                            <div class="force">
-                                <p style=margin:0>Hover over a node for additional attributes</p>
-                            </div>
-                            <div class="force">
-                                <p style=margin:0>Zoom in or out using the mouse scroll wheel</p>
-                            </div>
-                            <div class="force">
-                                <p style=margin:0>Move graph around the screen by dragging with the left mouse button</p>
-                            </div>
-                            <div class="force">
-                                <p style=margin:0>Right-click on node to look up gene at NCBI</p>
-                            </div>
-                            <div class="force">
-                                <p style=margin:0>
-                                    <a href="/jobs/{{job_info['jobname']}}/results/download/{{job_info['df_edgelist_file']}}" class="btn btn-sm btn-primary">
-                                    Download Edgelist </a>
-                                    as a tab-seperated text file
-                                </p>
+                            <div class="row">
+                                <div class="controls col-4 ml-3">
+                                    <div class="force">
+                                        <p style=margin:0><label>Network Interpretation:</label></p>
+                                    </div>
+                                    <div class="force">
+                                        <p style=margin:0>The graph shows the top 50 nodes based on highest prediction probability</p>
+                                    </div>
+                                    <div class="force">
+                                        <p style=margin:0>Node size is based on the prediction probability</p>
+                                    </div>
+                                    <div class="force">
+                                        <p style=margin:0>Node color is based on the Class-Label</p>
+                                    </div>
+                                    <div class="force">
+                                        <p style=margin:0>Hover over a node for additional attributes</p>
+                                    </div>
+                                    <div class="force">
+                                        <p style=margin:0>Zoom in or out using the mouse scroll wheel</p>
+                                    </div>
+                                    <div class="force">
+                                        <p style=margin:0>Move graph around the screen by dragging with the left mouse button</p>
+                                    </div>
+                                    <div class="force">
+                                        <p style=margin:0>Right-click on node to look up gene at NCBI</p>
+                                    </div>
+                                </div>
+                                <div class="col-9">
+                                    <svg width="1080" height="600" id="graph"></svg>
+                                    <canvas hidden width="1080" height="600" id="canvas"></canvas>
+                                </div>
                             </div>
                         </div>
-                        <svg width="1080" height="600" id="graph"></svg>
-                        <canvas hidden width="1080" height="600" id="canvas"></canvas>
                     </div>
                     <div class="tab-pane fade" id="validation">
                         <div class="table_container">
@@ -217,6 +229,7 @@
         <script>{{ d3_tip_js }}</script>
         <script>{{ graph_js }}</script>
         <script>{{ datatable_js }}</script>
+        <script>{{ save_svg_as_png_js }}</script>
         <script>
             $('[data-toggle="popover"]').popover();
         </script>

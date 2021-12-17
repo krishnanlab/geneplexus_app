@@ -340,6 +340,10 @@ def make_results_html(jobname, net_type, features, GSC,
     datatable_path = os.path.join(os.path.dirname(__file__), 'static', 'datatable.js')
     with open(datatable_path, 'r') as f:
         datatable_js = f.read()
+    
+    save_as_svg_path = os.path.join(os.path.dirname(__file__), 'static', 'saveSvgAsPng.js')
+    with open(save_as_svg_path, 'r') as f:
+        save_svg_as_png_js = f.read()
 
     main_path = os.path.join(os.path.dirname(__file__), 'static', 'main.css')
     with open(main_path, 'r') as f:
@@ -366,6 +370,7 @@ def make_results_html(jobname, net_type, features, GSC,
         d3_tip_js=d3_tip_js,
         graph_js=graph_js,
         datatable_js=datatable_js,
+        save_svg_as_png_js=save_svg_as_png_js,
         main_css=main_css,
         graph_css=graph_css,
         d3_tip_css=d3_tip_css,
