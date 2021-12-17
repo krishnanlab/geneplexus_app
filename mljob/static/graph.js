@@ -390,9 +390,16 @@ function updateAll() {
 initializeDisplay();
 initializeSimulation();
 
-d3.select("#download_chart")
+d3.select("#download_as_png")
 .on('click', function(){
     console.log('In download chart');
     // Get the d3js SVG element and save using saveSvgAsPng.js
     saveSvgAsPng(document.getElementsByTagName("svg")[0], "plot.png", {scale: 2, backgroundColor: "#FFFFFF"});
-})
+});
+
+d3.select("#download_as_svg")
+.on('click', function(){
+    console.log('In download chart');
+    // Get the d3js SVG element and save using saveSvgAsPng.js
+    saveSvg(document.getElementsByTagName("svg")[0], "plot.svg", {scale: 2, backgroundColor: "#FFFFFF"});
+});

@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-function() {
+(function() {
   const out$ = typeof exports != 'undefined' && exports || typeof define != 'undefined' && {} || this || window;
   if (typeof define !== 'undefined') define('save-svg-as-png', [], () => out$);
   out$.default = out$;
