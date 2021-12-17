@@ -152,6 +152,9 @@
                             <div class="force">
                                 <p style=margin:0>Right-click on node to look up gene at NCBI</p>
                             </div>
+                            <div class="force" id="download_chart">
+                                <button style="margin:0;" class="btn btn-sm">Download as PNG</button>
+                            </div>
                         </div>
                         <svg width="1080" height="600" id="graph"></svg>
                         <canvas hidden width="1080" height="600" id="canvas"></canvas>
@@ -198,6 +201,7 @@
         <script>{{ d3_tip_js }}</script>
         <script>{{ graph_js }}</script>
         <script>{{ datatable_js }}</script>
+        <script>{{ save_svg_as_png_js }}</script>
         <script>
             $('[data-toggle="popover"]').popover();
         </script>
