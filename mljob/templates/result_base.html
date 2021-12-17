@@ -85,7 +85,9 @@
                                     and U – gene was not considered at all during training. <b>Known/Novel</b> indicates whether the gene was part of 
                                     the input gene list (therefore ‘Known’) or not (therefore ‘Novel’).
                                     <br><br>
-                                    <a href="/jobs/{{job_info['jobname']}}/results/download/{{job_info['df_probs_file']}}">Download the full prediction probability table of all genes in the network as tab separated values</a>                                    
+                                    To download the current subset of the table use the Copy, Excel or PDF buttons on the top right of the table. At most the table will display the top 500 results. 
+                                    To download the prediction probability of all the genes in the network as a tab separated values file click the following button:
+                                    <a href="/jobs/{{job_info['jobname']}}/results/download/{{job_info['df_probs_file']}}" class="btn btn-sm btn-primary">Download All Predictions</a>                                    
                                 </p>
                             </div>
                         {{ probs_table|safe }}
@@ -100,7 +102,9 @@
                                     trained on the input genes. See the Help page for more information about
                                     the similarity measure.
                                     <br><br>
-                                    <a href="/jobs/{{job_info['jobname']}}/results/download/{{job_info['df_GO_file']}}">Download the full biological process similarities table of all genes in the network as tab separated values</a>
+                                    To download the current subset of the table use the Copy, Excel or PDF buttons on the top right of the table. At most the table will display the top 500 results. 
+                                    To download the similarity to all Biological Processes as a tab separated values file click the following button:
+                                    <a href="/jobs/{{job_info['jobname']}}/results/download/{{job_info['df_GO_file']}}" class="btn btn-sm btn-primary">Download All Similarities</a>
                                 </p>
                             </div>
                         {{ go_table|safe }}
@@ -115,7 +119,9 @@
                                     trained on the input genes. See the Help page for more information about
                                     the similarity measure.
                                     <br><br>
-                                    <a href="/jobs/{{job_info['jobname']}}/results/download/{{job_info['df_dis_file']}}">Download table as tab seperated values</a></p>
+                                    To download the current subset of the table use the Copy, Excel or PDF buttons on the top right of the table. At most the table will display the top 500 results. 
+                                    To download the similarity to all Diseases as a tab separated values file click the following button:
+                                    <a href="/jobs/{{job_info['jobname']}}/results/download/{{job_info['df_dis_file']}}" class="btn btn-sm btn-primary">Download All Similarities</a></p>
                             </div>
                         {{ dis_table|safe }}
                         </div>
@@ -157,7 +163,9 @@
                                 The number of those genes that were uniquely mapped to an Entrez ID
                                         and were also in the network is {{positive_genes}}.
                                     <br><br>
-                                    <a href="/jobs/{{job_info['jobname']}}/results/download/{{job_info['df_convert_out_subset_file']}}">Download table as tab seperated values</a>
+                                    To download the current subset of the table use the Copy, Excel or PDF buttons on the top right of the table. At most the table will display the top 500 results. 
+                                    To download the validation data as a tab separated values file click the following button:
+                                    <a href="/jobs/{{job_info['jobname']}}/results/download/{{job_info['df_convert_out_subset_file']}}" class="btn btn-sm btn-primary">Download Validation Data</a>
                                 </p>
                             </div>
                         {{ validate_results|safe }}
