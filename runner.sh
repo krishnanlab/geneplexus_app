@@ -70,6 +70,13 @@ function post_status ()
 
 }
 
+function make_zip ()
+{
+ # post-job combine all files into a zip file. 
+ cd $OUTPUT_PATH/..
+ zip -r -9 $OUTPUT_PATH/$JOBNAME.zip `basename $OUTPUT_PATH`
+
+}
 # get system stats in logfile
 #echo "System Memory State " | tee -a  $LOGFILE
 #vmstat -s -S M  | tee -a $LOGFILE
@@ -84,6 +91,7 @@ PYTHON_EXITCODE=$?
 if [ $PYTHON_EXITCODE -eq 0 ]
 then
 
+  make_zip 2>&1 | tee -a $LOGFILE
   post_status 200 2>&1 | tee -a $LOGFILE
   echo "COMPLETED `date +'%d/%m/%Y %H:%M:%S'`"  2>&1 | tee -a $LOGFILE
  
