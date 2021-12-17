@@ -1,4 +1,5 @@
 from flask.helpers import make_response
+from slugify.slugify import slugify
 from mljob.jobs import path_friendly_jobname, launch_job, retrieve_job_folder,retrieve_results,job_info_list,valid_results_filename,results_file_dir,job_exists,retrieve_job_info,job_status_codes
 
 
@@ -208,6 +209,12 @@ def uploads(filename):
     # Returning file from appended path
     return send_file(uploads, as_attachment=True)
 
+@app.route('/get_slugified_text', methods=['POST'])
+def get_slugified_text():
+    prefix = request.get_json()['prefix']
+    clean_text = slugify(prefix.lower())
+    return jsonify(success=True, clean_text=clean_text, prefix_too_long=(len(clean_text) > app.config['MAX_PREFIX_LENGTH']), too_long_by=(len(clean_text) - app.config['MAX_PREFIX_LENGTH']))
+
 
 @app.route("/run_model", methods=['POST'])
 def run_model():
@@ -236,7 +243,10 @@ def run_model():
     # if the optional prefix has been added, concatenate
     # the two fields together.  Otherwise the jobname is the jobid
     if form.prefix.data != '':
-        jobname = f'{form.prefix.data}-{jobid}'
+        friendly_prefix = slugify(form.prefix.data.lower())
+        if len(friendly_prefix) > app.config['MAX_PREFIX_LENGTH']:
+            friendly_prefix = friendly_prefix[:app.config['MAX_PREFIX_LENGTH']]
+        jobname = f'{friendly_prefix}-{jobid}'
     else:
         jobname = jobid
 
@@ -383,5 +393,7 @@ def create_sidenav_kwargs():
         validate_df = pd.DataFrame(session['df_convert_out'])[['Original ID', 'Entrez ID', 'In BioGRID?', 'In STRING?', 'In STRING-EXP?', 'In GIANT-TN?']]
         validate_html = validate_df.to_html(index=False,
                             classes='table table-striped table-bordered" id = "validatetable')
-        return {'existing_genes': session['genes'], 'pos': session['pos'], 'table_summary': session['table_summary'], 'validate_table': validate_html, 'valid_form': form}
+        return {'existing_genes': session['genes'], 'pos': session['pos'], 
+        'table_summary': session['table_summary'], 'validate_table': validate_html, 'valid_form': form,
+        'prefix_limit': app.config['MAX_PREFIX_LENGTH']}
     return {}

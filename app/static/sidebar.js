@@ -76,3 +76,23 @@ function clearInput(){
         }
     });
 }
+
+$('#prefix').on('change keyup blur', function(){
+    prefix = $('#prefix').val()
+    $.ajax({
+        type: 'POST',
+        url: '/get_slugified_text',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            'prefix': prefix
+        }),
+        success: function(data) {
+            if (data.prefix_too_long){
+                $('#char_limit').text('Your input is ' + data.too_long_by + ' characters too long. It will be truncated on submit');
+            }
+            else{
+                $('#char_limit').text('');
+            }
+        }
+    })
+});

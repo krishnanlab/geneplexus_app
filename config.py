@@ -37,6 +37,8 @@ class BaseConfig(object):
     # TODO remove this from base config, but leave it here until email notification is implemented
     TEST_EMAIL_RECIPIENT = os.getenv('TEST_EMAIL_RECIPIENT')
 
+    MAX_PREFIX_LENGTH = 32
+
 class ProdConfig(BaseConfig):
     FLASK_ENV="production"
     FILE_LOC = "local"

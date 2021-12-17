@@ -40,7 +40,7 @@
         <li><a href="https://academic.oup.com/bioinformatics/article/36/11/3457/5780279"><i class="fas fa-video"></i>Watch the GenePlexus tutorial</a></li>
         <li><a href="{{ url_for('about') }}"><i class="fas fa-info-circle"></i>See the About page</a>  for a high-level overview of how GenePlexus works.</li>
         <li><a href="{{ url_for('help') }}"><i class="far fa-question-circle"></i>See the Help page</a> for detailed help on the various inputs or outputs.</li>
-        <li><a href="http://localhost:5000/jobs/primary-ciliary-dyskinesia-example"><i class="fas fa-project-diagram"></i>See an example run </a>where GenePlexus was used to train a model and predict novel genes associated with the disease</li>
+        <li><a href="{{url_for('job', jobname='example')}}"><i class="fas fa-project-diagram"></i>See an example run </a>where GenePlexus was used to train a model and predict novel genes associated with the disease</li>
     </ul>
    
     <h4>About GenePlexus <sup>&beta;eta</sup></h4>
@@ -52,7 +52,7 @@
     <!-- <hr class="mt-4"> -->
     <h4>Example</h4>
     <p>You can visit
-    <a href="{{url_for('job', jobname='primary-ciliary-dyskinesia-example')}}">this page</a>
+    <a href="{{url_for('job', jobname='example')}}">this page</a>
     to see the results of an example run where GenePlexus was used to train a model and predict novel genes associated with the disease <i>primary ciliary dyskinesia (PCD)</i>.</p>
     <p>This run used the adjacency matrix representation of the human STRING network. Since the input genes correspond to a disease, the negative genes were selected based on genes associated with other diseases (from the DisGeNet database).
         The predicted genes are under the “Gene Predictions” tab. It is notable that the gene DNALI1 (dynein axonemal light intermediate chain 1), which was not included in the original gene list, is strongly predicted to be associated with PCD.</p>
