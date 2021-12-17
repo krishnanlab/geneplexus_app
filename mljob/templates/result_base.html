@@ -17,8 +17,20 @@
 </head>
     <body>
        <div class="result_container">
-           <h4 style="padding: 5px">Prediction results</h4>
-            <div class="border border-dark">
+            <h4 class="col-12 p-2">
+                Prediction results
+                <!-- add large button on same row as header -->
+                <a href="/jobs/{{job_info['jobname']}}/results/download/{{job_info['jobname']}}.zip"
+                    class="btn btn-success float-right">
+                    Download all results data as zip file
+                </a>
+                <a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                data-content="Download all the tables, edge list, and this result 
+                file contained in a single zip file named for the job name">
+              <i class="fas fa-question-circle"></i>
+            </h4>
+
+           <div class="border border-dark">
                 <div class="box_padding">
                     <div class="row">
                         <div class="col text-left">
