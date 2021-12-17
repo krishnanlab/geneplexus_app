@@ -100,9 +100,9 @@ def update_job(jobname):
         else:
             resp = app.notifier.notify(notifyaddress, job_config, job_status)         
         app.logger.info(f"job completed email initiated to {job_config['notifyaddress']} with response {resp}")
-        return  {'a': 'b'}, resp
+        return  {'notification response': resp}, resp
     else:
-        return  {'a': 'b'}, 202
+        return  {'notifiation response': 202}, 202
 
 
 
