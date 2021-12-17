@@ -23,13 +23,17 @@
 
     {% else %}
     <!-- job not completed yet -->
+    {% set job_config = job_info['params'] %}
     <div class="container">
         <div id="content-padding" class="pl-4 pt-4">
             <h4>Job Status for {{ jobname }}</h4>
             <p> The job has not completed or otherwise has not produced results.  </p>
             <ul>                
                 <li>Submit Time: {{job_info['submit_time']}}</li>
-                <li>Parameters:  {{job_info['params']}}</li>
+                <li>Network:<strong> {{job_config['GP_NET_TYPE']}}</strong></li>
+                <li>Features: <strong>{{job_config['GP_FEATURES']}}</strong></li>
+                <li>Negative Selection: <strong>{{job_config['GP_GSC']}}</strong></li>
+
             </ul> 
         </div>
     </div>
