@@ -58,6 +58,7 @@ class Notifier():
         self.job_status_codes = job_status_codes
         template_path = os.path.join(os.path.dirname(__file__), template_folder)
         self.template_env = Environment(loader=FileSystemLoader(template_path))
+        return(None)
 
     def render_message(self, job_config, event=None):
         """ using standard job status codes, find template file and build jinja template"""
@@ -114,7 +115,7 @@ class Notifier():
         message_content = self.render_message(job_config, event)
         if not subject_line:
             event_name = self.job_status_codes[event]
-            subject_line = "Geneplexus job information : {event_name}"
+            subject_line = f"Geneplexus job information : {event_name}"
 
         mail_status_code = self.send_email(to_address, message_content, subject_line)
         return(mail_status_code)
@@ -126,9 +127,9 @@ class Notifier():
             # if job config has minimal info, fire notifiy
             subject_line = f"Geneplexus: job '{job_config['jobname'] }' {self.job_status_codes[event]}"
             return self.notify(job_config['notifyaddress'], job_config, event, subject_line)
-        else:
-            print('job info missing notifyaddress and/or jobname', file=sys.stderr)
-            return(None)
+        
+        print('job info missing notifyaddress and/or jobname', file=sys.stderr)
+        return(None)
 
     def notify_completed(self, job_config):
         """ standard job completed message"""
@@ -137,9 +138,9 @@ class Notifier():
             # if job config has minimal info, fire notifiy
             subject_line = f"Geneplexus: job '{job_config['jobname'] }' {self.job_status_codes[event]}"
             return self.notify(job_config['notifyaddress'], job_config, event, subject_line)
-        else:
-            print('job info missing notifyaddress and/or jobname', file=sys.stderr)
-            return(None)
+
+        print('job info missing notifyaddress and/or jobname', file=sys.stderr)
+        return(None)
 
 
 def test_notifier(app, address='mail@billspat.com'):
