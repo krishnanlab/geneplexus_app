@@ -427,11 +427,8 @@ function modifyNodeCount(nodeCount) {
     oldNodes = dataset.nodes.slice(nodeCount);
     newLinks = dataset.links.filter(
         function(l) {
-            for(let i = 0; i < oldNodes.count; i++){
-                if (l.source.id == oldNodes[id].id || l.target.id == oldNodes[i].id) {
-                    console.log(l.source);
-                    console.log(l.target);
-                    console.log(oldNodes[i].id);
+            for(let i = 0; i < oldNodes.length; i++){
+                if (l.source.id == oldNodes[i].id || l.target.id == oldNodes[i].id) {
                     return false;
                 }
             }
