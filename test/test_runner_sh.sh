@@ -34,4 +34,6 @@ export GP_FEATURES='Embedding'
 export GP_GSC='GO'
 # optional  --cross_validation
 
+export APP_POST_URL=http://localhost:5000/jobs
+
 $GPDIR/runner.sh

@@ -1,6 +1,6 @@
 import requests
 import json
-import os, sys #, re, errno
+import os, sys, pathlib #, re, errno
 from slugify import slugify
 from datetime import datetime
 from mljob.geneplexus import run_and_render
@@ -19,6 +19,10 @@ jobs_status_descriptions = { 200:"Job completed successfully",
     500:"There was a problem with the job creation or a run-time error",
     504:"Timeout.  There has been no status updates from the job within the expected time, assumed error"
     }
+
+# standardized file name for reading /wrwiting status codes in job folder
+job_status_filename = "JOBSTATUS"
+
 
 def path_friendly_jobname(jobname):
     """ job name must be useable to create file paths and other cloud resources, so remove unuesable or unicode characters"""
@@ -46,6 +50,11 @@ def valid_results_filename(possible_file_name):
     return(slugified_file_name)
 
 
+def create_job_folder_name(job_config, app_config):
+    """create standardized job folder path given application configuration"""
+    local_job_folder = f"{app_config['JOB_PATH']}/{job_config['jobname']}"
+    return(local_job_folder)
+
 
 def create_input_file_name(jobname):
     return('input_genes.txt')
@@ -60,6 +69,39 @@ def create_results_file_name(jobname):
 def create_json_file_name(jobname):
     jn = path_friendly_jobname(jobname)
     return(f"{jn}.json")
+
+def create_notifyaddress_file_name(jobname):
+    """standardized notifier file naming"""
+    return('NOTIFY')
+
+def save_notifyaddress(job_config, app_config):
+    """create a new file in the job folder to hold the notifier email address.  
+    this is not going into the job info json file for now because we also send that to the 
+    job runner, and that does not need this address"""
+    job_dir = create_job_folder_name(job_config, app_config)
+    notifyaddress_file = os.path.join(job_dir, create_notifyaddress_file_name(job_config['jobname']))
+    with open(notifyaddress_file, 'w') as nf:
+        nf.write(job_config['notifyaddress'])
+
+    return(notifyaddress_file)
+
+
+def get_notifyaddress(jobname, app_config):
+    """ retrieve the email address that was notified for this job, if any. Return the email address"""
+
+    notifyaddress = None
+
+    if job_exists(jobname, app_config):
+
+        jf = retrieve_job_folder(jobname, app_config)    
+        notifyaddress_file = os.path.join(jf, create_notifyaddress_file_name(jobname))
+
+        try:
+            notifyaddress = pathlib.Path(notifyaddress_file).read_text()
+        except:
+            print(f"File with notifier info {notifyaddress_file} not found or readable", file=sys.stderr)
+
+    return(notifyaddress)
 
 
 def job_json(job_config, app_config):
@@ -173,6 +215,9 @@ def launch_job(genes, job_config, app_config):
     # write job params ( data sent to azure )
     with open(json_file_path, 'w') as f:
         f.write(job_vars)
+
+    # save notifier address 
+    notifier_file_name = save_notifyaddress(job_config, app_config)
 
     if app_config['RUN_LOCAL']:
         print("running job locally (may take a while")
@@ -293,7 +338,10 @@ def retrieve_job_info(jobname, app_config):
         'submit_time' : '',
         'has_results' : '',
         'params' : '',
-        'status' : ''
+        'status' : '',
+        'notifyaddress' : '',
+        'job_url' : ''
+
     }
 
     jf = retrieve_job_folder(jobname, app_config)
@@ -301,12 +349,15 @@ def retrieve_job_info(jobname, app_config):
         job_info['is_job'] = True
         job_info['submit_time'] = datetime.fromtimestamp(os.path.getmtime(jf)).strftime("%Y-%m-%d %H:%M:%S")
         job_info['has_results'] = check_results(jobname, app_config)
-        job_info['params']= retrieve_job_params(jobname, app_config)
-        job_info['status']=retrieve_job_status(jobname, app_config)
+        job_info['params'] = retrieve_job_params(jobname, app_config)
+        job_info['status'] = retrieve_job_status(jobname, app_config)
+        job_info['notifyaddress'] = get_notifyaddress(jobname, app_config)
+        job_info['job_url'] = '' # this is a placeholder until I find non-clunky way to get use url_for without importing all of flask
     else:
         job_info['is_job'] = False
         job_info['status'] = 'NOT FOUND'
 
+    
     return(job_info)
   
 def job_info_list(jobnames, app_config):
@@ -318,7 +369,7 @@ def job_info_list(jobnames, app_config):
     return(jobinfolist)
     
 def retrieve_job_status(jobname, app_config, status_file_suffix = ".log", default_status = "SUBMITTED"):
-    """ read the log file created by the job runner in the same folder as the results"""
+    """ DEPRECATED for simpler version below.   read the log file created by the job runner in the same folder as the results"""
 
     fp = results_file_path(jobname, app_config) + status_file_suffix
     last_line = default_status # this is the default
@@ -331,6 +382,38 @@ def retrieve_job_status(jobname, app_config, status_file_suffix = ".log", defaul
     
     return(last_line)
 
+def set_job_status(jobname, job_status, app_config):
+    """set a single file JOBSTATUS in job folder"""
+    jf = retrieve_job_folder(jobname, app_config)
+    if jf and job_status in job_status_codes:
+
+        job_status_file = os.join(jf, job_status_filename)
+
+        with open(job_status_file , 'w') as f:
+            f.write(job_status)
+        return(job_status_file)
+    else:
+        return(None)
+
+def get_job_status(jobname,app_config):
+    """ if the job exists, read the job """
+    jf = retrieve_job_folder(jobname, app_config)
+    if jf:
+        job_status_file = os.join(jf, job_status_filename)
+        if os.path.exists(job_status_file):
+            with open(job_status_file , 'r') as f:
+                job_status = f.read()
+                try:
+                    job_status = int(job_status)
+                except:
+                    print("error  job status file contents not numeric", file = sys.stderr)
+        else:
+            job_status = 0
+        
+    else:
+        job_status = 404
+  
+    return(job_status)
 
 def retrieve_results(jobname, app_config):
     """ retrieve the results file (html) for a given job"""
@@ -401,14 +484,6 @@ def retrieve_job_params(jobname, app_config):
         return('')
 
 
-def job_status(jobname, app_config):
-    """ use methods above to construct and return the state of the job"""
-    jf = retrieve_job_folder(jobname, app_config)
-    if not jf:
-        return('4o4')
-    
-
-
 def test_job(test_jobname="A_test_job!-A99", input_file='input_genes.txt'):
     from app import app
     # in calling function, Assign variables to navbar input selections
@@ -431,3 +506,4 @@ def test_job(test_jobname="A_test_job!-A99", input_file='input_genes.txt'):
     print("launching",file=sys.stderr)
     response = launch_job(genes, job_config, app.config)
     print("response = ", response,file=sys.stderr) 
+

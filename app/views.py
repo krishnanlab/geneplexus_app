@@ -1,4 +1,5 @@
-from mljob.jobs import path_friendly_jobname, launch_job, retrieve_job_folder,retrieve_results,job_info_list,valid_results_filename,results_file_dir, job_exists
+from flask.helpers import make_response
+from mljob.jobs import path_friendly_jobname, launch_job, retrieve_job_folder,retrieve_results,job_info_list,valid_results_filename,results_file_dir, job_exists,retrieve_job_info,job_status_codes
 
 from werkzeug.exceptions import InternalServerError
 from flask import request, render_template, jsonify, session, redirect, url_for, flash, send_file, Markup, abort,send_from_directory
@@ -77,6 +78,31 @@ def job(jobname):
     jobexists = job_exists(jobname, app.config)
     """ """
     return render_template("jobresults.html", jobname = jobname, jobexists = jobexists)
+
+@app.route("/jobs/<jobname>", methods = ["POST"])
+def update_job(jobname):
+    """ update the job info and possibly notify of new jobs status"""
+
+    request_data = request.get_json()
+    job_status = request_data.get('status')
+    
+    # sanitize.  if this is an actual jobname this will be idempotent
+    jobname = path_friendly_jobname(jobname)
+    # TODO read the data that was posted! to see the event code
+    job_config = retrieve_job_info(jobname, app.config)
+    job_config['job_url'] =  url_for('job', jobname=jobname ,_external=True)
+    
+    notifyaddress = job_config.get('notifyaddress')
+    if notifyaddress:    
+        if job_status_codes.get(job_status ).lower() == "completed":
+            resp = app.notifier.notify_completed(job_config)
+        else:
+            resp = app.notifier.notify(notifyaddress, job_config, job_status)         
+        app.logger.info(f"job completed email initiated to {job_config['notifyaddress']} with response {resp}")
+        return  {'a': 'b'}, resp
+    else:
+        return  {'a': 'b'}, 202
+
 
 
 @app.route("/jobs/<jobname>/results",methods=['GET'])

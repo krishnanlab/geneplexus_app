@@ -55,6 +55,21 @@ if [ -n "$JOBNAME" ]; then
 fi
 
 
+function post_status ()
+{
+  # post-job status update
+  # APP_POST_URL is set by the OS or Dockerfile
+  url=$APP_POST_URL/$JOBNAME
+
+  STATUS_DATA='{"status":'$1'}'
+
+  curl --header "Content-Type: application/json" \
+    --request POST \
+    --data $STATUS_DATA \
+    $APP_POST_URL
+    
+}
+
 # get system stats in logfile
 #echo "System Memory State " | tee -a  $LOGFILE
 #vmstat -s -S M  | tee -a $LOGFILE
@@ -69,9 +84,13 @@ PYTHON_EXITCODE=$?
 if [ $PYTHON_EXITCODE -eq 0 ]
 then
   echo "COMPLETED `date +'%d/%m/%Y %H:%M:%S'`"  2>&1 | tee -a $LOGFILE
+  post_status 200
+ 
 else
   echo "ERROR `date +'%d/%m/%Y %H:%M:%S'` exit code $PYTHON_EXITCODE"  | tee -a  $LOGFILE
+  post_status 500
 fi
+
 
 
 # testing example
