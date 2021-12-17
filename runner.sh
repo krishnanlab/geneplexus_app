@@ -66,8 +66,8 @@ function post_status ()
   curl --header "Content-Type: application/json" \
     --request POST \
     --data $STATUS_DATA \
-    $APP_POST_URL
-    
+    $url
+
 }
 
 # get system stats in logfile
@@ -84,11 +84,11 @@ PYTHON_EXITCODE=$?
 if [ $PYTHON_EXITCODE -eq 0 ]
 then
   echo "COMPLETED `date +'%d/%m/%Y %H:%M:%S'`"  2>&1 | tee -a $LOGFILE
-  post_status 200
+  post_status 200 2>&1 | tee -a $LOGFILE
  
 else
   echo "ERROR `date +'%d/%m/%Y %H:%M:%S'` exit code $PYTHON_EXITCODE"  | tee -a  $LOGFILE
-  post_status 500
+  post_status 500 2>&1 | tee -a $LOGFILE
 fi
 
 
