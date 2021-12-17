@@ -58,13 +58,14 @@ def jobs():
             else:
                 flash(f"Sorry, the job '{jobname}'' was not found")
 
-    if 'jobs' in session and session['jobs']:
+    jobnames = []
+    joblist = {}
+    if 'jobs' in session:
         jobnames = session['jobs']
         # jobnames = list_all_jobs(app.config.get('JOB_PATH'))
-        joblist = job_info_list(jobnames, app.config)
-    else:
-        jobnames = []
-        joblist = {}
+        if jobnames:
+            joblist = job_info_list(jobnames, app.config)  
+
     session_args = create_sidenav_kwargs()
     return render_template("jobs.html", jobs = jobnames, 
                             joblist = joblist, 
@@ -240,10 +241,15 @@ def run_model():
         job_response = launch_job(input_genes, job_config, app.config)
         app.logger.info(f"job {job_config['jobid']} launched with response {job_response}")
 
-        if 'jobs' in session and session['jobs']:
-            session['jobs'] = session['jobs'].append(jobname)
+        if 'jobs' in session:
+            sessionjobs = session['jobs']
         else:
-            session['jobs'] = [jobname]
+            sessionjobs = []
+
+        sessionjobs.append(jobname)
+        session['jobs'] = sessionjobs
+
+
 
         job_submit_message = f"Job {jobname} submitted!  The completed job will be available on <a href='{job_config['job_url'] }'>{job_config['job_url']}</a>"
 
