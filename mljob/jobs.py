@@ -348,11 +348,22 @@ def retrieve_job_info(jobname, app_config):
         job_info['is_job'] = True
         job_info['submit_time'] = datetime.fromtimestamp(os.path.getmtime(jf)).strftime("%Y-%m-%d %H:%M:%S")
         job_info['has_results'] = check_results(jobname, app_config)
-        job_info['params'] = retrieve_job_params(jobname, app_config)
         job_info['status'] = retrieve_job_status(jobname, app_config)
         job_info['notifyaddress'] = get_notifyaddress(jobname, app_config)
         job_info['job_url'] = '' # this is a placeholder until I find non-clunky way to get use url_for without importing all of flask
-    
+
+        # now a hack to make the params fields consistent with 
+        # how it's constructed in app.views.launch_job() and how it's saved to disk in jobs.launch_job()
+        # TODO : move the code that creates a job_config dictionary and file into jobs.py from views.py
+
+        job_params = retrieve_job_params(jobname, app_config)
+        
+        job_info['params'] = job_params  # save the whole thing just because
+        job_info['net_type'] = job_params.get('GP_NET_TYPE')
+        job_info['features'] = job_params.get('GP_FEATURES')
+        job_info['GSC'] = job_params.get('GP_GSC')
+        job_info['jobid'] = job_params.get('JOBID')
+
     return(job_info)
   
 def job_info_list(jobnames, app_config):
