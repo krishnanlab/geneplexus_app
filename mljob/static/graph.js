@@ -1,6 +1,4 @@
 var allNodes = dataset.nodes.sort((a, b) => (a.Probability - b.Probability))
-console.log(allNodes);
-console.log(dataset.links);
 
 //Create SVG element
 var svg = d3.select("svg"),
@@ -409,8 +407,8 @@ d3.select("#download_as_svg")
 });
 
 $('#node_slider').slider({
-    value: 50,
-    max: 50,
+    value: allNodes.length,
+    max: allNodes.length,
     min: 1,
     step: 1,
     slide: function( event, ui ) {
