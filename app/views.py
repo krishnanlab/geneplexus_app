@@ -279,10 +279,10 @@ def run_model():
         job_response = launch_job(input_genes, job_config, app.config)
         app.logger.info(f"job {job_config['jobid']} launched with response {job_response}")
 
-        if 'jobs' in session:
-            sessionjobs = session['jobs']
-        else:
+        if 'jobs' not in session or session['jobs'] is None:
             sessionjobs = []
+        else:
+            sessionjobs = session['jobs']
 
         sessionjobs.append(jobname)
         session['jobs'] = sessionjobs

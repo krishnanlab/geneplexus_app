@@ -57,7 +57,7 @@ COPY runner.py .
 COPY runner.sh .
 
 # this needs to be set for the runner to know how to POST status updates.  
-ENV APP_POST_URL="https://geneplexusdev.azurewebsites.net/jobs"
+ENV APP_POST_URL="https://www.geneplexus.net/jobs"
 
 # note about back-end data files
 # the data files needed by the model are not copied into this container
