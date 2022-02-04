@@ -17,6 +17,10 @@ div.sidenav {
     width: 100%
 }
 
+.sidenav-suffix {
+    padding-right: 10%;
+}
+
 .sidenav-email {
     width: 100%
 }

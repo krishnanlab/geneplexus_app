@@ -40,8 +40,8 @@
                             <i class="fas fa-question-circle"></i></a>
                     <div>
                         <label>(Optional) Add a prefix to the job</label>
-                        <div class="d-flex justify-content-left">
-                            <span>{{ valid_form.prefix(class_="sidenav-prefix") }}</span>   -   <span>{{ valid_form.jobid(class_="form-control-plaintext") }}</span>
+                        <div class="d-flex">
+                            <span class="flex-grow-1">{{ valid_form.prefix(class_="sidenav-prefix") }}</span>   -   <span>{{ valid_form.jobid(class_="form-control-plaintext sidenav-suffix") }}</span>
                         </div>
                         <small id="char_limit" class="form-text" style="color:red"></small>
                     </div>
