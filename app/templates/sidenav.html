@@ -1,3 +1,4 @@
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='sidenav.css') }}">
 <div class="sidenav">
     <form id="model-form" action="{{ url_for('validate') }}" method="POST", enctype="multipart/form-data">
         <div class="item-content">
@@ -13,7 +14,7 @@
                         data-content="Manually input a gene set or upload a file containing a gene set as well as see examples for both">
                             <i class="fas fa-question-circle"></i></a>
                        <div class="mb-2">
-                        <button type="button" id="geneBtn" class="btn btn-sm"  data-toggle="modal" data-target="#geneModal">
+                        <button type="button" id="geneBtn" class="btn btn-sm sidenav-btn"  data-toggle="modal" data-target="#geneModal">
                           {% if valid_form is defined %}Edit Loaded Genes{% else %}Add Genes{% endif %}
                         </button>
                        </div>
@@ -40,7 +41,7 @@
                     <div>
                         <label>(Optional) Add a prefix to the job</label>
                         <div class="d-flex justify-content-left">
-                            <span>{{ valid_form.prefix }}</span>   -   <span>{{ valid_form.jobid(class_="form-control-plaintext") }}</span>
+                            <span>{{ valid_form.prefix(class_="sidenav-prefix") }}</span>   -   <span>{{ valid_form.jobid(class_="form-control-plaintext") }}</span>
                         </div>
                         <small id="char_limit" class="form-text" style="color:red"></small>
                     </div>
@@ -77,7 +78,7 @@
                     data-content="Optionally enter an email address for job notifications.  We will never share your email address outside of this application, add you to a mailing list, or send unsolicited communication.">
                     <i class="fas fa-question-circle"></i></a>
                     <div class="select">
-                        {{ valid_form.notifyaddress }}
+                        {{ valid_form.notifyaddress(class_="sidenav-email") }}
                     </div>
                     <br>
                     

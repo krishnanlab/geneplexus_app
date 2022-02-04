@@ -1,0 +1,23 @@
+div.sidenav {
+    width: 30%;
+    height: 100%;
+    padding: 60px 0;
+    position: absolute;
+    z-index: 1000;
+    left: 0;
+    background-color: #eeeeee;
+    color: rgb(75,81,91);
+    opacity: 0.99;
+    overflow-x: visible;
+    transition: 0.5s;
+    display: block;
+}
+
+.sidenav-prefix {
+    width: 100%
+}
+
+.sidenav-email {
+    width: 100%
+}
+
