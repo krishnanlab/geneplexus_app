@@ -10,7 +10,7 @@ $( document ).ready(function() {
       .attr('width', width)
       .attr('height', height);
   });
-
+  var api_endpoint = 'http://mygene.info/v3/query/q=entrezgene:'
   var allNodes = dataset.nodes.sort((a, b) => (a.Probability - b.Probability))
   //var width = 1080;
   //var height = 600;
@@ -83,21 +83,22 @@ $( document ).ready(function() {
     .attr('r', function(d){return nodescale(d.Probability)})
     .attr('fill', function(d){return myColor(d.Class) })
     .classed('node', true)
-    .classed("fixed", d => d.fx !== undefined)
-    .call(d3.drag()
-            .on("start", onDragStarted)
-            .on("drag", onDrag)
-            .on("end", onDragEnded))
-    .on('click', onClick);
+    .classed("fixed", d => d.fx !== undefined);
   
   zoom_handler = d3.zoom().on('zoom', onZoomAction);
   zoom_handler(svg);
 
-  d3.selectAll('circle').append("text")
+  nodeElements.append("text")
         .attr("text-anchor", "middle")
         .text(function(d) { return d.Symbol; })
         .attr('alignment-baseline', 'middle')
         .style('color', 'black');
+  
+  nodeElements.call(d3.drag()
+  .on("start", onDragStarted)
+  .on("drag", onDrag)
+  .on("end", onDragEnded))
+  .on('click', onClick);
 
   simulation.nodes(allNodes).on('tick', onTick);
 
@@ -161,6 +162,16 @@ $( document ).ready(function() {
     $('#static_symbol').text(d.Symbol);
     $('#static_site').attr('href', 'https://www.ncbi.nlm.nih.gov/gene/' + d.id, '_blank');
     $('#static_site').text('Click here');
+    $.ajax({
+      method: 'GET',
+      url: 'https://mygene.info/v3/gene/' + d.id,
+      success: function(result, status, xhr) {
+        console.log(result);
+      },
+      complete: function(xhr, status) {
+
+      }
+    })
   }
 
   function modifyNodeCount(startThresh, endThresh) {
@@ -217,4 +228,18 @@ $( document ).ready(function() {
         .attr('alignment-baseline', 'middle');
     simulation.alpha(1).restart();
   }
+
+  d3.select("#download_as_png")
+    .on('click', function(){
+        console.log('In download chart');
+        // Get the d3js SVG element and save using saveSvgAsPng.js
+        saveSvgAsPng(document.getElementsByTagName("svg")[0], "plot.png", {scale: 2, backgroundColor: "#FFFFFF"});
+    });
+
+    d3.select("#download_as_svg")
+    .on('click', function(){
+        console.log('In download chart');
+        // Get the d3js SVG element and save using saveSvgAsPng.js
+        saveSvg(document.getElementsByTagName("svg")[0], "plot.svg", {scale: 2, backgroundColor: "#FFFFFF"});
+    });
 });
