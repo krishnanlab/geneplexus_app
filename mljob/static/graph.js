@@ -152,13 +152,6 @@ $( document ).ready(function() {
     d3.select(this).classed("fixed", true);
   }
 
-  function getSize(d) {
-    var bbox = this.getBBox(),
-        cbbox = this.parentNode.getBBox(),
-        scale = Math.min(cbbox.width/bbox.width, cbbox.height/bbox.height);
-    d.scale = scale;
-  }
-
   function onDrag(d) {
     d.fx = d3.event.x;
     d.fy = d3.event.y;
@@ -229,34 +222,55 @@ $( document ).ready(function() {
           return true;
       }
   )
-    linkElements = svg.append('g')
-        .attr("class", "links")
-        .selectAll("line")
-        .data(newLinks)
-        .enter().append("line")
-        .style("stroke", "#ADA9A8")
-        .style("stroke-width", function(d) { return (d.weight); });
-    nodeElements = svg.append('g')
-      .attr('class', 'nodes')
-      .selectAll('circle')
-      .data(newNodes)
-      .enter()
-      .append('circle')
-      .attr('r', function(d){return nodescale(d.Probability)})
-      .attr('fill', function(d){return myColor(d.Class) })
-      .classed('node', true)
-      .classed("fixed", d => d.fx !== undefined)
-      .call(d3.drag()
-              .on("start", onDragStarted)
-              .on("drag", onDrag)
-              .on("end", onDragEnded))
-      .on('click', onClick);
-    zoom_handler = d3.zoom().on('zoom', onZoomAction);
-    zoom_handler(svg);
-    nodeElements.append("text")
-        .attr("text-anchor", "middle")
-        .text(function(d) { return d.Symbol; })
-        .attr('alignment-baseline', 'middle');
+  linkElements = g.append('g')
+  .attr("class", "links")
+  .selectAll("line")
+  .data(newLinks)
+  .enter().append("line")
+  .style("stroke", "#ADA9A8")
+  .style("stroke-width", function(d) { return (d.weight); });
+
+//const nodeElements = svg.append('g')
+/*nodeElements = svg.append('g')
+.attr('class', 'nodes')
+.selectAll('circle')
+.data(allNodes)
+.enter()
+.append('circle')
+.attr('r', function(d){return nodescale(d.Probability)})
+.attr('fill', function(d){return myColor(d.Class) })
+.classed('node', true)
+.classed("fixed", d => d.fx !== undefined);*/
+
+nodeElements = g.append('g')
+.attr('class', 'nodes')
+.selectAll('circle')
+.data(newNodes)
+.enter()
+.append('g')
+.attr('class', 'nodeHolder');
+
+nodeElements
+.append('circle')
+.attr('r', function(d){return nodescale(d.Probability)})
+.attr('fill', function(d){return myColor(d.Class) })
+.classed('node', true)
+.classed("fixed", d => d.fx !== undefined);
+
+zoom_handler = d3.zoom().on('zoom', onZoomAction);
+zoom_handler(svg);
+
+nodeElements.append("text")
+.attr("text-anchor", "middle")
+.text(function(d) { return d.Symbol; })
+.attr('alignment-baseline', 'middle')
+.style("font-size", "50%");
+
+nodeElements.call(d3.drag()
+.on("start", onDragStarted)
+.on("drag", onDrag)
+.on("end", onDragEnded))
+.on('click', onClick);
     simulation.alpha(1).restart();
   }
 
