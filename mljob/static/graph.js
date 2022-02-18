@@ -178,26 +178,27 @@ $( document ).ready(function() {
     d3.selectAll('g.nodes').remove();
     d3.selectAll('g.links').remove();
     //allNodes = dataset.nodes.sort((a, b) => (a.Probability - b.Probability))
-    newNodes = dataset.nodes.filter(
-      function(n) {
-        if (n.Probability >= startThresh && n.Probability <= endThresh) {
-          return true;
-        }
-        return false;
+    newNodes = []
+    oldNodes = []
+    for (let i = 0; i < dataset.nodes.length; i++) {
+      n = dataset.nodes[i]
+      if (n.Probability >= startThresh && n.Probability <= endThresh) {
+        newNodes.push(n)
       }
-    )
+      else {
+        oldNodes.push(n)
+      }
+    }
     newLinks = dataset.links.filter(
       function(l) {
-          for(let i = 0; i < newNodes.length; i++){
-              if (l.source.id == newNodes[i].id || l.target.id == newNodes[i].id) {
-                  return true;
+          for(let i = 0; i < oldNodes.length; i++){
+              if (l.source.id == oldNodes[i].id || l.target.id == oldNodes[i].id) {
+                  return false;
               }
           }
-          return false;
+          return true;
       }
   )
-  console.log(newNodes);
-  console.log(newLinks);
     linkElements = svg.append('g')
         .attr("class", "links")
         .selectAll("line")
