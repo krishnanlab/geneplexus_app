@@ -21,6 +21,7 @@ $( document ).ready(function() {
   selectedNode = null;
 
   const svg = d3.select('svg');
+  const g = svg.append('g');
   /*const svg = d3.select('#graph_area')
     .append('svg')
     .attr('width', width)
@@ -65,7 +66,7 @@ $( document ).ready(function() {
 
 
   //const linkElements = svg.append("g")
-  linkElements = svg.append('g')
+  linkElements = g.append('g')
           .attr("class", "links")
           .selectAll("line")
           .data(dataset.links)
@@ -74,11 +75,26 @@ $( document ).ready(function() {
           .style("stroke-width", function(d) { return (d.weight); });
 
   //const nodeElements = svg.append('g')
-  nodeElements = svg.append('g')
+  /*nodeElements = svg.append('g')
     .attr('class', 'nodes')
     .selectAll('circle')
     .data(allNodes)
     .enter()
+    .append('circle')
+    .attr('r', function(d){return nodescale(d.Probability)})
+    .attr('fill', function(d){return myColor(d.Class) })
+    .classed('node', true)
+    .classed("fixed", d => d.fx !== undefined);*/
+
+    nodeElements = g.append('g')
+    .attr('class', 'nodes')
+    .selectAll('circle')
+    .data(allNodes)
+    .enter()
+    .append('g')
+    .attr('class', 'nodeHolder');
+
+    nodeElements
     .append('circle')
     .attr('r', function(d){return nodescale(d.Probability)})
     .attr('fill', function(d){return myColor(d.Class) })
@@ -89,10 +105,10 @@ $( document ).ready(function() {
   zoom_handler(svg);
 
   nodeElements.append("text")
-        .attr("text-anchor", "middle")
-        .text(function(d) { return d.Symbol; })
-        .attr('alignment-baseline', 'middle')
-        .style('color', 'black');
+  .attr("text-anchor", "middle")
+  .text(function(d) { return d.Symbol; })
+  .attr('alignment-baseline', 'middle')
+  .style("font-size", "50%");
   
   nodeElements.call(d3.drag()
   .on("start", onDragStarted)
@@ -112,8 +128,11 @@ $( document ).ready(function() {
       .links(dataset.links);
   function onTick() {
     nodeElements
-      .attr('cx', node => node.x)
-      .attr('cy', node => node.y)
+      /*.attr('cx', node => node.x)
+      .attr('cy', node => node.y)*/
+      .attr("transform", function(d) {
+        return "translate(" + d.x + "," + d.y + ")";
+      })
     
     linkElements
       .attr('x1', link => link.source.x)
@@ -123,13 +142,21 @@ $( document ).ready(function() {
   }
 
   function onZoomAction(){
-    d3.selectAll('g.nodes').attr("transform", d3.event.transform)
-    d3.selectAll('g.links').attr("transform", d3.event.transform)
-    //g.attr("transform", d3.event.transform)
+    //d3.selectAll('g.nodeHolder').attr("transform", d3.event.transform)
+    //d3.selectAll('g.links').attr("transform", d3.event.transform)
+    //console.log(d3.selectAll('g.nodeHolder'));
+    g.attr("transform", d3.event.transform)
   }
 
   function onDragStarted(d) {
     d3.select(this).classed("fixed", true);
+  }
+
+  function getSize(d) {
+    var bbox = this.getBBox(),
+        cbbox = this.parentNode.getBBox(),
+        scale = Math.min(cbbox.width/bbox.width, cbbox.height/bbox.height);
+    d.scale = scale;
   }
 
   function onDrag(d) {
@@ -144,11 +171,14 @@ $( document ).ready(function() {
   function onClick(d) {
     delete d.fx;
     delete d.fy;
-    d3.select(selectedNode).style('stroke', 'transparent');
+    theCircle = d3.select(this).select('circle');
+    if (selectedNode != null) {
+      selectedNode.style('stroke', 'transparent');
+    }
     setSidebarInformation(d);
-    d3.select(this).classed("fixed", false);
-    d3.select(this).style('stroke', 'red');
-    selectedNode = this;
+    theCircle.classed("fixed", false);
+    theCircle.style('stroke', 'red');
+    selectedNode = theCircle;
     simulation.alpha(1).restart();
   }
 
