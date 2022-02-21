@@ -708,7 +708,7 @@ az storage account create -g $AZRG --name $AZSTORAGENAME -l $AZLOCATION \
     --sku $AZSTORAGESKU --kind FileStorage \
     --tags $AZTAGS
 
-export AZSTORAGEKEY=$(az storage account keys list -g $AZRG -n $AZSTORAGENAME --query [0].value -o tsv)
+export AZSTORAGEKEY=$(az storage account keys list -g $AZRG -n $AZSTORAGENAME --query '[0].value' -o tsv)
 
 az storage share create --account-name  $AZSTORAGENAME \
     --name $AZSHARENAME --account-key $AZSTORAGEKEY
@@ -741,7 +741,7 @@ az_app_mount_file_storage ()
     # see function az_get_app_identity() and this is run when the app is created above
 
     # requires storage account has been created
-    AZSTORAGEKEY=$(az storage account keys list -g $AZRG -n $AZSTORAGENAME --query [0].value -o tsv)
+    AZSTORAGEKEY=$(az storage account keys list -g $AZRG -n $AZSTORAGENAME --query '[0].value' -o tsv)
 
     # NOTE to simply make a change to the path that is mounted, use 
     # az webapp config storage-account update -g $AZRG -n $AZAPPNAME \
@@ -910,7 +910,7 @@ az_copy_hpcc_to_files ()
 
     SOURCEFOLDER=$1  # TODDO validate that this folder exists/is accessible from here     
     # this option needed to get a SAS token is for blob storage, doesn't work for Azure files
-    AZSTORAGEKEY=$(az storage account keys list -g $AZRG -n $AZSTORAGENAME --query [0].value -o tsv)
+    AZSTORAGEKEY=$(az storage account keys list -g $AZRG -n $AZSTORAGENAME --query '[0].value' -o tsv)
 
     # this option is for azure files NOTE the identity is not used for azcopy
     # the identity is used to grant access FROM the appservice TO the storage for when the storage is mounted
