@@ -1,8 +1,6 @@
 div.sidenav {
-    width: 30%;
     height: 100%;
     padding: 60px 0;
-    position: absolute;
     z-index: 1000;
     left: 0;
     background-color: #eeeeee;

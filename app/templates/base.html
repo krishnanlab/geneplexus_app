@@ -21,10 +21,18 @@
         </header>
 
         {% include 'cookies.html' %}
-        {% include 'sidenav.html' %}
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-3">
+                    {% include 'sidenav.html' %}
+                </div>
 
-        {% block app_content %}
-        {% endblock %}
+                <div class="col-9 main_body">
+                    {% block app_content %}
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
         
         <!-- jQuery first, then Popper.js, then Bootstrap JS -->
         <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
