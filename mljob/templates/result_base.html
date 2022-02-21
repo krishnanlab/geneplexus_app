@@ -145,8 +145,12 @@
                                 <div class="box_padding m-3">
                                     <p>The graph below shows the network connectivity of the top 50 genes based on prediction probability. The edges used in the graph come 
                                         from the adjacency matrix representation of the network used to train the machine learning model. 
-                                        For a description of the graph features, see the panel on the left.
-                                        <br><br>
+                                        Directions: <br>
+                                        <ul>
+                                            <li>Clicking a node will display additional information about the gene on the right side</li>
+                                            <li>Dragging a node will make it stick (it will no longer move). Clicking on a sticky node will allow it to move freely again</li>
+                                            <li>The slider below allows you to select which nodes will show up based on gene probability</li>
+                                        </ul>
                                         The current view of the graph can be exported as a PNG, SVG file or the entire edgelist can be downloaded as a tab separated file:
                                         <a id="download_as_png" class="btn btn-sm btn-primary m-1" style="width: 5%" href="#">PNG</a>
                                         <a id="download_as_svg" class="btn btn-sm btn-primary m-1" style="width: 5%" href="#">SVG</a>
