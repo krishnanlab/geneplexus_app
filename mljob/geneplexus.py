@@ -345,7 +345,7 @@ def make_results_html(jobname, net_type, features, GSC,
     with open(save_as_svg_path, 'r') as f:
         save_svg_as_png_js = f.read()
 
-    main_path = os.path.join(os.path.dirname(__file__), 'static', 'main.css')
+    main_path = os.path.join(os.path.dirname(__file__), 'static', 'results.css')
     with open(main_path, 'r') as f:
         main_css = f.read()
 
