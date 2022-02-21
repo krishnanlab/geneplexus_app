@@ -35,6 +35,10 @@ th {
     color: white;
 }
 
+table.datatable {
+    margin-top: 10em !important;
+}
+
 tr:hover {
     background-color: lightgray;
 }
