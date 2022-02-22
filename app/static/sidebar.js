@@ -1,8 +1,8 @@
 $('#insertGeneButton').click(function(){
     $("input[type='file']").trigger('click');
- });
+});
 
- $('#insertGenesInput').change(
+$('#insertGenesInput').change(
     function(){
         if ($(this).val() != '') {
             console.log()
@@ -96,3 +96,11 @@ $('#prefix').on('change keyup blur', function(){
         }
     })
 });
+
+$('#runbatch').click(function(e) {
+    setTimeout(function () { disableButton(); }, 0);
+});
+
+function disableButton() {
+    $('#runbatch').prop('disabled', true);
+}
