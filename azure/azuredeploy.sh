@@ -113,7 +113,7 @@ az_build_all ()
     if [ -n "$1" ]; then
         export PROJECTENV=$1
     else
-        echo "project environment name requireed (dev, test, prod for production, etc, eg"
+        echo "project environment name required (dev, test, prod for production, etc, eg"
         echo 'e.g., $ build_all test'
         return 1
     fi

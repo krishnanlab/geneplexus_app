@@ -172,8 +172,35 @@ Azure services can be created in many ways ( web 'portal', Python, Templates) bu
 tldr; 
 
 ```bash
-source azure/create_azure_services.sh
-az_set_vars
+source azure/azuredeploy.sh
+az login
+
+
+# if you use multiple subscriptions, there is currently not a great way to select the one you want
+# so you have to do it manually 
+# list all your subs
+az account list
+# list the currently select subscription ID
+
+az account show --query id --output tsv
+
+# you may have to change that for this script
+az account set --subscription "some long subscription id"
+# and/or
+export AZSUBID="some long subscription id"
+
+# you can also set that using the function
+az_check_account
+
+# next, select an 'environment' for a suffix for all names, dev, test, prod, qa, whatever and set the rest of the variables
+export PROJECTENV=test1
+az_set_vars $PROJECTENV
+
+# this simple function doesn't have a good way to set the TAG used for all the docker containers. 
+# set the tag now for docker to current date, or whatever you want (v3, latest, etc)
+export TAG=`date +"%Y.%m.%d"`    
+
+# note what the az_set_vars used for the resource group
 echo $RG
 
 ```
