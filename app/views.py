@@ -1,6 +1,6 @@
 from flask.helpers import make_response
 from slugify.slugify import slugify
-from mljob.jobs import path_friendly_jobname, launch_job, retrieve_job_folder,retrieve_results,job_info_list,valid_results_filename,results_file_dir,job_exists,retrieve_job_info,job_status_codes
+from mljob.jobs import path_friendly_jobname, launch_job, retrieve_job_folder,retrieve_results,job_info_list,valid_results_filename,results_file_dir,job_exists,retrieve_job_info,generate_job_id, job_status_codes
 
 
 from werkzeug.exceptions import InternalServerError
@@ -11,7 +11,6 @@ from mljob import geneplexus  # models
 geneplexus.data_path = app.config.get("DATA_PATH")
 
 import os
-import uuid
 import numpy as np
 import pandas as pd
 
@@ -184,7 +183,7 @@ def validate():
     # run all the components of the model and pass to the results form
     convert_IDs, df_convert_out = geneplexus.intial_ID_convert(input_genes)
 
-    jobid = str(uuid.uuid1())[0:8]
+    jobid = generate_job_id()
     form.jobid.data = jobid
 
     df_convert_out, table_summary, input_count = geneplexus.make_validation_df(df_convert_out)
@@ -237,8 +236,9 @@ def run_model():
     # grab the assigned job ID
     jobid = form.jobid.data
 
-    # Avoid collisions if someone immediately resubmits a job
-    session['jobid'] = str(uuid.uuid1())[0:8]
+    # Regenerate JobID in the session (not the form)
+    # avoid collisions if someone immediately resubmits a job
+    session['jobid'] = generate_job_id()
 
     # if the optional prefix has been added, concatenate
     # the two fields together.  Otherwise the jobname is the jobid
