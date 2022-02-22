@@ -5,6 +5,8 @@ from slugify import slugify
 from datetime import datetime
 from mljob.geneplexus import run_and_render
 
+from random import choices as random_choices
+from string import ascii_lowercase, digits
 
 # job status codes is a simple dictionary mirroring a small subset of http status codes
 # these are status codes sent from the api that creates the job, or via the job itself. 
@@ -23,6 +25,9 @@ jobs_status_descriptions = { 200:"Job completed successfully",
 # standardized file name for reading /wrwiting status codes in job folder
 job_status_filename = "JOBSTATUS"
 
+def generate_job_id():
+    eight_char_rand_id = ''.join(random_choices(population = ascii_lowercase + digits, k=8))
+    return(eight_char_rand_id)
 
 def path_friendly_jobname(jobname):
     """ job name must be useable to create file paths and other cloud resources, so remove unuesable or unicode characters"""
