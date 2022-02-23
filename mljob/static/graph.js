@@ -80,9 +80,12 @@ $( document ).ready(function() {
     .classed('node', true)
     .classed("fixed", d => d.fx !== undefined);
   
+  //svg.call(d3.zoom().on('zoom', onZoomAction)).on("dblclick.zoom", null);
   zoom_handler = d3.zoom().on('zoom', onZoomAction);
   zoom_handler(svg);
+  //zoom_handler(svg).on("dblclick.zoom", null);
   svg.call(zoom_handler.transform, d3.zoomIdentity.scale(0.8));
+  svg.on("dblclick.zoom", null);
 
   nodeElements.append("text")
   .attr("text-anchor", "middle")
@@ -94,7 +97,8 @@ $( document ).ready(function() {
   .on("start", onDragStarted)
   .on("drag", onDrag)
   .on("end", onDragEnded))
-  .on('click', onClick);
+  .on('click', onClick)
+  .on('dblclick', onDblClick);
 
   simulation.nodes(allNodes).on('tick', onTick);
 
@@ -138,17 +142,19 @@ $( document ).ready(function() {
   }
 
   function onClick(d) {
-    delete d.fx;
-    delete d.fy;
     theCircle = d3.select(this).select('circle');
     if (selectedNode != null) {
       selectedNode.style('stroke', 'transparent');
     }
     setSidebarInformation(d);
-    theCircle.classed("fixed", false);
     theCircle.style('stroke', 'red');
     selectedNode = theCircle;
-    simulation.alpha(.01).restart();
+  }
+
+  function onDblClick(d) {
+    delete d.fx;
+    delete d.fy;
+    theCircle.classed("fixed", false);
   }
 
   function setSidebarInformation(d) {
@@ -161,6 +167,7 @@ $( document ).ready(function() {
     $('#static_symbol').text(d.Symbol);
     $('#static_site').attr('href', 'https://www.ncbi.nlm.nih.gov/gene/' + d.id, '_blank');
     $('#static_site').text('Click here');
+    /*
     $.ajax({
       method: 'GET',
       url: 'https://mygene.info/v3/gene/' + d.id,
@@ -170,7 +177,25 @@ $( document ).ready(function() {
       complete: function(xhr, status) {
 
       }
-    })
+    });
+    */
+  }
+
+  function unclick() {
+    console.log(d3.select(this));
+    if (selectedNode == null) { return; }
+    console.log('In unclick');
+    selectedNode.style('stroke', 'transparent');
+    selectedNode = null;
+    $('#static_id').text('');
+    $('#static_class').text('');
+    $('#static_known').text('')
+    $('#static_name').text('');
+    $('#static_prob').text('');
+    $('#static_rank').text('');
+    $('#static_symbol').text('');
+    $('#static_site').attr('href', '');
+    $('#static_site').text('');
   }
 
   function modifyNodeCount(startThresh, endThresh) {
