@@ -35,7 +35,7 @@ $( document ).ready(function() {
 
   const forceProperties = {
     charge: {
-      strength: -10,
+      strength: -75,
     },
     collide: {
       strength: 0.3,
@@ -48,6 +48,8 @@ $( document ).ready(function() {
     .force('charge', d3.forceManyBody()) 
     .force('collide', d3.forceCollide())
     .force('center', d3.forceCenter(width / 2, height / 2))
+    .force("forceX", d3.forceX(width/2).strength(.05) )
+    .force("forceY", d3.forceY(height/2).strength(.05) );
 
   var nodescale = d3.scaleLinear().domain([0, .3]).range([1, 5])
 
@@ -128,11 +130,11 @@ $( document ).ready(function() {
   function onDrag(d) {
     d.fx = d3.event.x;
     d.fy = d3.event.y;
-    simulation.alpha(0.001).restart();
+    simulation.alpha(0.1).restart();
   }
 
   function onDragEnded(d) {
-    simulation.alpha(.1).restart();
+    simulation.alpha(1).restart();
   }
 
   function onClick(d) {
