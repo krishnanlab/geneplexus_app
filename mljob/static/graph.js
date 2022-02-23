@@ -258,8 +258,12 @@ nodeElements
 .classed('node', true)
 .classed("fixed", d => d.fx !== undefined);
 
+//svg.call(d3.zoom().on('zoom', onZoomAction)).on("dblclick.zoom", null);
 zoom_handler = d3.zoom().on('zoom', onZoomAction);
 zoom_handler(svg);
+//zoom_handler(svg).on("dblclick.zoom", null);
+svg.call(zoom_handler.transform, d3.zoomIdentity.scale(0.8));
+svg.on("dblclick.zoom", null);
 
 nodeElements.append("text")
 .attr("text-anchor", "middle")
@@ -271,7 +275,8 @@ nodeElements.call(d3.drag()
 .on("start", onDragStarted)
 .on("drag", onDrag)
 .on("end", onDragEnded))
-.on('click', onClick);
+.on('click', onClick)
+.on('dblclick', onDblClick);
     simulation.alpha(1).restart();
   }
 
