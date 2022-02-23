@@ -1,32 +1,24 @@
 $( document ).ready(function() {
   graph_aspect_ratio = 2;
+  r = 0;
   $('body').on('click', '#graph_tab', function() {
     
     var width = $('.result_container').width() * (8/12);
-    console.log(width);
     var height = width / graph_aspect_ratio;
-    console.log(height);
+    r = -parseInt(Math.min(width, height) / 4)
     svg
       .attr('width', width)
       .attr('height', height);
   });
   var api_endpoint = 'http://mygene.info/v3/query/q=entrezgene:'
   var allNodes = dataset.nodes.sort((a, b) => (a.Probability - b.Probability))
-  //var width = 1080;
-  //var height = 600;
   var width = $('.result_container').width() * (8/12);
-  console.log(width);
   var height = width / graph_aspect_ratio;
-  console.log(height);
   selectedNode = null;
+  selectedEdges = [];
 
   const svg = d3.select('svg');
   const g = svg.append('g');
-  /*const svg = d3.select('#graph_area')
-    .append('svg')
-    .attr('width', width)
-    .attr('height', height);*/
-  //const g = svg.append('g');
 
   $('#node_slider').slider({
     range: true,
@@ -43,7 +35,7 @@ $( document ).ready(function() {
 
   const forceProperties = {
     charge: {
-      strength: -100,
+      strength: -10,
     },
     collide: {
       strength: 0.3,
@@ -63,9 +55,6 @@ $( document ).ready(function() {
   var myColor = d3.scaleOrdinal().domain(data)
       .range(["#00ccbc","#6598bf","#CC333F"])
 
-
-
-  //const linkElements = svg.append("g")
   linkElements = g.append('g')
           .attr("class", "links")
           .selectAll("line")
@@ -73,18 +62,6 @@ $( document ).ready(function() {
           .enter().append("line")
           .style("stroke", "#ADA9A8")
           .style("stroke-width", function(d) { return (d.weight); });
-
-  //const nodeElements = svg.append('g')
-  /*nodeElements = svg.append('g')
-    .attr('class', 'nodes')
-    .selectAll('circle')
-    .data(allNodes)
-    .enter()
-    .append('circle')
-    .attr('r', function(d){return nodescale(d.Probability)})
-    .attr('fill', function(d){return myColor(d.Class) })
-    .classed('node', true)
-    .classed("fixed", d => d.fx !== undefined);*/
 
     nodeElements = g.append('g')
     .attr('class', 'nodes')
@@ -103,6 +80,7 @@ $( document ).ready(function() {
   
   zoom_handler = d3.zoom().on('zoom', onZoomAction);
   zoom_handler(svg);
+  svg.call(zoom_handler.transform, d3.zoomIdentity.scale(0.8));
 
   nodeElements.append("text")
   .attr("text-anchor", "middle")
@@ -128,8 +106,6 @@ $( document ).ready(function() {
       .links(dataset.links);
   function onTick() {
     nodeElements
-      /*.attr('cx', node => node.x)
-      .attr('cy', node => node.y)*/
       .attr("transform", function(d) {
         return "translate(" + d.x + "," + d.y + ")";
       })
@@ -142,9 +118,6 @@ $( document ).ready(function() {
   }
 
   function onZoomAction(){
-    //d3.selectAll('g.nodeHolder').attr("transform", d3.event.transform)
-    //d3.selectAll('g.links').attr("transform", d3.event.transform)
-    //console.log(d3.selectAll('g.nodeHolder'));
     g.attr("transform", d3.event.transform)
   }
 
@@ -155,10 +128,11 @@ $( document ).ready(function() {
   function onDrag(d) {
     d.fx = d3.event.x;
     d.fy = d3.event.y;
-    simulation.alpha(1).restart();
+    simulation.alpha(0.001).restart();
   }
 
   function onDragEnded(d) {
+    simulation.alpha(.1).restart();
   }
 
   function onClick(d) {
@@ -172,7 +146,7 @@ $( document ).ready(function() {
     theCircle.classed("fixed", false);
     theCircle.style('stroke', 'red');
     selectedNode = theCircle;
-    simulation.alpha(1).restart();
+    simulation.alpha(.01).restart();
   }
 
   function setSidebarInformation(d) {
