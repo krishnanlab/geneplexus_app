@@ -74,13 +74,59 @@ def jobs():
                             form=form, **session_args)
 
 
+def html_output_table(df, id = "", row_limit = 500):
+    """ given a data frame, create an html output table for job template for a subset of top rows.
+        This assumes the data frame is already in the correct sort order
+        
+    returns : string of html  or empty string if not a data frame
+    """
+
+    #TODO this needs to go away and we need a jinja template macro to build tables instead 
+    # this is formattibng code which does not belong in the view or anywhere execpt for a template
+    if isinstance(df, pd.DataFrame):        
+        html_table = df.head(row_limit).to_html(index=False, classes="table table-striped table-bordered width:100%",table_id = id )
+        return(html_table)
+    else:
+        #TODO log that this is not a dataframe
+        return("")
+    
+
 @app.route("/jobs/<jobname>", methods=['GET'])
 def job(jobname):
     """ show info about job: results if there are some but otherwise basic job information"""
+    #TODO check valid job and 404 if not
     job_info = retrieve_job_info(jobname, app.config)
     job_output = retrieve_job_outputs(jobname, app.config)
-    session_args = create_sidenav_kwargs()
-    return render_template("jobresults.html", jobname = jobname, jobexists = job_exists(jobname, app.config), job_info = job_info, job_output = job_output, **session_args)
+    print(f"job_output = {job_output.keys()}")
+    row_limit = 50
+    dfname = 'df_probs'
+    job_output['df_probs_table'] = html_output_table(job_output[dfname],id=dfname )
+
+    return render_template("jobresults.html",
+        jobexists = job_exists(jobname, app.config), 
+        job_info = job_info,
+        jobname=jobname,
+        network=net_type,
+        features=features,
+        negativeclass=GSC,
+        avgps=avgps,
+        input_count=input_count,
+        positive_genes=positive_genes,
+        context_menu_js=context_menu_js,
+        d3_tip_js=d3_tip_js,
+        graph_js=graph_js,
+        datatable_js=datatable_js,
+        save_svg_as_png_js=save_svg_as_png_js,
+        main_css=main_css,
+        graph_css=graph_css,
+        d3_tip_css=d3_tip_css,
+        probs_table=df_probs.head(row_limit).to_html(index=False, classes='table table-striped table-bordered" style="width: 100%;" id = "probstable"'),
+        go_table=df_GO.head(row_limit).to_html(index=False,
+                               classes='table table-striped table-bordered nowrap" style="width: 100%;" id = "gotable"'),
+        dis_table=df_dis.head(row_limit).to_html(index=False, classes='table table-striped table-bordered" style="width: 100%;" id = "distable"'),
+        validate_results=df_convert_out_subset.head(row_limit).to_html(index=False,
+                                              classes='table table-striped table-bordered" style="width: 100%;" id = "validateresults"'),
+        graph=graph)
 
 @app.route("/jobs/<jobname>", methods = ["POST"])
 def update_job(jobname):

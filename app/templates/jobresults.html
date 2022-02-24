@@ -1,29 +1,43 @@
+{% macro df_table(df, table_id='') -%}
+    <!-- begin table for {{table_id}}-->
+    {{df.head(500).to_html(index=False, classes='datatables table table-striped table-bordered, width: 100%;', table_id = table_id)   |safe }}
+    
+        <!-- end {{table_id}}-->
+{%- endmacro %}
+
 {% extends "base.html" %}
 
 {% block title %}{% if jobexists %}Job: {{ jobname }}{% else %}Job {{ jobname }} does not exist{% endif %}{% endblock %}
 
 {% block app_content %}
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='main.css') }}">
 
-<div> 
-<!-- this is not class container, as that currently floats right to avoid the sidenav, which we are hiding on this page --> 
-{% if jobexists %}
-    {% if job_info['has_results'] %}
-    <!-- disabling the sidebar the results.html from jobs looks best at 100&% of screen (currently), the sidebar takes up significant blank space  -->
+<div class="container">
+    <div id="content-padding" class="pl-4 pt-4">
+    {% include 'messages.html' ignore missing %}
+  
+    {% if jobexists %}
+        {% if job_info['has_results'] %}
+        <!-- disabling the sidebar the results.html from jobs looks best at 100&% of screen (currently), the sidebar takes up significant blank space  -->
 
         <style>
             .sidenav {
                 display:none !important
             }
         </style>
-        <h2>job_info</h2>
-        <div class="container">
-            {{job_info}}
+            <h3>job output items</h3>
+            {{job_output.keys()}}
+            <h3> probs table</h3>
+       
+            {{df_table( df = job_output['df_probs'], table_id = 'probstable') }}
+
+            
         </div>
         <!-- <iframe 
             style="position: absolute; width: 100%; height: 100%; border: none" 
             src="{{url_for('jobresults_content', jobname=jobname)}}">
         </iframe> -->
-
+        
     {% else %}
     <!-- job not completed yet -->
     {% set job_config = job_info['params'] %}
@@ -56,4 +70,9 @@
 
 </div>
 
+{% endblock %}
+
+{% block scripts %}
+<script src="{{url_for('static', filename='validation.js')}}"></script>
+<script src="{{url_for('static', filename='datatable.js')}}"></script>
 {% endblock %}
