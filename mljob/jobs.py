@@ -4,6 +4,7 @@ import os, sys, pathlib #, re, errno
 from slugify import slugify
 from datetime import datetime
 from mljob.geneplexus import run_and_render
+from mljob.model_output import read_output
 
 from random import choices as random_choices
 from string import ascii_lowercase, digits
@@ -426,6 +427,8 @@ def get_job_status(jobname,app_config):
   
     return(job_status)
 
+
+# move to mljob/model_output.py
 def retrieve_results(jobname, app_config):
     """ retrieve the results file (html) for a given job"""
 
@@ -443,7 +446,7 @@ def retrieve_results(jobname, app_config):
     else:
         return ''    
 
-
+# coordinate/replace with mljob/model_output.py:read_df_output() method
 def retrieve_results_data(jobname, app_config, data_file_name):
     """get any one of several of the results data files (TSV, JSON, etc)
     This does not check if the file name is one of the 'approved' file names to give 
@@ -475,7 +478,7 @@ def retrieve_results_data(jobname, app_config, data_file_name):
 
 
 
-
+# coordinate/replace with mljob/model_output.py:read_job_info() method
 def retrieve_job_params(jobname, app_config):
     """construct the path to the job (for local/mounted file storage)"""    
     job_folder = retrieve_job_folder(jobname, app_config)
@@ -494,6 +497,13 @@ def retrieve_job_params(jobname, app_config):
     else:
         return('')
 
+def retrieve_job_outputs(jobname, app_config):
+    """ get everything from a job for rendering the job output/results page"""
+    job_folder = retrieve_job_folder(jobname, app_config)  # is this same as output path, or is there another method for just output path
+    output_path = job_folder  # these are the same thing in the two module
+
+    return(read_output(output_path, jobname))
+    
 
 def test_job(test_jobname="A_test_job!-A99", input_file='input_genes.txt'):
     from app import app

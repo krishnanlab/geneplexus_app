@@ -1,6 +1,6 @@
 from flask.helpers import make_response
 from slugify.slugify import slugify
-from mljob.jobs import path_friendly_jobname, launch_job, retrieve_job_folder,retrieve_results,job_info_list,valid_results_filename,results_file_dir,job_exists,retrieve_job_info,generate_job_id, job_status_codes
+from mljob.jobs import path_friendly_jobname, launch_job, retrieve_job_folder,retrieve_results,job_info_list,valid_results_filename,results_file_dir,job_exists,retrieve_job_info,generate_job_id, job_status_codes, retrieve_job_outputs
 
 
 from werkzeug.exceptions import InternalServerError
@@ -78,12 +78,13 @@ def jobs():
 def job(jobname):
     """ show info about job: results if there are some but otherwise basic job information"""
     job_info = retrieve_job_info(jobname, app.config)
+    job_output = retrieve_job_outputs(jobname, app.config)
     session_args = create_sidenav_kwargs()
-    return render_template("jobresults.html", jobname = jobname, jobexists = job_exists(jobname, app.config), job_info = job_info, **session_args)
+    return render_template("jobresults.html", jobname = jobname, jobexists = job_exists(jobname, app.config), job_info = job_info, job_output = job_output, **session_args)
 
 @app.route("/jobs/<jobname>", methods = ["POST"])
 def update_job(jobname):
-    """ update the job info and possibly notify of new jobs status"""
+    """ update the job info and possibly notify of new jobs status.  Used by external job runner.  """
 
     request_data = request.get_json()
     job_status = request_data.get('status')
@@ -116,7 +117,34 @@ def jobresults_content(jobname):
     else:
         return(f'<html><body><h3 style="padding-top:50px"> No results yet for the job "{jobname}"</h3></body><html>')
 
+# @app.route("/jobs/<jobname>/job_output",methods=['GET'])
+# def jobresults_content(jobname):
+#     """ get all the ouptut from the job and render tables and visualization """
 
+#     if not job_exists(jobname, app.config):
+#         flash(f"No job exists {jobname}")
+#         redirect('/', code=404)
+
+#     # dictionary of stuff
+#     job_info =  retrieve_job_info(jobname, app.config)
+
+#     return render_template("job_output.html", jobname=jobname, job_info = job_info,
+#         probs_table=job_info['df_probs'].head(row_limit).to_html(index=False, classes='table table-striped table-bordered" style="width: 100%;" id = "probstable"'),
+#         go_table=job_info['df_GO'].head(row_limit).to_html(index=False,classes='table table-striped table-bordered nowrap" style="width: 100%;" id = "gotable"'),
+#         dis_table=job_info['df_dis'].head(row_limit).to_html(index=False, classes='table table-striped table-bordered" style="width: 100%;" id = "distable"'),
+#         validate_results=job_info['df_convert_out_subset'].head(row_limit).to_html(index=False,classes='table table-striped table-bordered" style="width: 100%;" id = "validateresults"'),
+#         graph=job_info['graph'],
+#         **session_args )
+
+#         # get all of this from job_info dictionary
+
+#         # network=net_type,   
+#         # features=features,
+#         # negativeclass=GSC,
+#         # avgps=avgps,
+#         # input_count=input_count,
+#         # positive_genes=positive_genes,
+    
 
 # download results file 
 @app.route("/jobs/<jobname>/results/download/<results_file_name>",methods=['GET'])
