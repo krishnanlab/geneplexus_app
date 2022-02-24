@@ -97,19 +97,19 @@ def read_graph_output(output_path, jobname):
 
     return(graph_data)
 
-
 def read_df_output(output_path, jobname, output_name):
     """retrieve individual data frames from output folder given the name of the file, assuming they are saved as tsv
     returns: pandas data frame or None if not found
     """
     output_filename = construct_output_filename(jobname, output_name, '.tsv')
-
-    if os.path.exists(output_filename):
+    output_filepath = construct_output_filepath(output_path, jobname, output_filename)
+    
+    if os.path.exists(output_filepath):
         # TODO try /catch
-        output_df = pd.read_csv(output_filename, sep = '\t', delimter = '\n')
+        output_df = pd.read_csv(output_filepath, sep = '\t')
         return(output_df)
     else:
-        print(f"output file not found: {output_filename} ",file=sys.stderr)
+        print(f"output file not found: {output_filepath} ",file=sys.stderr)
         return(None)
     
 def read_job_info(output_path, jobname):
@@ -122,7 +122,7 @@ def read_job_info(output_path, jobname):
 
         return(job_info)
     else:
-        print(f"job info file not found: {job_info_file} ",file=sys.stderr)
+        print(f"job info file not found: {job_info_path} ",file=sys.stderr)
         return(None)
 
 
