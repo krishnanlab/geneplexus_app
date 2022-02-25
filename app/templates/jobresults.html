@@ -9,18 +9,56 @@
 
 {% block title %}{% if jobexists %}Job: {{ jobname }}{% else %}Job {{ jobname }} does not exist{% endif %}{% endblock %}
 
-{% block app_content %}
-<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='results_main.css') }}">
-<div class="container-fluid result_container">
+{% block head %}
+    {# stylesheets manually put in results_base, confirm if we need thse or not? #}
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.6/css/responsive.dataTables.min.css">
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='results_main.css') }}">
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='results.css') }}">
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='graph.css') }}">
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='d3-tip.css') }}">
 
-{% if jobexists %} {# this is not necessary if the view 404's when no job found #}
-{% if job_info['has_results'] %}
     <!-- disabling the sidebar the results.html from jobs looks best at 100&% of screen (currently), the sidebar takes up significant blank space  -->
     <style>
         .sidenav {
             display:none !important
         }
+    </style> 
+
+    <style>
+        .modal {
+            display:    none;
+            position:   fixed;
+            z-index:    1000;
+            top:        0;
+            left:       0;
+            height:     100%;
+            width:      100%;
+            background: rgba( 255, 255, 255, .8 ) 
+                        url('http://i.stack.imgur.com/FhHRx.gif') 
+                        50% 50% 
+                        no-repeat;
+        }
+
+        /* When the body has the loading class, we turn
+        the scrollbar off with overflow:hidden */
+        body.loading .modal {
+            overflow: hidden;   
+        }
+
+        /* Anytime the body has the loading class, our
+        modal element will be visible */
+        body.loading .modal {
+            display: block;
+        }
     </style>
+{% endblock %}
+
+
+{% block app_content %}
+<div class="container-fluid result_container">
+
+{% if jobexists %} {# this is probably not necessary since view method redirects to 404 if no job found #}
+{% if job_info['has_results'] %}
     <h4 class="col-12 p-2">
         Prediction results
         <!-- add large button on same row as header -->
@@ -183,7 +221,7 @@
                         </div>
                         <div id="info_area" class="mr-3 form-control col-3">
                             <div class="row">
-                                <div class="container">
+                                <!-- <div class="container"> -->
                                     <div class='my-legend'>
                                         <div class='legend-title'>Gene node colors and their meanings</div>
                                         <div class='legend-scale'>
@@ -194,7 +232,7 @@
                                           </ul>
                                         </div>
                                     </div>
-                                </div>
+                                <!-- </div> -->
                             </div>
                             <hr>
                             <div class="mb-3 row">
@@ -242,7 +280,7 @@
                               <div class="mb-3 row">
                                 <label for="static_site" class="col-4">NCBI Info</label>
                                 <div class="col">
-                                    <a id="static_site" href="" target="_blank"></a>
+                                    <span><a id="static_site" href="" target="_blank"></a></span>
                                 </div>
                               </div>
                         </div>
@@ -269,33 +307,7 @@
     </div>
 </div>
 
-<style>
-    .modal {
-        display:    none;
-        position:   fixed;
-        z-index:    1000;
-        top:        0;
-        left:       0;
-        height:     100%;
-        width:      100%;
-        background: rgba( 255, 255, 255, .8 ) 
-                    url('http://i.stack.imgur.com/FhHRx.gif') 
-                    50% 50% 
-                    no-repeat;
-    }
 
-    /* When the body has the loading class, we turn
-    the scrollbar off with overflow:hidden */
-    body.loading .modal {
-        overflow: hidden;   
-    }
-
-    /* Anytime the body has the loading class, our
-    modal element will be visible */
-    body.loading .modal {
-        display: block;
-    }
-</style>
 <div class="modal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
@@ -307,9 +319,10 @@
         </div>
       </div>
     </div>
-  </div>
+</div>
 
 {% else %}
+
 <div class="container">
     <div id="content-padding" class="pl-4 pt-4">
         <h4>Job incomplete</h4>
@@ -331,36 +344,39 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-    var dataset = {{ job_output['graph'] | safe }}
-</script>
+    {# this inserts the graph/network data directly into the page as javascript #}
+    <script>
+        // data for network visualization
+        var dataset = {{ job_output['graph'] | safe }}
+    </script>
 
-<!-- differences from base -->
-<!-- results had /v/dt commented out-->
-<!-- <script src="https://cdn.datatables.net/v/dt/dt-1.10.22/datatables.min.js"></script> -->
-<!-- base has the jquery js datatables below commented out -->
-<!-- <script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script> -->
+    <!-- differences from base -->
+    <!-- results had /v/dt commented out-->
+    <!-- <script src="https://cdn.datatables.net/v/dt/dt-1.10.22/datatables.min.js"></script> -->
+    <!-- base has the jquery js datatables below commented out -->
+    <!-- <script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script> -->
 
-<!-- base has this, which seems redundant with the the other 1.10.22 version -->
-<!-- <script src="https://cdn.datatables.net/v/dt/dt-1.10.22/datatables.min.js"></script> -->
+    <!-- base has this, which seems redundant with the the other 1.10.22 version -->
+    <!-- <script src="https://cdn.datatables.net/v/dt/dt-1.10.22/datatables.min.js"></script> -->
 
-<!-- do we need jquery UI ?? -->
-<script src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"></script>
+    <!-- do we need jquery UI ?? -->
+    <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"></script>
 
 
-<script>
-    $("body").addClass("loading");
-</script>
+    <script>
+        $("body").addClass("loading");
+    </script>
 
-<!-- <script>
-//    $('[data-toggle="popover"]').popover();
-</script> -->
+    <!-- <script>
+    // confirm this is part of base template already and remove
+    //    $('[data-toggle="popover"]').popover();
+    </script> -->
 
-<script src="{{url_for('static', filename='d3-v4-context_menu.js')}}"></script>
-<script src="{{url_for('static', filename='d3-tip.js')}}"></script>
-<script src="{{url_for('static', filename='graph.js')}}"></script>
-<script src="{{url_for('static', filename='results_datatable.js')}}"></script>
-<script src="{{url_for('static', filename='results_index.js')}}"></script>
-<script src="{{url_for('static', filename='results_validation.js')}}"></script>
-<script src="{{url_for('static', filename='saveSvgAsPng.js')}}"></script>
+    <script src="{{url_for('static', filename='d3-v4-contextmenu.js')}}"></script>
+    <script src="{{url_for('static', filename='d3-tip.js')}}"></script>
+    <script src="{{url_for('static', filename='graph.js')}}"></script>
+    <script src="{{url_for('static', filename='results_datatable.js')}}"></script>
+    <script src="{{url_for('static', filename='results_index.js')}}"></script>
+    <script src="{{url_for('static', filename='results_validation.js')}}"></script>
+    <script src="{{url_for('static', filename='saveSvgAsPng.js')}}"></script>
 {% endblock %}
