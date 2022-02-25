@@ -152,10 +152,7 @@ body {
   select {
       width: 200px;
   }
-  
-  input[type="text"] {
-      width: 150px;
-  }
+
   
   .tab-content>.active {
       display: flex;
@@ -261,3 +258,13 @@ body {
   .my-legend a {
     color: #777;
     }
+
+input.slider-labels {
+    border: none;
+    border-color: transparent;
+}
+
+div.slider {
+    margin-left: 3px;
+    margin-right: 3px;
+}

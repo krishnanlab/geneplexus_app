@@ -2,6 +2,10 @@
 
 {% block title %}Home{% endblock %}
 
+{% block head %}
+
+{% endblock %}
+
 {% block app_content %}
 
 <style >
@@ -14,12 +18,12 @@
 
 </style>
 
-<div class="container pl-4">
+<div class="pl-4">
 
 
     {% include 'messages.html' ignore missing %}
 
-    <div class="row container-fluid bg-secondary text-white  rounded p-3">
+    <div class="row bg-secondary text-white  rounded p-3">
     
         <div class="col-12">
             <h1 class="text-light" id="geneplexus-help-page" >GenePlexus <sup>&beta;eta</sup></h1><!-- class="text-center" -->
@@ -67,8 +71,7 @@
     <p style="margin:0">Bioinformatics 36 (11), 3457-3465.</p>
 
 
-    </div> <!-- content wrapper-->
-</div> <!-- container-->
+</div> <!-- content wrapper-->
 
 {% block scripts %}
 <script src="{{url_for('static', filename='index.js')}}"></script>

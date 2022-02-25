@@ -160,10 +160,6 @@ select {
     width: 200px;
 }
 
-input[type="text"] {
-    width: 150px;
-}
-
 .tab-content>.active {
     display: flex;
 }

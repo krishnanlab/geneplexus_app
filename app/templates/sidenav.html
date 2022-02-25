@@ -1,3 +1,4 @@
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='sidenav.css') }}">
 <div class="sidenav">
     <form id="model-form" action="{{ url_for('validate') }}" method="POST", enctype="multipart/form-data">
         <div class="item-content">
@@ -9,11 +10,11 @@
                        <label>
                            1. Enter/Load Gene Set
                        </label>
-                       &nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                       <a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
                         data-content="Manually input a gene set or upload a file containing a gene set as well as see examples for both">
                             <i class="fas fa-question-circle"></i></a>
                        <div class="mb-2">
-                        <button type="button" id="geneBtn" class="btn btn-sm"  data-toggle="modal" data-target="#geneModal">
+                        <button type="button" id="geneBtn" class="btn btn-sm sidenav-btn"  data-toggle="modal" data-target="#geneModal">
                           {% if valid_form is defined %}Edit Loaded Genes{% else %}Add Genes{% endif %}
                         </button>
                        </div>
@@ -31,7 +32,8 @@
                 <fieldset class="border box_padding fieldset">
                     <label>
                         2. Job Name
-                    </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                    </label>
+                    <a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
                         data-content="The default job name is a unique identifier that will be assigned
                         once the model is run.  Optionally, a prefix can be added for easier identification
                             by typing text into the box below. The character limit is {{ prefix_limit }}. Anything longer
@@ -39,15 +41,16 @@
                             <i class="fas fa-question-circle"></i></a>
                     <div>
                         <label>(Optional) Add a prefix to the job</label>
-                        <div class="d-flex justify-content-left">
-                            <span>{{ valid_form.prefix }}</span>   -   <span>{{ valid_form.jobid(class_="form-control-plaintext") }}</span>
+                        <div class="d-flex">
+                            <span class="flex-grow-1">{{ valid_form.prefix(class_="sidenav-prefix") }}</span>   -   <span>{{ valid_form.jobid(class_="form-control-plaintext sidenav-suffix") }}</span>
                         </div>
                         <small id="char_limit" class="form-text" style="color:red"></small>
                     </div>
                     <br>
                     <label>
                         3. Select Molecular Network
-                    </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                    </label>
+                    <a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
                         data-content="Select the molecular network that will be used in training the model.">
                     <i class="fas fa-question-circle"></i></a>
                     <div>
@@ -56,7 +59,8 @@
                     <br>
                     <label>
                         4. Select Feature Type
-                    </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                    </label>
+                    <a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
                     data-content="Select how the connections of chosen network will be represented as features in the machine learning model.">
                     <i class="fas fa-question-circle"></i></a>
                     <div class="select">
@@ -65,7 +69,8 @@
                     <br>
                     <label>
                         5. Select Negative Gene Class
-                    </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                    </label>
+                    <a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
                     data-content="Select the type of genes in the negative class – genes annotated to Gene Ontology Biological Processes or to disease in the DisGeNet database – based on whether the input genes represent a process/pathway or a disease.">
                     <i class="fas fa-question-circle"></i></a>
                     <div class="select">
@@ -73,11 +78,11 @@
                     </div>
                     <br>
                     6. (Optional) Notification Email Address
-                    </label>&nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                    </label><a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
                     data-content="Optionally enter an email address for job notifications.  We will never share your email address outside of this application, add you to a mailing list, or send unsolicited communication.">
                     <i class="fas fa-question-circle"></i></a>
                     <div class="select">
-                        {{ valid_form.notifyaddress }}
+                        {{ valid_form.notifyaddress(class_="sidenav-email") }}
                     </div>
                     <br>
                     
@@ -101,7 +106,7 @@
           <form id="modal-form" method="POST", enctype="multipart/form-data" action="{{ url_for('validate') }}">
             <div class="modal-header">
               <h5 class="modal-title" id="exampleModalLabel">Enter or Paste List of Genes</h5>
-              &nbsp<a href="#" data-toggle="popover" data-trigger="hover" data-placement="right" data-html="true" 
+              <a href="#" data-toggle="popover" data-trigger="hover" data-placement="right" data-html="true" 
                         data-content="Upload a file of gene IDs or input them manually. <br>
                         Acceptable Gene IDs are: Entrez, ENSG, Symbol, ENSP, ENST. <br>
                         The format is delimited by newline (i.e. each gene is on a separate line)">
@@ -110,7 +115,7 @@
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
-            <div class="container-fluid">
+            <div>
                 <div class="row justify-content-center mt-2">
                     <div class="col">
                         <span id="insertGeneButton" class="btn btn-sm smaller-button">Select Gene File</span>

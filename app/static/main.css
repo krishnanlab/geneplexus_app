@@ -31,8 +31,12 @@ table.dataframe.data {
 }
 
 th {
-    background-color: gray;
+    background-color: gray !important;
     color: white;
+}
+
+table.datatable {
+    margin-top: 10em !important;
 }
 
 tr:hover {
@@ -43,14 +47,13 @@ tr:hover {
     width: 275px;
 }
 
-div.container {
+div.main_body {
     padding: 60px 15px 0;
-    margin-left: 290px;
     height: 100%;
 }
 
 div.result_container {
-    padding: 60px 15px 0;
+    /*padding: 60px 15px 0;*/
     height: 100%;
 }
 
@@ -84,21 +87,6 @@ div.fill_container {
   position: absolute;
   top: 30%;
   left: 50%;
-}
-
-div.sidenav {
-    width: 300px;
-    height: 100%;
-    padding: 60px 0;
-    position: absolute;
-    z-index: 1000;
-    left: 0;
-    background-color: #eeeeee;
-    color: rgb(75,81,91);
-    opacity: 0.99;
-    overflow-x: visible;
-    transition: 0.5s;
-    display: block;
 }
 
 div.input-wrapper{
@@ -156,12 +144,9 @@ div.input-item-content{
 }
 
 select {
-    width: 200px;
+    width: 90%;
 }
 
-input[type="text"] {
-    width: 150px;
-}
 
 .tab-content>.active {
     display: flex;
@@ -212,7 +197,7 @@ div.dt-buttons {
 }
 
 .modal-lg {
-    width: 500px !important;
+    width: 50% !important;
 }
 
 .smaller-button {
@@ -228,4 +213,10 @@ div.dt-buttons {
 
 #jobid {
     padding: 0px 0px 10px 0px;
+}
+
+#geneBtn {
+    width: 100%;
+    text-align: center;
+    background-color: #efefef;
 }
