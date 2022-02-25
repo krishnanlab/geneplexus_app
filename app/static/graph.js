@@ -1,472 +1,296 @@
-var allNodes = dataset.nodes.sort((a, b) => (a.Probability - b.Probability))
+$( document ).ready(function() {
+  graph_aspect_ratio = 2;
+  r = 0;
+  $('body').on('click', '#graph_tab', function() {
+    
+    var width = $('.result_container').width() * (8/12);
+    var height = width / graph_aspect_ratio;
+    r = -parseInt(Math.min(width, height) / 4)
+    svg
+      .attr('width', width)
+      .attr('height', height);
+  });
+  var api_endpoint = 'http://mygene.info/v3/query/q=entrezgene:'
+  var allNodes = dataset.nodes.sort((a, b) => (a.Probability - b.Probability))
+  var width = $('.result_container').width() * (8/12);
+  var height = width / graph_aspect_ratio;
+  selectedNode = null;
+  selectedEdges = [];
 
-//Create SVG element
-var svg = d3.select("svg"),
-    w = +svg.node().getBoundingClientRect().width,
-    h = +svg.node().getBoundingClientRect().height
+  const svg = d3.select('svg');
+  const g = svg.append('g');
 
-//////// g holds zoom, nodes and links
-var g = svg.append('g')
-    .attr("class", "everything");
-
-// define scale variable and range for node sizing
-var nodescale = d3.scaleLinear().domain([0, .3]).range([1, 10])
-
-var initialScale = 0.5
-
-var items = [
-    {
-      label: function (d) {
-        return d.id;
-      },
-      onClick: function (d) {
-        console.log(d.id)
-          window.open('https://www.ncbi.nlm.nih.gov/gene/' + d.id, '_blank');
-
-        }
+  $('#node_slider').slider({
+    range: true,
+    min: 0.00,
+    max: 1.00,
+    values: [0.00, 1.00],
+    step: 0.01,
+    slide: function( event, ui ) {
+      $('#node_lower').val(ui.values[0].toFixed(2));
+      $('#node_upper').val(ui.values[1].toFixed(2));
+      modifyNodeCount(ui.values[0], ui.values[1]);
     }
-  ];
-
-/*
-//manipulate stuff
-d3.selectAll(".resize").append("circle")
-    .attr("cx", 0)
-    .attr("cy", 0)
-    .attr("r", radius)
-    .attr("fill", function(d){return myColor(d.Class) })
-    .classed("handle", true)
-
-
-d3.select(".domain")
-  .select(function () { return this.parentNode.appendChild(this.cloneNode(true)) })
-  .classed("halo", true)
-*/
-
-// Setup the tool tip.
-var tool_tip = d3.tip()
-  .attr('class', 'd3-tip')
-  .offset([-10, 0])
-  .html(function(d) {
-      return "<strong>Symbol: " + d.Symbol + "</strong><br>" +
-      "<strong>Entrez: " + d.id + "</strong><br>" +
-      "<strong>Probability: " + d.Probability.toFixed(2) + "</strong><br>" +
-      "<strong>Class-Label: " + d.Class + "</strong><br>";
   });
 
-svg.call(tool_tip);
-
-// Color the nodes by Class
-var data = ['P','U','N']
-var myColor = d3.scaleOrdinal().domain(data)
-    .range(["#00ccbc","#6598bf","#CC333F"]);
-
-
-//////////// FORCE SIMULATION ////////////
-var simulation = d3.forceSimulation();
-
-// set up the simulation and event to update locations after each tick
-function initializeSimulation() {
-  simulation.nodes(dataset.nodes);
-  initializeForces();
-  simulation.on("tick", ticked);
-}
-
-// values for all forces
-forceProperties = {
-    center: {
-        x: 0,
-        y: 0
-    },
+  const forceProperties = {
     charge: {
-        enabled: true,
-        strength: -1000,
-        distanceMin: 1,
-        distanceMax: 150
+      strength: -75,
     },
     collide: {
-        enabled: true,
-        strength: .7,
-        iterations: 1,
-        radius: 5
+      strength: 0.3,
+      radius: 5,
     },
-    link: {
-        enabled: true,
-        distance: 100,
-        iterations: 1
-    }
-}
 
-// add forces to the simulation
-function initializeForces() {
-    // add forces and associate each with a name
-    simulation
-        .force("link", d3.forceLink())
-        .force("charge", d3.forceManyBody())
-        .force("collide", d3.forceCollide())
-        .force("center", d3.forceCenter())
-    // apply properties to each of the forces
-    updateForces();
-}
+  }
+  const simulation = d3.forceSimulation()
+    .force('link', d3.forceLink())
+    .force('charge', d3.forceManyBody()) 
+    .force('collide', d3.forceCollide())
+    .force('center', d3.forceCenter(width / 2, height / 2))
+    .force("forceX", d3.forceX(width/2).strength(.05) )
+    .force("forceY", d3.forceY(height/2).strength(.05) );
 
-// apply new force properties
-function updateForces() {
-    simulation.force("charge")
-        .strength(forceProperties.charge.strength * forceProperties.charge.enabled)
-        .distanceMin(forceProperties.charge.distanceMin)
-        .distanceMax(forceProperties.charge.distanceMax);
-    simulation.force("collide")
-        .strength(forceProperties.collide.strength * forceProperties.collide.enabled)
-        .radius(forceProperties.collide.radius)
-        .iterations(forceProperties.collide.iterations);
-    simulation.force("link")
-         .id(function(d) {return d.id})
-        .distance(forceProperties.link.distance)
-        .iterations(forceProperties.link.iterations)
-        .links(forceProperties.link.enabled ? dataset.links : []);
-        simulation.force("center")
-        .x($('#graph').width() / 2)
-        .y($('#graph').height() / 2);
+  var nodescale = d3.scaleLinear().domain([0, .3]).range([1, 5])
 
-    // updates ignored until this is run
-    // restarts the simulation (important if simulation has already slowed down)
-    simulation.alpha(1).restart();
-}
+  var data = ['P','U','N']
+  var myColor = d3.scaleOrdinal().domain(data)
+      .range(["#00ccbc","#6598bf","#CC333F"])
 
-//////////// DISPLAY ////////////
+  linkElements = g.append('g')
+          .attr("class", "links")
+          .selectAll("line")
+          .data(dataset.links)
+          .enter().append("line")
+          .style("stroke", "#ADA9A8")
+          .style("stroke-width", function(d) { return (d.weight); });
 
-// generate the svg objects and force simulation
-function initializeDisplay() {
+    nodeElements = g.append('g')
+    .attr('class', 'nodes')
+    .selectAll('circle')
+    .data(allNodes)
+    .enter()
+    .append('g')
+    .attr('class', 'nodeHolder');
 
-    var menu = contextMenu().items('Entrez Lookup', 'Symbol Lookup');
+    nodeElements
+    .append('circle')
+    .attr('r', function(d){return nodescale(d.Probability)})
+    .attr('fill', function(d){return myColor(d.Class) })
+    .classed('node', true)
+    .classed("fixed", d => d.fx !== undefined);
+  
+  //svg.call(d3.zoom().on('zoom', onZoomAction)).on("dblclick.zoom", null);
+  zoom_handler = d3.zoom().on('zoom', onZoomAction);
+  zoom_handler(svg);
+  //zoom_handler(svg).on("dblclick.zoom", null);
+  svg.call(zoom_handler.transform, d3.zoomIdentity.scale(0.8));
+  svg.on("dblclick.zoom", null);
 
-    var toggle = 0;
-    // functions for highlighting neighboring links
-    /*
-    const linkedByIndex = {};
-    dataset.links.forEach(d => {
-        linkedByIndex[`${d.source.index},${d.target.index}`] = 1;
-    });
+  nodeElements.append("text")
+  .attr("text-anchor", "middle")
+  .text(function(d) { return d.Symbol; })
+  .attr('alignment-baseline', 'middle')
+  .style("font-size", "50%");
+  
+  nodeElements.call(d3.drag()
+  .on("start", onDragStarted)
+  .on("drag", onDrag)
+  .on("end", onDragEnded))
+  .on('click', onClick)
+  .on('dblclick', onDblClick);
 
-    function isConnected(a, b) {
-        return linkedByIndex[`${a.index},${b.index}`] || linkedByIndex[`${b.index},${a.index}`] || a.index === b.index;
-    }
+  simulation.nodes(allNodes).on('tick', onTick);
 
-    function fade(opacity) {
-        return d => {
-          node.style('stroke-opacity', function (o) {
-            const thisOpacity = isConnected(d, o) ? 1 : opacity;
-            this.setAttribute('fill-opacity', thisOpacity);
-            return thisOpacity;
-          });
+  simulation.force('charge')
+    .strength(forceProperties.charge.strength);
+  simulation.force('collide')
+    .strength(forceProperties.collide.strength)
+    .radius(forceProperties.collide.radius);
+  simulation.force('link')
+      .id(function(d) {return d.id})
+      .links(dataset.links);
+  function onTick() {
+    nodeElements
+      .attr("transform", function(d) {
+        return "translate(" + d.x + "," + d.y + ")";
+      })
+    
+    linkElements
+      .attr('x1', link => link.source.x)
+      .attr('y1', link => link.source.y)
+      .attr('x2', link => link.target.x)
+      .attr('y2', link => link.target.y)
+  }
 
-          link.style('stroke-opacity', o => (o.source === d || o.target === d ? 1 : opacity));
-
-        };
-    }
-
-    // New fade functions
-    var linkedByIndex = {};
-    dataset.links.forEach(function(d) {
-      linkedByIndex[d.source.index + "," + d.target.index] = 1;
-    });
-
-    function isConnected(a, b) {
-        return linkedByIndex[a.index + "," + b.index] || linkedByIndex[b.index + "," + a.index] || a.index == b.index;
-    }
-
-    function fade(opacity) {
-        return function(d) {
-            node.style("stroke-opacity", function(o) {
-                thisOpacity = isConnected(d, o) ? 1 : opacity;
-                this.setAttribute('fill-opacity', thisOpacity);
-                return thisOpacity;
-            });
-
-            link.style("stroke-opacity", opacity).style("stroke-opacity", function(o) {
-                return o.source === d || o.target === d ? 1 : opacity;
-            });
-        };
-    }
-    */
-    // set the data and properties of link lines
-    link = g.append("g")
-        .attr("class", "links")
-        .selectAll("line")
-        .data(dataset.links)
-        .enter().append("line")
-        .style("stroke", "#ADA9A8")
-        .style("stroke-width", function(d) { return (d.weight); })
-        //.on('mouseout.fade', fade(1));
-
-
-    // set the data and properties of node circles
-    node = g.append("g")
-        .attr("class", "nodes")
-        .selectAll("circle")
-        .data(dataset.nodes)
-        .enter()
-        // add note g element for each node here.
-        .append("g")
-        // position the g element like the circle element use to be.
-
-
-    node.append("circle")
-        .attr("r", function(d){return nodescale(d.Probability)})
-        //.attr("r", function(d){ return Math.exp(d.Probability)*10})
-        .attr("fill", function(d){return myColor(d.Class) })
-        .on('mouseover', tool_tip.show)
-        //.on('mouseover.fade', fade(0.1))
-        .on('mouseout', tool_tip.hide)
-  	    //.on('mouseout.fade', fade(1))
-        .on('contextmenu', d3.contextmenu(items));
-
-    node.append("text")
-        .attr("text-anchor", "middle")
-        .text(function(d) { return d.Symbol; })
-        .attr('alignment-baseline', 'middle');
-
-    //add drag capabilities
-    var drag_handler = d3.drag()
-        .on("start", dragstarted)
-        .on("drag", dragged)
-        .on("end", dragended);
-
-    drag_handler(node);
-
-    //add zoom capabilities
-    var zoom_handler = d3.zoom()
-        .on("zoom", zoom_actions);
-
-    zoom_handler(svg);
-
-    svg.call(zoom_handler.transform, d3.zoomIdentity.scale(initialScale));
-
-  // visualize the graph
-  updateDisplay();
-}
-
-// update the display based on the forces (but not positions)
-function updateDisplay() {
-    node
-        //.attr("stroke", forceProperties.charge.strength > 0 ? "blue" : "red")
-        .attr("stroke-width", forceProperties.charge.enabled==false ? 0 : Math.abs(forceProperties.charge.strength)/15);
-
-    link
-        //.attr("stroke-width", forceProperties.link.enabled ? 1 : (d.weight))
-        .attr("opacity", forceProperties.link.enabled ? 1 : 0);
-}
-
-// update the display positions after each simulation tick
-function ticked() {
-    link
-        .attr("x1", function(d) { return d.source.x; })
-        .attr("y1", function(d) { return d.source.y; })
-        .attr("x2", function(d) { return d.target.x; })
-        .attr("y2", function(d) { return d.target.y; });
-
-    node
-        //.attr("cx", function(d) { return d.x; })
-        //.attr("cy", function(d) { return d.y; })
-        .attr("transform", function(d) {
-          return "translate(" + d.x + "," + d.y + ")";
-        })
-
-    d3.select('#alpha_value').style('flex-basis', (simulation.alpha()*100) + '%');
-}
-
-
-//////////// UI EVENTS ////////////
-
-//Drag functions
-//d is the node
-function dragstarted(d) {
-  if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-  d.fx = d.x;
-  d.fy = d.y;
-}
-//make sure you can't drag the circle outside the box
-function dragged(d) {
-  d.fx = d3.event.x;
-  d.fy = d3.event.y;
-}
-
-function dragended(d) {
-  if (!d3.event.active) simulation.alphaTarget(0.0001);
-  d.fx = null;
-  d.fy = null;
-}
-
-//Zoom functions
-function zoom_actions(){
+  function onZoomAction(){
     g.attr("transform", d3.event.transform)
-}
+  }
 
+  function onDragStarted(d) {
+    d3.select(this).classed("fixed", true);
+  }
 
-//Context Menu functions
-function contextMenu() {
-    var height,
-        width,
-        margin = 0.1, // fraction of width
-        items = [],
-        style = {
-            'rect': {
-                'mouseout': {
-                    'fill': 'rgb(244,244,244)',
-                    'stroke': 'white',
-                    'stroke-width': '1px'
-                },
-                'mouseover': {
-                    'fill': 'rgb(200,200,200)'
-                }
-            },
-            'text': {
-                'fill': 'steelblue',
-                'font-size': '13'
-            }
-        };
+  function onDrag(d) {
+    d.fx = d3.event.x;
+    d.fy = d3.event.y;
+    simulation.alpha(0.1).restart();
+  }
 
-    function menu(x, y) {
-        d3.select('.context-menu').remove();
+  function onDragEnded(d) {
+    simulation.alpha(1).restart();
+  }
 
-        // Draw the menu
-        d3.select('g')
-            .append('g').attr('class', 'context-menu')
-            .selectAll('tmp')
-            .data(items).enter()
-            .append('g').attr('class', 'menu-entry')
-            .style({'cursor': 'pointer'})
-            .on('mouseover', function(){
-                d3.select(this).select('rect').style(style.rect.mouseover) })
-            .on('mouseout', function(){
-                d3.select(this).select('rect').style(style.rect.mouseout) });
-
-        d3.selectAll('.menu-entry')
-            .append('rect')
-            .attr('x', x)
-            .attr('y', function(d, i){ return y + (i * height); })
-            .attr('width', width)
-            .attr('height', height)
-            .style(style.rect.mouseout);
-
-        d3.selectAll('.menu-entry')
-            .append('text')
-            .text(function(d){ return d; })
-            .attr('x', x)
-            .attr('y', function(d, i){ return y + (i * height); })
-            .attr('dy', height - margin / 2)
-            .attr('dx', margin)
-            .style(style.text);
-
-        // Other interactions
-        d3.select('body')
-            .on('click', function() {
-                d3.select('.context-menu').remove();
-            });
-
+  function onClick(d) {
+    theCircle = d3.select(this).select('circle');
+    if (selectedNode != null) {
+      selectedNode.style('stroke', 'transparent');
     }
+    setSidebarInformation(d);
+    theCircle.style('stroke', 'red');
+    selectedNode = theCircle;
+  }
 
-    menu.items = function(e) {
-        if (!arguments.length) return items;
-        for (i in arguments) items.push(arguments[i]);
-        return menu;
-    }
+  function onDblClick(d) {
+    delete d.fx;
+    delete d.fy;
+    theCircle.classed("fixed", false);
+  }
 
-    return menu;
-}
+  function setSidebarInformation(d) {
+    $('#static_id').text(d.id);
+    $('#static_class').text(d.Class);
+    $('#static_known').text(d['Known/Novel'])
+    $('#static_name').text(d.Name);
+    $('#static_prob').text(d.Probability);
+    $('#static_rank').text(d.Rank);
+    $('#static_symbol').text(d.Symbol);
+    $('#static_site').attr('href', 'https://www.ncbi.nlm.nih.gov/gene/' + d.id, '_blank');
+    $('#static_site').text('Click here');
+    /*
+    $.ajax({
+      method: 'GET',
+      url: 'https://mygene.info/v3/gene/' + d.id,
+      success: function(result, status, xhr) {
+        console.log(result);
+      },
+      complete: function(xhr, status) {
 
-
-
-// update size-related forces
-d3.select(window).on("resize", function(){
-    width = +svg.node().getBoundingClientRect().width;
-    height = +svg.node().getBoundingClientRect().height;
-    updateForces();
-});
-
-// convenience function to update everything (run after UI input)
-function updateAll() {
-    updateForces();
-    updateDisplay();
-}
-
-initializeDisplay();
-initializeSimulation();
-
-d3.select("#download_as_png")
-.on('click', function(){
-    console.log('In download chart');
-    // Get the d3js SVG element and save using saveSvgAsPng.js
-    saveSvgAsPng(document.getElementsByTagName("svg")[0], "plot.png", {scale: 2, backgroundColor: "#FFFFFF"});
-});
-
-d3.select("#download_as_svg")
-.on('click', function(){
-    console.log('In download chart');
-    // Get the d3js SVG element and save using saveSvgAsPng.js
-    saveSvg(document.getElementsByTagName("svg")[0], "plot.svg", {scale: 2, backgroundColor: "#FFFFFF"});
-});
-
-$('#node_slider').slider({
-    value: allNodes.length,
-    max: allNodes.length,
-    min: 1,
-    step: 1,
-    slide: function( event, ui ) {
-        $( "#node_count" ).val( ui.value );
-        modifyNodeCount(ui.value);
       }
-});
+    });
+    */
+  }
 
-function modifyNodeCount(nodeCount) {
+  function unclick() {
+    console.log(d3.select(this));
+    if (selectedNode == null) { return; }
+    console.log('In unclick');
+    selectedNode.style('stroke', 'transparent');
+    selectedNode = null;
+    $('#static_id').text('');
+    $('#static_class').text('');
+    $('#static_known').text('')
+    $('#static_name').text('');
+    $('#static_prob').text('');
+    $('#static_rank').text('');
+    $('#static_symbol').text('');
+    $('#static_site').attr('href', '');
+    $('#static_site').text('');
+  }
+
+  function modifyNodeCount(startThresh, endThresh) {
     d3.selectAll('g.nodes').remove();
     d3.selectAll('g.links').remove();
-    allNodes = dataset.nodes.sort((a, b) => (b.Probability - a.Probability))
-    newNodes = allNodes.slice(0, nodeCount);
-    oldNodes = dataset.nodes.slice(nodeCount);
+    //allNodes = dataset.nodes.sort((a, b) => (a.Probability - b.Probability))
+    newNodes = []
+    oldNodes = []
+    for (let i = 0; i < dataset.nodes.length; i++) {
+      n = dataset.nodes[i]
+      if (n.Probability >= startThresh && n.Probability <= endThresh) {
+        newNodes.push(n)
+      }
+      else {
+        oldNodes.push(n)
+      }
+    }
     newLinks = dataset.links.filter(
-        function(l) {
-            for(let i = 0; i < oldNodes.length; i++){
-                if (l.source.id == oldNodes[i].id || l.target.id == oldNodes[i].id) {
-                    return false;
-                }
-            }
-            return true;
-        }
-    )
-    link = g.append("g")
-        .attr("class", "links")
-        .selectAll("line")
-        .data(newLinks)
-        .enter().append("line")
-        .style("stroke", "#ADA9A8")
-        .style("stroke-width", function(d) { return (d.weight); })
-        //.on('mouseout.fade', fade(1));
-    node = g.append("g")
-        .attr("class", "nodes")
-        .selectAll("circle")
-        .data(newNodes)
-        .enter()
-        // add note g element for each node here.
-        .append("g")
-        // position the g element like the circle element use to be.
-    node.append("circle")
-        .attr("r", function(d){return nodescale(d.Probability)})
-        //.attr("r", function(d){ return Math.exp(d.Probability)*10})
-        .attr("fill", function(d){return myColor(d.Class) })
-        .on('mouseover', tool_tip.show)
-        //.on('mouseover.fade', fade(0.1))
-        .on('mouseout', tool_tip.hide)
-  	    //.on('mouseout.fade', fade(1))
-        .on('contextmenu', d3.contextmenu(items));
-    node.append("text")
-        .attr("text-anchor", "middle")
-        .text(function(d) { return d.Symbol; })
-        .attr('alignment-baseline', 'middle');
-    var drag_handler = d3.drag()
-    .on("start", dragstarted)
-    .on("drag", dragged)
-    .on("end", dragended);
+      function(l) {
+          for(let i = 0; i < oldNodes.length; i++){
+              if (l.source.id == oldNodes[i].id || l.target.id == oldNodes[i].id) {
+                  return false;
+              }
+          }
+          return true;
+      }
+  )
+  linkElements = g.append('g')
+  .attr("class", "links")
+  .selectAll("line")
+  .data(newLinks)
+  .enter().append("line")
+  .style("stroke", "#ADA9A8")
+  .style("stroke-width", function(d) { return (d.weight); });
 
-    drag_handler(node);
+//const nodeElements = svg.append('g')
+/*nodeElements = svg.append('g')
+.attr('class', 'nodes')
+.selectAll('circle')
+.data(allNodes)
+.enter()
+.append('circle')
+.attr('r', function(d){return nodescale(d.Probability)})
+.attr('fill', function(d){return myColor(d.Class) })
+.classed('node', true)
+.classed("fixed", d => d.fx !== undefined);*/
+
+nodeElements = g.append('g')
+.attr('class', 'nodes')
+.selectAll('circle')
+.data(newNodes)
+.enter()
+.append('g')
+.attr('class', 'nodeHolder');
+
+nodeElements
+.append('circle')
+.attr('r', function(d){return nodescale(d.Probability)})
+.attr('fill', function(d){return myColor(d.Class) })
+.classed('node', true)
+.classed("fixed", d => d.fx !== undefined);
+
+//svg.call(d3.zoom().on('zoom', onZoomAction)).on("dblclick.zoom", null);
+zoom_handler = d3.zoom().on('zoom', onZoomAction);
+zoom_handler(svg);
+//zoom_handler(svg).on("dblclick.zoom", null);
+svg.call(zoom_handler.transform, d3.zoomIdentity.scale(0.8));
+svg.on("dblclick.zoom", null);
+
+nodeElements.append("text")
+.attr("text-anchor", "middle")
+.text(function(d) { return d.Symbol; })
+.attr('alignment-baseline', 'middle')
+.style("font-size", "50%");
+
+nodeElements.call(d3.drag()
+.on("start", onDragStarted)
+.on("drag", onDrag)
+.on("end", onDragEnded))
+.on('click', onClick)
+.on('dblclick', onDblClick);
     simulation.alpha(1).restart();
-}
+  }
+
+  d3.select("#download_as_png")
+    .on('click', function(){
+        console.log('In download chart');
+        // Get the d3js SVG element and save using saveSvgAsPng.js
+        saveSvgAsPng(document.getElementsByTagName("svg")[0], "plot.png", {scale: 2, backgroundColor: "#FFFFFF"});
+    });
+
+    d3.select("#download_as_svg")
+    .on('click', function(){
+        console.log('In download chart');
+        // Get the d3js SVG element and save using saveSvgAsPng.js
+        saveSvg(document.getElementsByTagName("svg")[0], "plot.svg", {scale: 2, backgroundColor: "#FFFFFF"});
+    });
+});

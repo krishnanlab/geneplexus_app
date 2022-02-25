@@ -94,39 +94,24 @@ def html_output_table(df, id = "", row_limit = 500):
 @app.route("/jobs/<jobname>", methods=['GET'])
 def job(jobname):
     """ show info about job: results if there are some but otherwise basic job information"""
+    # sanitize.  if this is an actual jobname this will be idempotent
+    jobname = path_friendly_jobname(jobname)
+
     #TODO check valid job and 404 if not
+    if not job_exists(jobname, app.config): 
+        abort(404)
+
     job_info = retrieve_job_info(jobname, app.config)
     job_output = retrieve_job_outputs(jobname, app.config)
-    print(f"job_output = {job_output.keys()}")
-    row_limit = 50
-    dfname = 'df_probs'
-    job_output['df_probs_table'] = html_output_table(job_output[dfname],id=dfname )
-
+    print(job_info.keys())
+    print(job_output.keys())
     return render_template("jobresults.html",
         jobexists = job_exists(jobname, app.config), 
+        jobname=jobname,         
         job_info = job_info,
-        jobname=jobname,
-        network=net_type,
-        features=features,
-        negativeclass=GSC,
-        avgps=avgps,
-        input_count=input_count,
-        positive_genes=positive_genes,
-        context_menu_js=context_menu_js,
-        d3_tip_js=d3_tip_js,
-        graph_js=graph_js,
-        datatable_js=datatable_js,
-        save_svg_as_png_js=save_svg_as_png_js,
-        main_css=main_css,
-        graph_css=graph_css,
-        d3_tip_css=d3_tip_css,
-        probs_table=df_probs.head(row_limit).to_html(index=False, classes='table table-striped table-bordered" style="width: 100%;" id = "probstable"'),
-        go_table=df_GO.head(row_limit).to_html(index=False,
-                               classes='table table-striped table-bordered nowrap" style="width: 100%;" id = "gotable"'),
-        dis_table=df_dis.head(row_limit).to_html(index=False, classes='table table-striped table-bordered" style="width: 100%;" id = "distable"'),
-        validate_results=df_convert_out_subset.head(row_limit).to_html(index=False,
-                                              classes='table table-striped table-bordered" style="width: 100%;" id = "validateresults"'),
-        graph=graph)
+        
+        job_output = job_output)
+                
 
 @app.route("/jobs/<jobname>", methods = ["POST"])
 def update_job(jobname):

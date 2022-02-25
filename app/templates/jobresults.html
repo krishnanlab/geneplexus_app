@@ -10,69 +10,357 @@
 {% block title %}{% if jobexists %}Job: {{ jobname }}{% else %}Job {{ jobname }} does not exist{% endif %}{% endblock %}
 
 {% block app_content %}
-<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='main.css') }}">
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='results_main.css') }}">
+<div class="container-fluid result_container">
 
-<div class="container">
-    <div id="content-padding" class="pl-4 pt-4">
-    {% include 'messages.html' ignore missing %}
-  
-    {% if jobexists %}
-        {% if job_info['has_results'] %}
-        <!-- disabling the sidebar the results.html from jobs looks best at 100&% of screen (currently), the sidebar takes up significant blank space  -->
+{% if jobexists %} {# this is not necessary if the view 404's when no job found #}
+{% if job_info['has_results'] %}
+    <!-- disabling the sidebar the results.html from jobs looks best at 100&% of screen (currently), the sidebar takes up significant blank space  -->
+    <style>
+        .sidenav {
+            display:none !important
+        }
+    </style>
+    <h4 class="col-12 p-2">
+        Prediction results
+        <!-- add large button on same row as header -->
+        <a href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['jobname']}}.zip"
+            class="btn btn-success float-right">
+            Download all results data as zip file
+        </a>
+        <a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+        data-content="Download all the tables, edge list, and this result 
+        file contained in a single zip file named for the job name">
+      <i class="fas fa-question-circle"></i></a>
+    </h4>
 
-        <style>
-            .sidenav {
-                display:none !important
-            }
-        </style>
-            <h3>job output items</h3>
-            {{job_output.keys()}}
-            <h3> probs table</h3>
-       
-            {{df_table( df = job_output['df_probs'], table_id = 'probstable') }}
-
-            
-        </div>
-        <!-- <iframe 
-            style="position: absolute; width: 100%; height: 100%; border: none" 
-            src="{{url_for('jobresults_content', jobname=jobname)}}">
-        </iframe> -->
-        
-    {% else %}
-    <!-- job not completed yet -->
-    {% set job_config = job_info['params'] %}
-    <div class="container">
-        <div id="content-padding" class="pl-4 pt-4">
-            <h4>Job Status for {{ jobname }}</h4>
-            <p> The job has not completed or otherwise has not produced results.  </p>
-            <ul>                
-                <li>Submit Time: {{job_info['submit_time']}}</li>
-                <li>Network:<strong> {{job_config['GP_NET_TYPE']}}</strong></li>
-                <li>Features: <strong>{{job_config['GP_FEATURES']}}</strong></li>
-                <li>Negative Selection: <strong>{{job_config['GP_GSC']}}</strong></li>
-
-            </ul> 
+   <div class="border border-dark">
+        <div class="box_padding">
+            <div class="row">
+                <div class="col text-left">
+                    <label><b>Job Name:</b>&nbsp</label>{{( jobname )}}<br>
+                </div>
+                <div class="col text-left">
+                    <label><b>Network:</b>&nbsp</label>{{ job_output['net_type'] }}<br>
+                </div>
+                <div class="col text-left">
+                    <label><b>Features:</b>&nbsp</label>{{job_output['features']}}<br>
+                </div>
+                <div class="col text-left">
+                    <label><b>Negative Class:</b>&nbsp</label>{{job_output['GSC']}}<br>
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                <div class="col-xs-12 col-sm-12">
+                    <label>The median value of the log2(auPRC/prior)
+                        for 5-fold cross validation is &nbsp</label>{{( job_output['avgps'] )}}.
+                    </label>&nbsp
+                    <a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
+                          data-content="If the number of genes in the positive class is greater than 20,
+                          this metric reports the fold change of the area under the precision-recall curve
+                          (auPRC) over the prior auPRC expected by random chance. For example, a value of 1
+                          indicates that the model performs twice as good as a random ranking of genes.">
+                        <i class="fas fa-question-circle"></i>
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
-    {% endif %}
+    <br>
+    <div role="tabpanel">
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item">
+                <a href="#predictions" class="nav-link text-dark active" data-toggle="tab">Gene Predictions</a>
+            </li>
+            <li class="nav-item">
+                <a href="#sim_go" class="nav-link text-dark" data-toggle="tab">Similarities to Biological Processes</a>
+            </li>
+            <li class="nav-item">
+                <a href="#sim_dis" class="nav-link text-dark" data-toggle="tab">Similarities to Disease</a>
+            </li>
+            <li class="nav-item">
+                <a id="nettab" href="#netgraph" class="nav-link text-dark" data-toggle="tab">Network Graph</a>
+            </li>
+            <li class="nav-item">
+                <a href="#validation" class="nav-link text-dark" data-toggle="tab">Validation Data</a>
+            </li>
+        </ul>
 
-{% else %}
+          <!-- Tab panes -->
+        <div class="tab-content">
+            <div role="tabpanel" class="tab-pane fade show active" id="predictions">
+                <div class="table_container">
+                    <div class="box_padding">
+                        <p>The table below shows the top 500 genes with the highest prediction probability. 
+                            The <b>Probability</b> of each gene is bounded between 0 and 1, and indicates the gene’s functional similarity 
+                            to the input genes in the selected network. The <b>Rank</b> column indicates the rank of the gene when sorted by 
+                            the full probability value (up to several decimals). The <b>Class-Labels</b> are: P – gene was considered in 
+                            positive class during training, N – gene was considered in negative class during training, 
+                            and U – gene was not considered at all during training. <b>Known/Novel</b> indicates whether the gene was part of 
+                            the input gene list (therefore ‘Known’) or not (therefore ‘Novel’).
+                            <br><br>
+                            To download the current subset of the table use the Copy, Excel or PDF buttons on the top right of the table. At most the table will display the top 500 results. 
+                            To download the prediction probability of all the genes in the network as a tab separated values file click the following button:
+                            <a href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_probs_file']}}" class="btn btn-sm btn-primary">Download All Predictions</a>                                    
+                        </p>
+                    </div>
+                    {{ df_table(df=job_output['df_probs'], table_id="probstable") }}
+                </div>
+            </div>
 
-    <!-- no job found-->
-    <div class="container">
-        <div id="content-padding" class="pl-4 pt-4">
-            <h4>No job Found</h4>
-            <p>Sorry, but no GenePlexus job with that name exists on our server. ( {{ jobname }} )  </p>
+            <div class="tab-pane fade" id="sim_go">
+                <div class="table_container">
+                    <div class="box_padding">
+                        <p>The table below shows the similarity of machine learning models trained on sets of
+                            genes associated with Gene Ontology Biological Process terms to the custom model
+                            trained on the input genes. See the Help page for more information about
+                            the similarity measure.
+                            <br><br>
+                            To download the current subset of the table use the Copy, Excel or PDF buttons on the top right of the table. At most the table will display the top 500 results. 
+                            To download the similarity to all Biological Processes as a tab separated values file click the following button:
+                            <a href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_GO_file']}}" class="btn btn-sm btn-primary">Download All Similarities</a>
+                        </p>
+                    </div>
+                    {{ df_table(df=job_output['df_GO'], table_id="gotable") }}
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="sim_dis">
+                <div class="table_container">
+                    <div class="box_padding">
+                        <p>The table below shows the similarity of machine learning models trained on sets of
+                            genes associated with diseases in the DisGeNET database to the custom model
+                            trained on the input genes. See the Help page for more information about
+                            the similarity measure.
+                            <br><br>
+                            To download the current subset of the table use the Copy, Excel or PDF buttons on the top right of the table. At most the table will display the top 500 results. 
+                            To download the similarity to all Diseases as a tab separated values file click the following button:
+                            <a href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_dis_file']}}" class="btn btn-sm btn-primary">Download All Similarities</a>
+                        </p>
+                    </div>
+                    {{ df_table(df=job_output['df_dis'], table_id="distable") }}
+                </div>
+            </div>
+            <div class="tab-pane fade" id="netgraph">
+                <div>
+                    <div class="row">
+                        <div class="box_padding m-3">
+                            <p>The graph below shows the network connectivity of the top 50 genes based on prediction probability. The edges used in the graph come 
+                                from the adjacency matrix representation of the network used to train the machine learning model. 
+                                Directions: <br>
+                                <ul>
+                                    <li>Clicking a node will display additional information about the gene on the right side</li>
+                                    <li>Dragging a node will make it sticky (it will no longer move by itself). Double clicking on a sticky node will allow it to move freely again</li>
+                                    <li>The slider below allows you to select which nodes will show up based on gene probability</li>
+                                </ul>
+                                The current view of the graph can be exported as a PNG, SVG file or the entire edgelist can be downloaded as a tab separated file:
+                                <a id="download_as_png" class="btn btn-sm btn-primary m-1" style="width: 5%" href="#">PNG</a>
+                                <a id="download_as_svg" class="btn btn-sm btn-primary m-1" style="width: 5%" href="#">SVG</a>
+                                <a class="btn btn-sm btn-primary m-1" style="width: 8%" href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_edgelist_file']}}" >Edgelist</a>                               
+                            </p>
+                        </div>
+                    </div>
+                
+                    <div id="graph_container" class="row">
+                        <div id="graph_area" class="col-8">
+                            <div id="graph" class="row">
+                                <svg width="1100" height="550"></svg>
+                            </div>
+                            <div id="sliders" class="row">
+                                <div id="slider_containers" class="col">
+
+                                    <div class="mb-3row form-inline">
+                                        <label for="node_sliders" class="col-sm-2 col-form-label">Node probabilities</label>
+                                        <div id="node_sliders">
+                                            <input type="text" readonly class="form-control-plaintext col-sm-3" id="node_lower" value="0.00"> - <input type="text" readonly class="form-control-plaintext col-sm-3" id="node_upper" value="1.00">
+                                        </div>
+                                    </div>
+                                    <div id="node_slider" class="row ml-3 mr-3 m3-3 mb-3"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="info_area" class="mr-3 form-control col-3">
+                            <div class="row">
+                                <div class="container">
+                                    <div class='my-legend'>
+                                        <div class='legend-title'>Gene node colors and their meanings</div>
+                                        <div class='legend-scale'>
+                                          <ul class='legend-labels'>
+                                            <li><span style='background:#00ccbc;'></span>Positive</li>
+                                            <li><span style='background:#6598bf;'></span>Unlabeled</li>
+                                            <li><span style='background:#CC333F;'></span>Negative</li>
+                                          </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="mb-3 row">
+                                <label for="static_id" class="col-4">ID</label>
+                                <div class="col">
+                                  <span id="static_id"></span>
+                                </div>
+                              </div>
+                              <div class="mb-3 row">
+                                <label for="static_class" class="col-4">Class</label>
+                                <div class="col">
+                                  <span id="static_class"></span>
+                                </div>
+                              </div>
+                              <div class="mb-3 row">
+                                <label for="static_known" class="col-4">Known/Novel</label>
+                                <div class="col">
+                                  <span id="static_known"></span>
+                                </div>
+                              </div>
+                              <div class="mb-3 row">
+                                <label for="static_name" class="col-4">Name</label>
+                                <div class="col">
+                                  <span id="static_name"></span>
+                                </div>
+                              </div>
+                              <div class="mb-3 row">
+                                <label for="static_prob" class="col-4">Probability</label>
+                                <div class="col">
+                                  <span id="static_prob"></span>
+                                </div>
+                              </div>
+                              <div class="mb-3 row">
+                                <label for="static_rank" class="col-4">Rank</label>
+                                <div class="col">
+                                    <span id="static_rank"></span>
+                                </div>
+                              </div>
+                              <div class="mb-3 row">
+                                <label for="static_symbol" class="col-4">Symbol</label>
+                                <div class="col">
+                                    <span id="static_symbol"></span>
+                                </div>
+                              </div>
+                              <div class="mb-3 row">
+                                <label for="static_site" class="col-4">NCBI Info</label>
+                                <div class="col">
+                                    <a id="static_site" href="" target="_blank"></a>
+                                </div>
+                              </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="validation">
+                <div class="table_container">
+                    <div class="box_padding">
+                        <p>The number of genes in the input file was {{ input_count }}.
+                        The number of those genes that were uniquely mapped to an Entrez ID
+                                and were also in the network is {{positive_genes}}.
+                            <br><br>
+                            To download the current subset of the table use the Copy, Excel or PDF buttons on the top right of the table. At most the table will display the top 500 results. 
+                            To download the validation data as a tab separated values file click the following button:
+                            <a href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_convert_out_subset_file']}}" class="btn btn-sm btn-primary">Download Validation Data</a>
+                        </p>
+                    </div>
+
+                {{ df_table(df=job_output['df_convert_out_subset'], table_id="validateresults") }}
+                </div>
+            </div>
         </div>
     </div>
-    
-{% endif %}
-
 </div>
 
+<style>
+    .modal {
+        display:    none;
+        position:   fixed;
+        z-index:    1000;
+        top:        0;
+        left:       0;
+        height:     100%;
+        width:      100%;
+        background: rgba( 255, 255, 255, .8 ) 
+                    url('http://i.stack.imgur.com/FhHRx.gif') 
+                    50% 50% 
+                    no-repeat;
+    }
+
+    /* When the body has the loading class, we turn
+    the scrollbar off with overflow:hidden */
+    body.loading .modal {
+        overflow: hidden;   
+    }
+
+    /* Anytime the body has the loading class, our
+    modal element will be visible */
+    body.loading .modal {
+        display: block;
+    }
+</style>
+<div class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Loading</h5>
+        </div>
+        <div class="modal-body">
+          <p>Loading data... please wait</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% else %}
+<div class="container">
+    <div id="content-padding" class="pl-4 pt-4">
+        <h4>Job incomplete</h4>
+        <p>Sorry,  No results yet for the job '{jobname}'  </p>
+    </div>
+</div>
+
+{% endif %} {# job was found and had results #}
+{% else %}  {# invalid job name #}
+      <!-- no job found-->
+      <div class="container">
+          <div id="content-padding" class="pl-4 pt-4">
+              <h4>No job Found</h4>
+              <p>Sorry, but no GenePlexus job with that name exists on our server. ( {{ jobname }} )  </p>
+          </div>
+      </div>
+{% endif %}
+   
 {% endblock %}
 
 {% block scripts %}
-<script src="{{url_for('static', filename='validation.js')}}"></script>
-<script src="{{url_for('static', filename='datatable.js')}}"></script>
+<script>
+    var dataset = {{ job_output['graph'] | safe }}
+</script>
+
+<!-- differences from base -->
+<!-- results had /v/dt commented out-->
+<!-- <script src="https://cdn.datatables.net/v/dt/dt-1.10.22/datatables.min.js"></script> -->
+<!-- base has the jquery js datatables below commented out -->
+<!-- <script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script> -->
+
+<!-- base has this, which seems redundant with the the other 1.10.22 version -->
+<!-- <script src="https://cdn.datatables.net/v/dt/dt-1.10.22/datatables.min.js"></script> -->
+
+<!-- do we need jquery UI ?? -->
+<script src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"></script>
+
+
+<script>
+    $("body").addClass("loading");
+</script>
+
+<!-- <script>
+//    $('[data-toggle="popover"]').popover();
+</script> -->
+
+<script src="{{url_for('static', filename='d3-v4-context_menu.js')}}"></script>
+<script src="{{url_for('static', filename='d3-tip.js')}}"></script>
+<script src="{{url_for('static', filename='graph.js')}}"></script>
+<script src="{{url_for('static', filename='results_datatable.js')}}"></script>
+<script src="{{url_for('static', filename='results_index.js')}}"></script>
+<script src="{{url_for('static', filename='results_validation.js')}}"></script>
+<script src="{{url_for('static', filename='saveSvgAsPng.js')}}"></script>
 {% endblock %}
