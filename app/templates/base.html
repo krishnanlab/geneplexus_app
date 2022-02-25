@@ -7,12 +7,11 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.22/css/dataTables.bootstrap4.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.6.4/css/buttons.bootstrap4.min.css">
-    
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='main.css') }}">
-    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='graph.css') }}">
-    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='d3-tip.css') }}">
     <title>GenePlexus | {% block title %}{% endblock %}</title>
 
+    {% block head %} {# block for extra css, meta or other elements #}
+    {% endblock %}
 
 </head>
     <body>

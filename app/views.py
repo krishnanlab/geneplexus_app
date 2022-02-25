@@ -1,6 +1,6 @@
 from flask.helpers import make_response
 from slugify.slugify import slugify
-from mljob.jobs import path_friendly_jobname, launch_job, retrieve_job_folder,retrieve_results,job_info_list,valid_results_filename,results_file_dir,job_exists,retrieve_job_info,job_status_codes
+from mljob.jobs import path_friendly_jobname, launch_job, retrieve_job_folder,retrieve_results,job_info_list,valid_results_filename,results_file_dir,job_exists,retrieve_job_info,generate_job_id, job_status_codes, retrieve_job_outputs
 
 
 from werkzeug.exceptions import InternalServerError
@@ -11,7 +11,6 @@ from mljob import geneplexus  # models
 geneplexus.data_path = app.config.get("DATA_PATH")
 
 import os
-import uuid
 import numpy as np
 import pandas as pd
 
@@ -75,16 +74,48 @@ def jobs():
                             form=form, **session_args)
 
 
+def html_output_table(df, id = "", row_limit = 500):
+    """ given a data frame, create an html output table for job template for a subset of top rows.
+        This assumes the data frame is already in the correct sort order
+        
+    returns : string of html  or empty string if not a data frame
+    """
+
+    #TODO this needs to go away and we need a jinja template macro to build tables instead 
+    # this is formattibng code which does not belong in the view or anywhere execpt for a template
+    if isinstance(df, pd.DataFrame):        
+        html_table = df.head(row_limit).to_html(index=False, classes="table table-striped table-bordered width:100%",table_id = id )
+        return(html_table)
+    else:
+        #TODO log that this is not a dataframe
+        return("")
+    
+
 @app.route("/jobs/<jobname>", methods=['GET'])
 def job(jobname):
     """ show info about job: results if there are some but otherwise basic job information"""
+    # sanitize.  if this is an actual jobname this will be idempotent
+    jobname = path_friendly_jobname(jobname)
+
+    #TODO check valid job and 404 if not
+    if not job_exists(jobname, app.config): 
+        abort(404)
+
     job_info = retrieve_job_info(jobname, app.config)
-    session_args = create_sidenav_kwargs()
-    return render_template("jobresults.html", jobname = jobname, jobexists = job_exists(jobname, app.config), job_info = job_info, **session_args)
+    job_output = retrieve_job_outputs(jobname, app.config)
+    print(job_info.keys())
+    print(job_output.keys())
+    return render_template("jobresults.html",
+        jobexists = job_exists(jobname, app.config), 
+        jobname=jobname,         
+        job_info = job_info,
+        
+        job_output = job_output)
+                
 
 @app.route("/jobs/<jobname>", methods = ["POST"])
 def update_job(jobname):
-    """ update the job info and possibly notify of new jobs status"""
+    """ update the job info and possibly notify of new jobs status.  Used by external job runner.  """
 
     request_data = request.get_json()
     job_status = request_data.get('status')
@@ -117,7 +148,34 @@ def jobresults_content(jobname):
     else:
         return(f'<html><body><h3 style="padding-top:50px"> No results yet for the job "{jobname}"</h3></body><html>')
 
+# @app.route("/jobs/<jobname>/job_output",methods=['GET'])
+# def jobresults_content(jobname):
+#     """ get all the ouptut from the job and render tables and visualization """
 
+#     if not job_exists(jobname, app.config):
+#         flash(f"No job exists {jobname}")
+#         redirect('/', code=404)
+
+#     # dictionary of stuff
+#     job_info =  retrieve_job_info(jobname, app.config)
+
+#     return render_template("job_output.html", jobname=jobname, job_info = job_info,
+#         probs_table=job_info['df_probs'].head(row_limit).to_html(index=False, classes='table table-striped table-bordered" style="width: 100%;" id = "probstable"'),
+#         go_table=job_info['df_GO'].head(row_limit).to_html(index=False,classes='table table-striped table-bordered nowrap" style="width: 100%;" id = "gotable"'),
+#         dis_table=job_info['df_dis'].head(row_limit).to_html(index=False, classes='table table-striped table-bordered" style="width: 100%;" id = "distable"'),
+#         validate_results=job_info['df_convert_out_subset'].head(row_limit).to_html(index=False,classes='table table-striped table-bordered" style="width: 100%;" id = "validateresults"'),
+#         graph=job_info['graph'],
+#         **session_args )
+
+#         # get all of this from job_info dictionary
+
+#         # network=net_type,   
+#         # features=features,
+#         # negativeclass=GSC,
+#         # avgps=avgps,
+#         # input_count=input_count,
+#         # positive_genes=positive_genes,
+    
 
 # download results file 
 @app.route("/jobs/<jobname>/results/download/<results_file_name>",methods=['GET'])
@@ -184,7 +242,7 @@ def validate():
     # run all the components of the model and pass to the results form
     convert_IDs, df_convert_out = geneplexus.intial_ID_convert(input_genes)
 
-    jobid = str(uuid.uuid1())[0:8]
+    jobid = generate_job_id()
     form.jobid.data = jobid
 
     df_convert_out, table_summary, input_count = geneplexus.make_validation_df(df_convert_out)
@@ -237,8 +295,9 @@ def run_model():
     # grab the assigned job ID
     jobid = form.jobid.data
 
-    # Avoid collisions if someone immediately resubmits a job
-    session['jobid'] = str(uuid.uuid1())[0:8]
+    # Regenerate JobID in the session (not the form)
+    # avoid collisions if someone immediately resubmits a job
+    session['jobid'] = generate_job_id()
 
     # if the optional prefix has been added, concatenate
     # the two fields together.  Otherwise the jobname is the jobid

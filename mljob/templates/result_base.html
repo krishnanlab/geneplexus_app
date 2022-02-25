@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.6.4/css/buttons.bootstrap4.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.6/css/responsive.dataTables.min.css">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.13.0/themes/base/jquery-ui.css">
     <script src="https://kit.fontawesome.com/e6f3faaa40.js" crossorigin="anonymous"></script>
     <style>{{ main_css }}</style>
     <style>{{ graph_css }}</style>
@@ -16,7 +17,7 @@
     </script>
 </head>
     <body>
-       <div class="result_container">
+       <div class="container-fluid result_container">
             <h4 class="col-12 p-2">
                 Prediction results
                 <!-- add large button on same row as header -->
@@ -77,7 +78,7 @@
                         <a href="#sim_dis" class="nav-link text-dark" data-toggle="tab">Similarities to Disease</a>
                     </li>
                     <li class="nav-item">
-                        <a href="#netgraph" class="nav-link text-dark" data-toggle="tab">Network Graph</a>
+                        <a id="nettab" href="#netgraph" class="nav-link text-dark" data-toggle="tab">Network Graph</a>
                     </li>
                     <li class="nav-item">
                         <a href="#validation" class="nav-link text-dark" data-toggle="tab">Validation Data</a>
@@ -144,8 +145,12 @@
                                 <div class="box_padding m-3">
                                     <p>The graph below shows the network connectivity of the top 50 genes based on prediction probability. The edges used in the graph come 
                                         from the adjacency matrix representation of the network used to train the machine learning model. 
-                                        For a description of the graph features, see the panel on the left.
-                                        <br><br>
+                                        Directions: <br>
+                                        <ul>
+                                            <li>Clicking a node will display additional information about the gene on the right side</li>
+                                            <li>Dragging a node will make it sticky (it will no longer move by itself). Double clicking on a sticky node will allow it to move freely again</li>
+                                            <li>The slider below allows you to select which nodes will show up based on gene probability</li>
+                                        </ul>
                                         The current view of the graph can be exported as a PNG, SVG file or the entire edgelist can be downloaded as a tab separated file:
                                         <a id="download_as_png" class="btn btn-sm btn-primary m-1" style="width: 5%" href="#">PNG</a>
                                         <a id="download_as_svg" class="btn btn-sm btn-primary m-1" style="width: 5%" href="#">SVG</a>
@@ -153,36 +158,89 @@
                                     </p>
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="controls col-4 ml-3">
-                                    <div class="force">
-                                        <p style=margin:0><label>Network Interpretation:</label></p>
+                        
+                            <div id="graph_container" class="row">
+                                <div id="graph_area" class="col-8">
+                                    <div id="graph" class="row">
+                                        <svg width="1100" height="550"></svg>
                                     </div>
-                                    <div class="force">
-                                        <p style=margin:0>The graph shows the top 50 nodes based on highest prediction probability</p>
-                                    </div>
-                                    <div class="force">
-                                        <p style=margin:0>Node size is based on the prediction probability</p>
-                                    </div>
-                                    <div class="force">
-                                        <p style=margin:0>Node color is based on the Class-Label</p>
-                                    </div>
-                                    <div class="force">
-                                        <p style=margin:0>Hover over a node for additional attributes</p>
-                                    </div>
-                                    <div class="force">
-                                        <p style=margin:0>Zoom in or out using the mouse scroll wheel</p>
-                                    </div>
-                                    <div class="force">
-                                        <p style=margin:0>Move graph around the screen by dragging with the left mouse button</p>
-                                    </div>
-                                    <div class="force">
-                                        <p style=margin:0>Right-click on node to look up gene at NCBI</p>
+                                    <div id="sliders" class="row">
+                                        <div id="slider_containers" class="col">
+
+                                            <div class="mb-3row form-inline">
+                                                <label for="node_sliders" class="col-sm-2 col-form-label">Node probabilities</label>
+                                                <div id="node_sliders">
+                                                    <input type="text" readonly class="form-control-plaintext col-sm-3" id="node_lower" value="0.00"> - <input type="text" readonly class="form-control-plaintext col-sm-3" id="node_upper" value="1.00">
+                                                </div>
+                                            </div>
+                                            <div id="node_slider" class="row ml-3 mr-3 m3-3 mb-3"></div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="col-9">
-                                    <svg width="1080" height="600" id="graph"></svg>
-                                    <canvas hidden width="1080" height="600" id="canvas"></canvas>
+                                <div id="info_area" class="mr-3 form-control col-3">
+                                    <div class="row">
+                                        <div class="container">
+                                            <div class='my-legend'>
+                                                <div class='legend-title'>Gene node colors and their meanings</div>
+                                                <div class='legend-scale'>
+                                                  <ul class='legend-labels'>
+                                                    <li><span style='background:#00ccbc;'></span>Positive</li>
+                                                    <li><span style='background:#6598bf;'></span>Unlabeled</li>
+                                                    <li><span style='background:#CC333F;'></span>Negative</li>
+                                                  </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="mb-3 row">
+                                        <label for="static_id" class="col-4">ID</label>
+                                        <div class="col">
+                                          <span id="static_id"></span>
+                                        </div>
+                                      </div>
+                                      <div class="mb-3 row">
+                                        <label for="static_class" class="col-4">Class</label>
+                                        <div class="col">
+                                          <span id="static_class"></span>
+                                        </div>
+                                      </div>
+                                      <div class="mb-3 row">
+                                        <label for="static_known" class="col-4">Known/Novel</label>
+                                        <div class="col">
+                                          <span id="static_known"></span>
+                                        </div>
+                                      </div>
+                                      <div class="mb-3 row">
+                                        <label for="static_name" class="col-4">Name</label>
+                                        <div class="col">
+                                          <span id="static_name"></span>
+                                        </div>
+                                      </div>
+                                      <div class="mb-3 row">
+                                        <label for="static_prob" class="col-4">Probability</label>
+                                        <div class="col">
+                                          <span id="static_prob"></span>
+                                        </div>
+                                      </div>
+                                      <div class="mb-3 row">
+                                        <label for="static_rank" class="col-4">Rank</label>
+                                        <div class="col">
+                                            <span id="static_rank"></span>
+                                        </div>
+                                      </div>
+                                      <div class="mb-3 row">
+                                        <label for="static_symbol" class="col-4">Symbol</label>
+                                        <div class="col">
+                                            <span id="static_symbol"></span>
+                                        </div>
+                                      </div>
+                                      <div class="mb-3 row">
+                                        <label for="static_site" class="col-4">NCBI Info</label>
+                                        <div class="col">
+                                            <a id="static_site" href="" target="_blank"></span>
+                                        </div>
+                                      </div>
                                 </div>
                             </div>
                         </div>
@@ -220,6 +278,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
         <script src="https://cdn.datatables.net/buttons/1.6.4/js/buttons.html5.min.js"></script>
         <script src="https://cdn.datatables.net/buttons/1.6.4/js/buttons.print.min.js"></script>
+        <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"></script>
         <script src="https://d3js.org/d3.v4.min.js"></script>
         <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
         <script>

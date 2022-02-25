@@ -1,10 +1,15 @@
+$('[data-toggle="popover"]').popover();
+
 $('#insertGeneButton').click(function(){
     $("input[type='file']").trigger('click');
-});
+ });
 
-$('#insertGenesInput').change(
+ $('#insertGenesInput').change(
     function(){
-        if ($(this).val() != '') {
+        if ($(this).val()) {
+            //$('#insert_filename').text(this.value.replace(/C:\\fakepath\\/i, ''))
+            //$('input:submit').attr('disabled',false);
+            //$('#geneBtn').prop('disabled',true);
             console.log()
             var file = this.files[0];
             uploadFile(file);
@@ -26,9 +31,6 @@ function uploadFile(file){
         processData: false,
         success: function(jsonReturn){
             $('#enterGenes').val(jsonReturn['data'].join('\n'));
-        },
-        complete: function(request, message){
-            $('#insertGenesInput').replaceWith($("#insertGenesInput").val('').clone(true))
         }
     });
 }
@@ -75,32 +77,4 @@ function clearInput(){
             $("#geneButton").css("pointer-events", "auto");
         }
     });
-}
-
-$('#prefix').on('change keyup blur', function(){
-    prefix = $('#prefix').val()
-    $.ajax({
-        type: 'POST',
-        url: '/get_slugified_text',
-        contentType: 'application/json',
-        data: JSON.stringify({
-            'prefix': prefix
-        }),
-        success: function(data) {
-            if (data.prefix_too_long){
-                $('#char_limit').text('Your input is ' + data.too_long_by + ' characters too long. It will be truncated on submit');
-            }
-            else{
-                $('#char_limit').text('');
-            }
-        }
-    })
-});
-
-$('#runbatch').click(function(e) {
-    setTimeout(function () { disableButton(); }, 0);
-});
-
-function disableButton() {
-    $('#runbatch').prop('disabled', true);
 }

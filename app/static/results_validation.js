@@ -1,19 +1,28 @@
+$('[data-toggle="popover"]').popover();
+
+$('#geneButton').click(function(){
+    $("input[type='file']").trigger('click');
+})
+
 $('#insertGeneButton').click(function(){
     $("input[type='file']").trigger('click');
-});
+ });
 
-$('#insertGenesInput').change(
+ $('#clearButton').click(function(){
+    $('#enterGenes').val('');
+})
+
+ $('#insertGenesInput').change(
     function(){
-        if ($(this).val() != '') {
+        if ($(this).val()) {
+            //$('#insert_filename').text(this.value.replace(/C:\\fakepath\\/i, ''))
+            //$('input:submit').attr('disabled',false);
+            //$('#geneBtn').prop('disabled',true);
             console.log()
             var file = this.files[0];
             uploadFile(file);
     }
 });
-
-$('#clearButton').click(function(){
-    $('#enterGenes').val('');
-})
 
 function uploadFile(file){
     var formData = new FormData();
@@ -26,9 +35,6 @@ function uploadFile(file){
         processData: false,
         success: function(jsonReturn){
             $('#enterGenes').val(jsonReturn['data'].join('\n'));
-        },
-        complete: function(request, message){
-            $('#insertGenesInput').replaceWith($("#insertGenesInput").val('').clone(true))
         }
     });
 }
@@ -77,30 +83,45 @@ function clearInput(){
     });
 }
 
-$('#prefix').on('change keyup blur', function(){
-    prefix = $('#prefix').val()
+
+function appendPrefix(){
+    var jobname = $('#job').val();
+    var prefix = $('#prefix').val();
     $.ajax({
-        type: 'POST',
-        url: '/get_slugified_text',
-        contentType: 'application/json',
-        data: JSON.stringify({
-            'prefix': prefix
-        }),
-        success: function(data) {
-            if (data.prefix_too_long){
-                $('#char_limit').text('Your input is ' + data.too_long_by + ' characters too long. It will be truncated on submit');
-            }
-            else{
-                $('#char_limit').text('');
-            }
-        }
-    })
-});
+        data: {
+            jobname: jobname,
+            prefix: prefix
+        },
+      type: 'POST',
+      url: "/appendprefix",
 
-$('#runbatch').click(function(e) {
-    setTimeout(function () { disableButton(); }, 0);
-});
+      success: function(data){
+        console.log(data.success);
+        $('#job').val(data.jobname);
+      }
+    });
+    event.preventDefault();
+};
 
-function disableButton() {
-    $('#runbatch').prop('disabled', true);
-}
+// run batch now works through same flask route as run local
+// function runBatch(){
+//     var jobname = $('#job').val();
+//     var nettype = $('#network').val();
+//     var features = $('#features').val();
+//     var GSC = $('#negativeclass').val();
+
+//     $.ajax({
+//         data: {
+//             jobname: jobname,
+//             network: nettype,
+//             feature: features,
+//             negativeclass: GSC,
+//         },
+//       type: 'POST',
+//       url: "/runbatch",
+//       success: function(data){
+//         console.log(data.success);
+//       }
+//     });
+//     event.preventDefault();
+// };
