@@ -12,6 +12,7 @@
 {% block head %}
     {# stylesheets manually put in results_base, confirm if we need thse or not? #}
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.6/css/responsive.dataTables.min.css">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.13.0/themes/base/jquery-ui.css">
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='results_main.css') }}">
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='results.css') }}">
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='graph.css') }}">
@@ -202,25 +203,8 @@
                     </div>
                 
                     <div id="graph_container" class="row">
-                        <div id="graph_area" class="col-8">
-                            <div id="graph" class="row">
-                                <svg width="1100" height="550"></svg>
-                            </div>
-                            <div id="sliders" class="row">
-                                <div id="slider_containers" class="col">
-
-                                    <div class="mb-3row form-inline">
-                                        <label for="node_sliders" class="col-sm-2 col-form-label">Node probabilities</label>
-                                        <div id="node_sliders">
-                                            <input type="text" readonly class="form-control-plaintext col-sm-3" id="node_lower" value="0.00"> - <input type="text" readonly class="form-control-plaintext col-sm-3" id="node_upper" value="1.00">
-                                        </div>
-                                    </div>
-                                    <div id="node_slider" class="row ml-3 mr-3 m3-3 mb-3"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div id="info_area" class="mr-3 form-control col-3">
-                            <div class="row">
+                        <div id="info_area" class="mr-3 ml-3 mb-3 form-control col-3">
+                            <div class="row ml-2">
                                 <!-- <div class="container"> -->
                                     <div class='my-legend'>
                                         <div class='legend-title'>Gene node colors and their meanings</div>
@@ -283,6 +267,23 @@
                                     <span><a id="static_site" href="" target="_blank"></a></span>
                                 </div>
                               </div>
+                        </div>
+                        <div id="graph_area" class="col-8">
+                            <div id="graph" class="row">
+                                <svg width="1100" height="550"></svg>
+                            </div>
+                            <div id="sliders" class="row">
+                                <div id="slider_containers" class="col">
+
+                                    <div class="mb-3row form-inline">
+                                        <label for="node_sliders" class="col-sm-2 col-form-label">Node probabilities</label>
+                                        <div id="node_sliders">
+                                            <input type="text" readonly class="form-control-plaintext col-sm-3" id="node_lower" value="0.00"> - <input type="text" readonly class="form-control-plaintext col-sm-3" id="node_upper" value="1.00">
+                                        </div>
+                                    </div>
+                                    <div id="node_slider" class="row ml-3 mr-3 m3-3 mb-3"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
