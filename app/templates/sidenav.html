@@ -14,7 +14,7 @@
                         data-content="Manually input a gene set or upload a file containing a gene set as well as see examples for both">
                             <i class="fas fa-question-circle"></i></a>
                        <div class="mb-2">
-                        <button type="button" id="geneBtn" class="btn btn-sm sidenav-btn"  data-toggle="modal" data-target="#geneModal">
+                        <button type="button" id="geneBtn" class="btn btn-sm sidenav-btn btn-primary"  data-toggle="modal" data-target="#geneModal">
                           {% if valid_form is defined %}Edit Loaded Genes{% else %}Add Genes{% endif %}
                         </button>
                        </div>
@@ -111,41 +111,37 @@
                         Acceptable Gene IDs are: Entrez, ENSG, Symbol, ENSP, ENST. <br>
                         The format is delimited by newline (i.e. each gene is on a separate line)">
                             <i class="fas fa-question-circle"></i></a>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-            <div>
-                <div class="row justify-content-center mt-2">
-                    <div class="col">
-                        <span id="insertGeneButton" class="btn btn-sm smaller-button">Select Gene File</span>
-                        <span id="insert_filename" class="text-center"></span>
-                        <input id="insertGenesInput" class="btn py-0" style="font-size: 0.0em;"
-                                type="file"
-                                title=" "
-                                name="insert_genes"
-                                accept="txt/csv"
-                                />
-                    </div>
-                    <div  class="col" onclick="sampleGenes()">
-                        <button type="button" class="btn btn-sm">Click to load a Sample Gene Set</button>
-                    </div>
-                    
-                </div>
-                <div class="row justify-content-center">
-                    <div  class="col">
-                    </div>
-                    <div class="col">
-                        <button type="button"
-                                       id="sampleBtn"
-                                       class="btn btn-sm"
-                                       onclick="window.location.href='/uploads/DOID-9562-STRING-Adjacency-DisGeNet-Symbols.txt'">
-                                  Download Sample Gene File
-                                </button>
-                    </div>
-                </div>
+                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+                <div>
+                    <div class="d-flex flex-row justify-content-between mb-2">
+                        <div>
+                            <span id="insertGeneButton" class="btn btn-sm btn-primary smaller-text">Select Gene File</span>
+                            <span id="insert_filename" class="text-center"></span>
+                            <input id="insertGenesInput" style="font-size: 0.0em;"
+                                    type="file"
+                                    title=" "
+                                    name="insert_genes"
+                                    accept="txt/csv"
+                                    />
+                        </div>
+                        <div  onclick="sampleGenes()">
+                            <button type="button" class="btn btn-sm btn-primary smaller-text">Click to load a Sample Gene Set</button>
+                        </div>
+                        
+                    </div>
+                    <div class="d-flex justify-content-end mb-2">
+                        <div class="">
+                            <button type="button"
+                                           id="sampleBtn"
+                                           class="btn btn-sm btn-primary smaller-text"
+                                           onclick="window.location.href='/uploads/DOID-9562-STRING-Adjacency-DisGeNet-Symbols.txt'">
+                                      Download Sample Gene File
+                                    </button>
+                        </div>
+                    </div>
+                </div>
               <textarea class="form-control rounded-0" id="enterGenes" rows="18" name="genesInput">{{ '\n'.join(existing_genes) }}</textarea>
             </div>
             <div class="modal-footer">

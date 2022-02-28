@@ -1,7 +1,7 @@
 {% if cookies_check() %}
 {% else %}
-    <div class="fixed-bottom p-4 row cookie_popup" id="cookie-consent-container">
-        <div class="toast bg-dark text-white w-100 mw-100" role="alert">
+    <div class="fixed-bottom p-4 cookie_popup" id="cookie-consent-container">
+        <div class="bg-dark text-white w-100 mw-100" role="alert">
             <div class="toast-body p-4 d-flex flex-column">
                 <h4>Cookie Warning</h4>
                 <p>
@@ -20,6 +20,7 @@
         document.cookie = "cookie_consent=true";
         document.getElementById('cookie-consent-container').hidden = true;
     };
+    console.log('It cannot')
     document.getElementById('btnAccept').onclick = fn;
     </script>
 {% endif %}
