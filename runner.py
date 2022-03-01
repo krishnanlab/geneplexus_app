@@ -70,7 +70,9 @@ if __name__ == "__main__":
     # setup logger
     import logging
     import sys
-    logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
+    logging.basicConfig(format='%(msg)s', stream=sys.stderr, level=logging.INFO)
+
+
 
     #### run it
     # TODO save args in a log file, perhaps from stderr

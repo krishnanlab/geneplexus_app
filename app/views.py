@@ -102,16 +102,18 @@ def job(jobname):
         abort(404)
 
     job_info = retrieve_job_info(jobname, app.config)
-    job_output = retrieve_job_outputs(jobname, app.config)
-    print(job_info.keys())
-    print(job_output.keys())
+
+    if job_info and job_info['has_results']:
+        job_output = retrieve_job_outputs(jobname, app.config)
+
+    else:
+        job_output = {}
+
     return render_template("jobresults.html",
-        jobexists = job_exists(jobname, app.config), 
-        jobname=jobname,         
-        job_info = job_info,
-        
-        job_output = job_output)
-                
+            jobexists = job_exists(jobname, app.config), 
+            jobname=jobname,         
+            job_info = job_info,        
+            job_output = job_output)
 
 @app.route("/jobs/<jobname>", methods = ["POST"])
 def update_job(jobname):

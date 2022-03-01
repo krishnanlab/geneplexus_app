@@ -59,7 +59,7 @@
 <div class="result_container">
 
 {% if jobexists %} {# this is probably not necessary since view method redirects to 404 if no job found #}
-{% if job_info['has_results'] %}
+{% if job_info['has_results'] == true and 'jobname' in job_output %}
     <h4 class="col-12">
         <div class="row">
             <span class="col-9">
