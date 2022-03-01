@@ -1,3 +1,4 @@
+{# content templates should extend either base-fullwidth or base-sidenav, not this one #}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,37 +10,37 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.6.4/css/buttons.bootstrap4.min.css">
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='main.css') }}">
     <title>GenePlexus | {% block title %}{% endblock %}</title>
+        <!-- <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.6/css/responsive.dataTables.min.css"> -->
+
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='main.css') }}">
+    <title>GenePlexus | {% block title %}{% endblock %}</title>
 
     {% block head %} {# block for extra css, meta or other elements #}
     {% endblock %}
 
 </head>
     <body>
-        <div class="container-fluid">
-       <header>
-           <div class="row">
-        {% include 'navbar.html'  ignore missing  %}
-           </div>
-        </header>
-        
+        <header>
             <div class="row">
-                
-                <div class="col-3">
-                    {% include 'sidenav.html' %}
-                </div>
-
-                <div class="col-9 main_body mt-3">
-                    {% block app_content %}
-                    {% endblock %}
-                </div>
-                {% include 'cookies.html' %}
+            {% include 'navbar.html'  ignore missing  %}
             </div>
+        </header>        
+        <div class="container-fluid mb-5">            
+
+            {% block body %} 
+            {% endblock %}    
             
+    
         </div>
-        
-        
-        
-        
+        <footer class="footer mt-auto py-3 bg-light fixed-bottom">
+            <div class="container">
+            <span class="text-muted">&copy; 2022 Krishnan Lab and Michigan State University Board of Trustees</span>
+            </div>
+        </footer>
+
+        {% include 'cookies.html' %}
+
+
         <!-- jQuery first, then Popper.js, then Bootstrap JS -->
         <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
@@ -57,17 +58,14 @@
         <script src="https://cdn.datatables.net/buttons/1.6.4/js/buttons.html5.min.js"></script>
         <script src="https://cdn.datatables.net/buttons/1.6.4/js/buttons.print.min.js"></script>
         <script src="https://kit.fontawesome.com/e6f3faaa40.js" crossorigin="anonymous"></script>
-        <script src="https://d3js.org/d3.v4.min.js"></script>
-        <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
-        <script src="{{url_for('static', filename='d3-v4-contextmenu.js')}}"></script>
-        <script src="{{url_for('static', filename='d3-tip.js')}}"></script>
-        <!-- <script src="{{url_for('static', filename='graph.js')}}"></script> -->
+
         <script src="{{url_for('static', filename='base.js')}}"></script>
 
         
         {% block scripts %}
         {% endblock %}
 
+        
 
     </body>
 </html>

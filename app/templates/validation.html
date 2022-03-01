@@ -1,72 +1,70 @@
-{% extends "base.html" %}
+{% extends "base-sidenav.html" %}
 
 {% block title %}Geneset{% endblock %}
 
 {% block app_content %}
-    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='main.css') }}">
-
 <div>
     <div id="content-padding" class="pl-4 pt-4">
-    {% include 'messages.html' ignore missing %}
-    {% if valid_form is defined %}
     <h1>Current Geneset</h1>
-    <div class="border border-dark">
-        <div class="box_padding">
-            <p>The table below shows how many of the input genes were converted to Entrez gene IDs and how many
-                of them are present in the various molecular networks.</p>
-            <table style="width: 85%">
-                    <colgroup>
-                        <col span="1" style="width: 15%;">
-                        <col span="1" style="width: 37%;">
-                        <col span="1" style="width: 48%;">
-                    </colgroup>
-                <thead>
-                    <tr>
-                        <th>Network</th>
-                        <th style="text-align: right">Total Number of Genes in the Network</th>
-                        <th style="text-align: right">Number of User-Supplied Genes in the Network</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for dict_item in table_summary %}
-                    <tr>
-                        {% for key, value in dict_item.items() %}
-                            {%- if key == 'Network' -%}
-                                <td style="text-align: left; vertical-align: middle;">{{ value }}</td>
-                            {%- else -%}
-                                <td style="text-align: right; vertical-align: middle;">{{ '{0:,}'.format(value | int) }}</td>
-                            {%- endif -%}
+
+    {% if valid_form is defined %}
+            <div class="border border-dark">
+                <div class="box_padding">
+                    <p>The table below shows how many of the input genes were converted to Entrez gene IDs and how many
+                        of them are present in the various molecular networks.</p>
+                    <table style="width: 85%">
+                        <colgroup>
+                            <col span="1" style="width: 15%;">
+                            <col span="1" style="width: 37%;">
+                            <col span="1" style="width: 48%;">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th>Network</th>
+                                <th style="text-align: right">Total Number of Genes in the Network</th>
+                                <th style="text-align: right">Number of User-Supplied Genes in the Network</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for dict_item in table_summary %}
+                            <tr>
+                                {% for key, value in dict_item.items() %}
+                                    {%- if key == 'Network' -%}
+                                        <td style="text-align: left; vertical-align: middle;">{{ value }}</td>
+                                    {%- else -%}
+                                        <td style="text-align: right; vertical-align: middle;">{{ '{0:,}'.format(value | int) }}</td>
+                                    {%- endif -%}
+                                {% endfor %}
+                            </tr>
                         {% endfor %}
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <br class="mt-5">
-    <h4>Input genes</h4>
-    <p>The table below shows the input genes, their corresponding Entrez gene IDs, and if they are present
-        in the various molecular networks. Use this table to select a molecular network to train your model
-        (in the panel on the left).</p>
-    {% if pos < 5 %}
-        <p style="color:red;">One or more networks has less than 5 positive genes.
-            Consider adding additional genes before running the model</p>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <br class="mt-5">
+            <h4>Input genes</h4>
+            <p>The table below shows the input genes, their corresponding Entrez gene IDs, and if they are present
+                in the various molecular networks. Use this table to select a molecular network to train your model
+                (in the panel on the left).</p>
+            {% if pos < 5 %}
+                <p style="color:red;">One or more networks has less than 5 positive genes.
+                    Consider adding additional genes before running the model</p>
+            {% endif %}
+            {{ validate_table|safe }}
+
+    {% else %}
+
+        <h3 class="mt-1">Please enter a geneset</h3>
+        <p>You can do so by clicking on the "Add Genes" button to the left! 
+        </p>
+        
     {% endif %}
-    {{ validate_table|safe }}
     </div>
 </div>
-{% else %}
-<div>
-    <div id="content-padding" class="pl-4 pt-4">
-    <h2>Please enter a geneset</h2>
-    <p>You can do so by clicking on the "Add Genes" button to the left!</p>
-    </div>
-</div>
-{% endif %}
+{% endblock %}
 
 {% block scripts %}
-<script src="{{url_for('static', filename='validation.js')}}"></script>
-<script src="{{url_for('static', filename='datatable.js')}}"></script>
+<!-- <script src="{{url_for('static', filename='validation.js')}}"></script>
+<script src="{{url_for('static', filename='datatable.js')}}"></script> -->
 {% endblock %}
 
-{% endblock %}
