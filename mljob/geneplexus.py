@@ -278,33 +278,34 @@ def make_graph(df_edge, df_probs):
 def run_model(convert_IDs, net_type, GSC, features, logger = logging.getLogger(__name__)
 ):
 
-    logger.info('1. get_genese_in_network')
+    logger.info('1/10:get genes in-network')
     pos_genes_in_net, genes_not_in_net, net_genes = get_genes_in_network(convert_IDs,
                                                                                 net_type)  # genes_not_in_net could be an output file
-    logger.info('2. get_negatives')
+    logger.info('2/10:get negatives..')
     negative_genes = get_negatives(pos_genes_in_net, net_type, GSC)
 
-    logger.info('3. run_SL... features=%s, features')
+    logger.info('3/10:run_SL... features=%s, features')
     mdl_weights, probs, avgps = run_SL(pos_genes_in_net, negative_genes, net_genes, net_type, features)
 
-    logger.info('4. get_negatives...')
+    logger.info('4/10:get_negatives...')
     negative_genes = get_negatives(pos_genes_in_net, net_type, GSC)
 
-    logger.info('5. make_prob_df...')
+    logger.info('5/10:probabilities')
     df_probs, Entrez_to_Symbol = make_prob_df(net_genes, probs, pos_genes_in_net, negative_genes)
 
-    logger.info('6. make_sim_dfs...')
+    logger.info('6/10:similiarities')
     df_GO, df_dis, weights_dict_GO, weights_dict_Dis = make_sim_dfs(mdl_weights, GSC, net_type,
                                                                            features)  # both of these dfs will be displaed on the webserver
-    logger.info('7. make_small_edgelist...')
+    logger.info('7/10:small edgelist')
     df_edge, isolated_genes, df_edge_sym, isolated_genes_sym = make_small_edgelist(df_probs, net_type,
                                                                                           Entrez_to_Symbol)
-    logger.info('8. make_graph...')
+    logger.info('8/10:graph')
     graph = make_graph(df_edge, df_probs)
 
-    logger.info('9. make an exported edge list ')
+    logger.info('9/10:export edge list')
     df_edgelist = export_small_edgelist(df_probs, net_type)
-
+    
+    logger.info('10/10:finishing')
     return graph, df_probs, df_GO, df_dis, avgps, df_edgelist
 
 

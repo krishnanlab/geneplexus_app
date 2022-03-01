@@ -390,7 +390,10 @@ def retrieve_job_status(jobname, app_config, status_file_suffix = ".log", defaul
     if os.path.exists(fp):
         # try
         with open(fp, 'r') as f:
-            last_line = f.readlines()[-1]
+            log_contents = f.readlines()
+            # sometimes the file is not read (may be blocked?), so don't try to read it...
+            if log_contents:
+                last_line = log_contents[-1]
     
     return(last_line)
 
