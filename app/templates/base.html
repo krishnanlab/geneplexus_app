@@ -28,7 +28,6 @@
             {% block body %} 
             {% endblock %}    
             
-            {% include 'cookies.html' %}
     
         </div>
         <footer class="footer mt-auto py-3 bg-light fixed-bottom">
@@ -36,6 +35,9 @@
             <span class="text-muted">&copy; 2022 Krishnan Lab and Michigan State University Board of Trustees</span>
             </div>
         </footer>
+
+        {% include 'cookies.html' %}
+
 
         <!-- jQuery first, then Popper.js, then Bootstrap JS -->
         <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
