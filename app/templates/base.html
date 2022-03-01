@@ -22,9 +22,8 @@
             <div class="row">
             {% include 'navbar.html'  ignore missing  %}
             </div>
-        </header>
-        <main class="flex-shrink-0 mb-5">
-        <div class="container">            
+        </header>        
+        <div class="container-fluid mb-5">            
 
             {% block body %} 
             {% endblock %}    
@@ -32,7 +31,6 @@
             {% include 'cookies.html' %}
     
         </div>
-        </main>
         <footer class="footer mt-auto py-3 bg-light fixed-bottom">
             <div class="container">
             <span class="text-muted">&copy; 2022 Krishnan Lab and Michigan State University Board of Trustees</span>
