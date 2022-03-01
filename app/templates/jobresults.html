@@ -5,13 +5,13 @@
         <!-- end {{table_id}}-->
 {%- endmacro %}
 
-{% extends "results_base.html" %}
+{% extends "base-fullwidth.html" %}
 
 {% block title %}{% if jobexists %}Job: {{ jobname }}{% else %}Job {{ jobname }} does not exist{% endif %}{% endblock %}
 
 {% block head %}
     {# stylesheets manually put in results_base, confirm if we need thse or not? #}
-    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.6/css/responsive.dataTables.min.css">
+    <!-- <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.6/css/responsive.dataTables.min.css"> -->
     <link rel="stylesheet" href="//code.jquery.com/ui/1.13.0/themes/base/jquery-ui.css">
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='results_main.css') }}">
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='results.css') }}">
@@ -357,28 +357,15 @@
         var dataset = {{ job_output['graph'] | safe }}
     </script>
 
-    <!-- differences from base -->
-    <!-- results had /v/dt commented out-->
-    <!-- <script src="https://cdn.datatables.net/v/dt/dt-1.10.22/datatables.min.js"></script> -->
-    <!-- base has the jquery js datatables below commented out -->
-    <!-- <script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script> -->
-
-    <!-- base has this, which seems redundant with the the other 1.10.22 version -->
-    <!-- <script src="https://cdn.datatables.net/v/dt/dt-1.10.22/datatables.min.js"></script> -->
-
-    <!-- do we need jquery UI ?? -->
-    <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"></script>
-
-
     <script>
         $("body").addClass("loading");
     </script>
 
-    <!-- <script>
-    // confirm this is part of base template already and remove
-    //    $('[data-toggle="popover"]').popover();
-    </script> -->
+    <!-- jquery UI is used for graph data box -->
+    <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"></script>
 
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
     <script src="{{url_for('static', filename='d3-v4-contextmenu.js')}}"></script>
     <script src="{{url_for('static', filename='d3-tip.js')}}"></script>
     <script src="{{url_for('static', filename='graph.js')}}"></script>
