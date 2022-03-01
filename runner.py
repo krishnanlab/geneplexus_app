@@ -70,7 +70,7 @@ if __name__ == "__main__":
     # setup logger
     import logging
     import sys
-    logging.basicConfig(format='%(message)s', stream=sys.stderr, level=logging.INFO)
+    logging.basicConfig(format='%(msg)s', stream=sys.stderr, level=logging.INFO)
 
 
 
