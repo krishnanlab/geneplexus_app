@@ -5,7 +5,6 @@
 {% block app_content %}
 <div>
     <div id="content-padding" class="pl-4 pt-4">
-    {% include 'messages.html' ignore missing %}
     <h1>Current Geneset</h1>
 
     {% if valid_form is defined %}
@@ -55,12 +54,9 @@
 
     {% else %}
 
-        <h3>Please enter a geneset</h3>
+        <h3 class="mt-1">Please enter a geneset</h3>
         <p>You can do so by clicking on the "Add Genes" button to the left! 
         </p>
-        
-
-
         
     {% endif %}
     </div>

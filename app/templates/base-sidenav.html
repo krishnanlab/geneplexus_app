@@ -12,6 +12,8 @@
         </div>
 
         <div class="col-9 main_body mt-3  pb-5">
+            {% include 'messages.html' ignore missing %}
+
             {% block app_content %}
             {% endblock %}
         </div>

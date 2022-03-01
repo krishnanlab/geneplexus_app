@@ -4,6 +4,8 @@
 
     <div class="row  pb-5">
         <div class="col">
+            {% include 'messages.html' ignore missing %}
+
             {% block app_content %}
             {% endblock %}
         </div>        
