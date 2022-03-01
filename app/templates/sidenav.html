@@ -10,11 +10,11 @@
                        <label>
                            1. Enter/Load Gene Set
                        </label>
-                       <a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                        data-content="Manually input a gene set or upload a file containing a gene set as well as see examples for both">
+                       <a href="#" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-placement="right"
+                        data-bs-content="Manually input a gene set or upload a file containing a gene set as well as see examples for both">
                             <i class="fas fa-question-circle"></i></a>
                        <div class="mb-2">
-                        <button type="button" id="geneBtn" class="btn btn-sm sidenav-btn btn-primary"  data-toggle="modal" data-target="#geneModal">
+                        <button type="button" id="geneBtn" class="btn btn-sm sidenav-btn btn-primary"  data-bs-toggle="modal" data-bs-target="#geneModal">
                           {% if valid_form is defined %}Edit Loaded Genes{% else %}Add Genes{% endif %}
                         </button>
                        </div>
@@ -33,8 +33,8 @@
                     <label>
                         2. Job Name
                     </label>
-                    <a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                        data-content="The default job name is a unique identifier that will be assigned
+                    <a href="#" data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="right"
+                        data-bs-content="The default job name is a unique identifier that will be assigned
                         once the model is run.  Optionally, a prefix can be added for easier identification
                             by typing text into the box below. The character limit is {{ prefix_limit }}. Anything longer
                             will be truncated when you submit a job">
@@ -50,8 +50,8 @@
                     <label>
                         3. Select Molecular Network
                     </label>
-                    <a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                        data-content="Select the molecular network that will be used in training the model.">
+                    <a href="#" data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="right"
+                        data-bs-content="Select the molecular network that will be used in training the model.">
                     <i class="fas fa-question-circle"></i></a>
                     <div>
                     {{ valid_form.network }}
@@ -60,8 +60,8 @@
                     <label>
                         4. Select Feature Type
                     </label>
-                    <a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                    data-content="Select how the connections of chosen network will be represented as features in the machine learning model.">
+                    <a href="#" data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="right"
+                    data-bs-content="Select how the connections of chosen network will be represented as features in the machine learning model.">
                     <i class="fas fa-question-circle"></i></a>
                     <div class="select">
                         {{ valid_form.features }}
@@ -70,16 +70,16 @@
                     <label>
                         5. Select Negative Gene Class
                     </label>
-                    <a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                    data-content="Select the type of genes in the negative class – genes annotated to Gene Ontology Biological Processes or to disease in the DisGeNet database – based on whether the input genes represent a process/pathway or a disease.">
+                    <a href="#" data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="right"
+                    data-bs-content="Select the type of genes in the negative class – genes annotated to Gene Ontology Biological Processes or to disease in the DisGeNet database – based on whether the input genes represent a process/pathway or a disease.">
                     <i class="fas fa-question-circle"></i></a>
                     <div class="select">
                         {{ valid_form.negativeclass }}
                     </div>
                     <br>
                     6. (Optional) Notification Email Address
-                    </label><a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                    data-content="Optionally enter an email address for job notifications.  We will never share your email address outside of this application, add you to a mailing list, or send unsolicited communication.">
+                    </label><a href="#" data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="right"
+                    data-bs-content="Optionally enter an email address for job notifications.  We will never share your email address outside of this application, add you to a mailing list, or send unsolicited communication.">
                     <i class="fas fa-question-circle"></i></a>
                     <div class="select">
                         {{ valid_form.notifyaddress(class_="sidenav-email") }}
@@ -87,8 +87,8 @@
                     <br>
                     
                     {{ valid_form.runbatch(class_="btn btn-sm btn-primary", style="width: 200px") }}
-                    <a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                    data-content="Hitting this button will launch a process in the cloud to train the machine learning model.
+                    <a href="#" data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="right"
+                    data-bs-content="Hitting this button will launch a process in the cloud to train the machine learning model.
                     The link to view the results will be available in the Jobs tab when completed.">
                     <i class="fas fa-question-circle"></i></a>
                 </fieldset>
@@ -106,12 +106,12 @@
           <form id="modal-form" method="POST", enctype="multipart/form-data" action="{{ url_for('validate') }}">
             <div class="modal-header">
               <h5 class="modal-title" id="exampleModalLabel">Enter or Paste List of Genes</h5>
-              <a href="#" data-toggle="popover" data-trigger="hover" data-placement="right" data-html="true" 
-                        data-content="Upload a file of gene IDs or input them manually. <br>
+              <a href="#" data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="right" data-bs-html="true" 
+                        data-bs-content="Upload a file of gene IDs or input them manually. <br>
                         Acceptable Gene IDs are: Entrez, ENSG, Symbol, ENSP, ENST. <br>
                         The format is delimited by newline (i.e. each gene is on a separate line)">
                             <i class="fas fa-question-circle"></i></a>
-                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div>
@@ -149,7 +149,7 @@
                     <button type="button" id="clearButton" class="btn btn-secondary">Clear Input</button>
                 </div>
                 <div>
-                    <button type="button" class="btn btn-secondary p-2" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-secondary p-2" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary p-2">Validate</button>
                 </div>
             </div>

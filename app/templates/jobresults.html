@@ -71,8 +71,8 @@
                     class="btn btn-success">
                     Download all results data as zip file
                 </a>
-                <a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                data-content="Download all the tables, edge list, and this result 
+                <a href="#" data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="right"
+                data-bs-content="Download all the tables, edge list, and this result 
                 file contained in a single zip file named for the job name">
                 <i class="fas fa-question-circle"></i></a>
             </div>
@@ -101,8 +101,8 @@
                     <label>The median value of the log2(auPRC/prior)
                         for 5-fold cross validation is &nbsp</label>{{( job_output['avgps'] )}}.
                     </label>&nbsp
-                    <a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                          data-content="If the number of genes in the positive class is greater than 20,
+                    <a href="#" data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="right"
+                          data-bs-content="If the number of genes in the positive class is greater than 20,
                           this metric reports the fold change of the area under the precision-recall curve
                           (auPRC) over the prior auPRC expected by random chance. For example, a value of 1
                           indicates that the model performs twice as good as a random ranking of genes.">
@@ -117,19 +117,19 @@
         <!-- Nav tabs -->
         <ul class="nav nav-tabs" role="tablist">
             <li class="nav-item">
-                <a href="#predictions" class="nav-link text-dark active" data-toggle="tab">Gene Predictions</a>
+                <a href="#predictions" class="nav-link text-dark active" data-bs-toggle="tab">Gene Predictions</a>
             </li>
             <li class="nav-item">
-                <a href="#sim_go" class="nav-link text-dark" data-toggle="tab">Similarities to Biological Processes</a>
+                <a href="#sim_go" class="nav-link text-dark" data-bs-toggle="tab">Similarities to Biological Processes</a>
             </li>
             <li class="nav-item">
-                <a href="#sim_dis" class="nav-link text-dark" data-toggle="tab">Similarities to Disease</a>
+                <a href="#sim_dis" class="nav-link text-dark" data-bs-toggle="tab">Similarities to Disease</a>
             </li>
             <li class="nav-item">
-                <a id="nettab" href="#netgraph" class="nav-link text-dark" data-toggle="tab">Network Graph</a>
+                <a id="nettab" href="#netgraph" class="nav-link text-dark" data-bs-toggle="tab">Network Graph</a>
             </li>
             <li class="nav-item">
-                <a href="#validation" class="nav-link text-dark" data-toggle="tab">Validation Data</a>
+                <a href="#validation" class="nav-link text-dark" data-bs-toggle="tab">Validation Data</a>
             </li>
         </ul>
 
@@ -373,11 +373,6 @@
     <script>
         $("body").addClass("loading");
     </script>
-
-    <!-- <script>
-    // confirm this is part of base template already and remove
-    //    $('[data-toggle="popover"]').popover();
-    </script> -->
 
     <script src="{{url_for('static', filename='d3-v4-contextmenu.js')}}"></script>
     <script src="{{url_for('static', filename='d3-tip.js')}}"></script>
