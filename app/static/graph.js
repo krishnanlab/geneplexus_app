@@ -167,19 +167,60 @@ $( document ).ready(function() {
     $('#static_symbol').text(d.Symbol);
     $('#static_site').attr('href', 'https://www.ncbi.nlm.nih.gov/gene/' + d.id, '_blank');
     $('#static_site').text('Click here');
-    /*
     $.ajax({
       method: 'GET',
       url: 'https://mygene.info/v3/gene/' + d.id,
       success: function(result, status, xhr) {
-        console.log(result);
+        if (typeof result.type_of_gene != 'undefined') {
+          $('#static_genetype').text(result.type_of_gene);
+        }
+        else {
+          $('#static_genetype').text('');
+        }
+        if (typeof result.uniprot != 'undefined' && 'Swiss-Prot' in result.uniprot) {
+          $('#static_swissprot').text(result.uniprot['Swiss-Prot']);
+        }
+        else {
+          $('#static_swissprot').text('');
+        }
+        if(typeof result.summary != 'undefined') {
+          description_parts = [result.summary.substring(0, 100), result.summary.substring(100)];
+          $('#desc_first').text(description_parts[0]);
+          $('#desc_last').text(description_parts[1]);
+          $('#desc_last').prop('hidden', true);
+          $('#read_more_elipsis').prop('hidden', false);
+          $('#read_more_link').prop('hidden', false);
+          $('#read_less_link').prop('hidden', true);
+        }
+        else {
+          $('#desc_first').text('None');
+          $('#desc_last').prop('hidden', true);
+          $('#read_more_elipsis').prop('hidden', true);
+          $('#read_more_link').prop('hidden', true);
+          $('#read_less_link').prop('hidden', true);
+        }
       },
       complete: function(xhr, status) {
 
       }
     });
-    */
   }
+
+  $('#read_more_link').on('click', function (e) {
+    e.preventDefault();
+    $('#desc_last').prop('hidden', false);
+    $('#read_more_link').prop('hidden', true);
+    $('#read_more_elipsis').prop('hidden', true);
+    $('#read_less_link').prop('hidden', false);
+  });
+
+  $('#read_less_link').on('click', function (e) {
+    e.preventDefault();
+    $('#desc_last').prop('hidden', true);
+    $('#read_more_link').prop('hidden', false);
+    $('#read_more_elipsis').prop('hidden', false);
+    $('#read_less_link').prop('hidden', true);
+  });
 
   function unclick() {
     console.log(d3.select(this));
