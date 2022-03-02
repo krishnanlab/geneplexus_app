@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "base-sidenav.html" %}
 
 {% block title %}Jobs{% endblock %}
 
@@ -10,8 +10,6 @@
 
 <div class="container">
     <div id="content-padding" class="pl-4 pt-4">
-    {% include 'messages.html' ignore missing %}
-
     <h1>Jobs</h1>
 
     <h4>Job Runtime</h4>
@@ -71,8 +69,8 @@
                 <label class="m-2 for="jobname">                    
                     Recall job results by name
                     &nbsp;
-                    <a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                    data-content="Only jobs from this browser session are available in this list. Enter the job name (name only) to find a previous job (exact match)
+                    <a href="#" data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="right"
+                    data-bs-content="Only jobs from this browser session are available in this list. Enter the job name (name only) to find a previous job (exact match)
                     or copy and paste the job url in your browser.">
                     <i class="fas fa-question-circle"></i></a>                      
                 </label>

@@ -163,7 +163,6 @@ body {
   }
   
   div.dom_wrapper {
-    position: sticky;  /* Fix to the top */
     width: 100%;
     padding: 5px;
     background: rgba(255, 255, 255, 1);  /* hide the scrolling table */

@@ -5,13 +5,13 @@
         <!-- end {{table_id}}-->
 {%- endmacro %}
 
-{% extends "results_base.html" %}
+{% extends "base-fullwidth.html" %}
 
 {% block title %}{% if jobexists %}Job: {{ jobname }}{% else %}Job {{ jobname }} does not exist{% endif %}{% endblock %}
 
 {% block head %}
     {# stylesheets manually put in results_base, confirm if we need thse or not? #}
-    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.6/css/responsive.dataTables.min.css">
+    <!-- <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.6/css/responsive.dataTables.min.css"> -->
     <link rel="stylesheet" href="//code.jquery.com/ui/1.13.0/themes/base/jquery-ui.css">
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='results_main.css') }}">
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='results.css') }}">
@@ -71,8 +71,8 @@
                     class="btn btn-success">
                     Download all results data as zip file
                 </a>
-                <a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                data-content="Download all the tables, edge list, and this result 
+                <a href="#" data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="right"
+                data-bs-content="Download all the tables, edge list, and this result 
                 file contained in a single zip file named for the job name">
                 <i class="fas fa-question-circle"></i></a>
             </div>
@@ -101,8 +101,8 @@
                     <label>The median value of the log2(auPRC/prior)
                         for 5-fold cross validation is &nbsp</label>{{( job_output['avgps'] )}}.
                     </label>&nbsp
-                    <a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                          data-content="If the number of genes in the positive class is greater than 20,
+                    <a href="#" data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="right"
+                          data-bs-content="If the number of genes in the positive class is greater than 20,
                           this metric reports the fold change of the area under the precision-recall curve
                           (auPRC) over the prior auPRC expected by random chance. For example, a value of 1
                           indicates that the model performs twice as good as a random ranking of genes.">
@@ -117,19 +117,19 @@
         <!-- Nav tabs -->
         <ul class="nav nav-tabs" role="tablist">
             <li class="nav-item">
-                <a href="#predictions" class="nav-link text-dark active" data-toggle="tab">Gene Predictions</a>
+                <a href="#predictions" class="nav-link text-dark active" data-bs-toggle="tab">Gene Predictions</a>
             </li>
             <li class="nav-item">
-                <a href="#sim_go" class="nav-link text-dark" data-toggle="tab">Similarities to Biological Processes</a>
+                <a href="#sim_go" class="nav-link text-dark" data-bs-toggle="tab">Similarities to Biological Processes</a>
             </li>
             <li class="nav-item">
-                <a href="#sim_dis" class="nav-link text-dark" data-toggle="tab">Similarities to Disease</a>
+                <a href="#sim_dis" class="nav-link text-dark" data-bs-toggle="tab">Similarities to Disease</a>
             </li>
             <li class="nav-item">
-                <a id="nettab" href="#netgraph" class="nav-link text-dark" data-toggle="tab">Network Graph</a>
+                <a id="nettab" href="#netgraph" class="nav-link text-dark" data-bs-toggle="tab">Network Graph</a>
             </li>
             <li class="nav-item">
-                <a href="#validation" class="nav-link text-dark" data-toggle="tab">Validation Data</a>
+                <a href="#validation" class="nav-link text-dark" data-bs-toggle="tab">Validation Data</a>
             </li>
         </ul>
 
@@ -375,23 +375,14 @@
         var dataset = {{ job_output['graph'] | safe }}
     </script>
 
-    <!-- differences from base -->
-    <!-- results had /v/dt commented out-->
-    <!-- <script src="https://cdn.datatables.net/v/dt/dt-1.10.22/datatables.min.js"></script> -->
-    <!-- base has the jquery js datatables below commented out -->
-    <!-- <script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script> -->
-
-    <!-- base has this, which seems redundant with the the other 1.10.22 version -->
-    <!-- <script src="https://cdn.datatables.net/v/dt/dt-1.10.22/datatables.min.js"></script> -->
-
-    <!-- do we need jquery UI ?? -->
-    <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"></script>
-
-
     <script>
         $("body").addClass("loading");
     </script>
 
+    <!-- jquery UI is used for graph data box -->
+    <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
     <script src="{{url_for('static', filename='d3-v4-contextmenu.js')}}"></script>
     <script src="{{url_for('static', filename='d3-tip.js')}}"></script>
     <script src="{{url_for('static', filename='graph.js')}}"></script>
