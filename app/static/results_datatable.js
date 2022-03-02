@@ -1,7 +1,8 @@
 $(document).ready( function () {
     $('#probstable').DataTable({
+        "lengthChange": true,
         dom: '<"dom_wrapper fh-fixedHeader"Bf>tip',
-        buttons: ['copy', 'excel', 'pdf' ],
+        buttons: ['pageLength','copy', 'excel', 'pdf'],
         fixedHeader: true,
         order: [[ 3, "desc" ]],
         columnDefs: [
@@ -58,22 +59,8 @@ $(document).ready( function () {
 
 
     $('#gotable').DataTable({
-        // #TODO why is this here?
-        // responsive: {
-        //     details: {
-        //         display: $.fn.dataTable.Responsive.display.modal( {
-        //             header: function ( row ) {
-        //                 var data = row.data();
-        //                 return 'Details for '+data[0]+' '+data[1];
-        //             }
-        //         } ),
-        //         renderer: $.fn.dataTable.Responsive.renderer.tableAll({
-        //             tableClass: 'table'
-        //         })
-        //     }
-        // },
         dom: '<"dom_wrapper fh-fixedHeader"Bf>tip',
-        buttons: ['copy', 'excel', 'pdf' ],
+        buttons: ['pageLength','copy', 'excel', 'pdf'],
         fixedHeader: true,
         order: [[ 2, "desc" ]],
         columnDefs: [
@@ -115,7 +102,7 @@ $(document).ready( function () {
 
     $('#distable').DataTable({
         dom: '<"dom_wrapper fh-fixedHeader"Bf>tip',
-        buttons: ['copy', 'excel', 'pdf' ],
+        buttons: ['pageLength','copy', 'excel', 'pdf' ],
         fixedHeader: true,
         order: [[ 2, "desc" ]],
         columnDefs: [
@@ -167,7 +154,7 @@ $(document).ready( function () {
             }
         ],
         pagingType: "full_numbers",
-        buttons: ['copy', 'excel', 'pdf' ],
+        buttons: ['pageLength','copy', 'excel', 'pdf' ],
         initComplete: function(){
             $("#validateresults").show();
         }
