@@ -74,13 +74,14 @@ def intial_ID_convert(input_genes):
 def make_validation_df(df_convert_out):
     table_summary = []
     #num_converted_to_Entrez = df_convert_out[~(df_convert_out['ID_converted_to_Entrez']=='Could Not be mapped to Entrez')].shape[0]
+    edge_counts = {'BioGRID': 484356,'STRING': 5521113,'STRING-EXP': 2121428,'GIANT-TN': 38904929}
     input_count = df_convert_out.shape[0]
     converted_genes = df_convert_out['ID_converted_to_Entrez'].to_numpy()
     for anet in ['BioGRID','STRING','STRING-EXP','GIANT-TN']:
         net_genes = load_txtfile('net_genes',net_type_=anet)
         df_tmp = df_convert_out[df_convert_out['ID_converted_to_Entrez'].isin(net_genes)]
         pos_genes_in_net = np.intersect1d(converted_genes,net_genes)
-        table_row = {'Network': anet, 'NetworkGenes': len(net_genes), 'PositiveGenes': len(pos_genes_in_net)}
+        table_row = {'Network': anet, 'NetworkGenes': len(net_genes), 'NetworkEdges': edge_counts[anet], 'PositiveGenes': len(pos_genes_in_net)}
         table_summary.append(dict(table_row))
         tmp_ins = np.full(len(converted_genes),'N',dtype=str)
         tmp_ins[df_tmp.index.to_numpy()] = 'Y'
