@@ -178,7 +178,7 @@ def make_prob_df(net_genes,probs,pos_genes_in_net,negative_genes):
         except KeyError:
             name_tmp = 'N/A'
         prob_results.append([net_genes[idx],syms_tmp,name_tmp,probs[idx],novel_label,class_label])
-    df_probs = pd.DataFrame(prob_results,columns=['Entrez','Symbol','Name','Probability','Known/Novel','Class-Label'])
+    df_probs = pd.DataFrame(prob_results,columns=['Entrez','Symbol','Name','Probability','Known/Novel','Training-Label'])
     df_probs = df_probs.astype({'Entrez':str,'Probability':float})
     df_probs = df_probs.sort_values(by=['Probability'],ascending=False)
     df_probs['Rank'] = rankdata(1/(df_probs['Probability'].to_numpy()+1e-9),method='min')
