@@ -6,35 +6,38 @@
 <div>
     <div id="content-padding" class="pl-4 pt-4">
     <h1>Current Geneset</h1>
-    {% if valid_form %}
-    <div class="border border-dark">
-        <div class="box_padding">
-            <p>The table below shows how many of the input genes were converted to Entrez gene IDs and how many
-                of them are present in the various molecular networks.</p>
-            <table style="width: 85%">
-                    <colgroup>
-                        <col span="1" style="width: 15%;">
-                        <col span="1" style="width: 26%;">
-                        <col span="1" style="width: 26%;">
-                        <col span="1" style="width: 33%;">
-                    </colgroup>
-                <thead>
-                    <tr>
-                        <th>Network</th>
-                        <th style="text-align: right">Total Number of Edges in the Network</th>
-                        <th style="text-align: right">Total Number of Genes in the Network</th>
-                        <th style="text-align: right">Number of User-Supplied Genes in the Network</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for dict_item in table_summary %}
-                    <tr>
-                        {% for key, value in dict_item.items() %}
-                            {%- if key == 'Network' -%}
-                                <td style="text-align: left; vertical-align: middle;">{{ value }}</td>
-                            {%- else -%}
-                                <td style="text-align: right; vertical-align: middle;">{{ '{0:,}'.format(value | int) }}</td>
-                            {%- endif -%}
+
+    {% if valid_form is defined %}
+            <div class="border border-dark">
+                <div class="box_padding">
+                    <p>The table below shows how many of the input genes were converted to Entrez gene IDs and how many
+                        of them are present in the various molecular networks.</p>
+                    <table>
+                        <colgroup>
+                            <col span="1" style="width: 15%;">
+                            <col span="1" style="width: 30%;">
+                            <col span="1" style="width: 30%;">
+                            <col span="1" style="width: 25%;">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th>Network</th>
+                                <th style="text-align: right">Total Number of Edges in the Network</th>
+                                <th style="text-align: right">Total Number of Genes in the Network</th>
+                                <th style="text-align: right">Number of User-Supplied Genes in the Network</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for dict_item in table_summary %}
+                            <tr>
+                                {% for key, value in dict_item.items() %}
+                                    {%- if key == 'Network' -%}
+                                        <td style="text-align: left; vertical-align: middle;">{{ value }}</td>
+                                    {%- else -%}
+                                        <td style="text-align: right; vertical-align: middle;">{{ '{0:,}'.format(value | int) }}</td>
+                                    {%- endif -%}
+                                {% endfor %}
+                            </tr>
                         {% endfor %}
                         </tbody>
                     </table>
