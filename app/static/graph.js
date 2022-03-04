@@ -34,11 +34,15 @@ $( document ).ready(function() {
     $(this).find('.ui-slider-handle').html(tooltip); //attach tooltip to the slider handle
   }
 
+  var curNodes = allNodes.slice(0, 10);
+  var curLinks = getLinksByNodes(curNodes, 0);
+  initial_values['node_prob_slider'] = curNodes[curNodes.length-1].Probability.toPrecision(2);
+
   $('#node_prob_slider').slider({
     min: 0,
     max: 1.00,
     step: 0.01,
-    value: 0.0,
+    value: initial_values['node_prob_slider'],
     slide: function (event, ui) {
       clamped = clamp(ui.value, 0.0, 1.0)
       $(this).slider('option', 'value', clamped);
@@ -53,7 +57,7 @@ $( document ).ready(function() {
     min: 0,
     max: dataset.nodes.length,
     step: 1,
-    value: 10,
+    value: initial_values['node_count_slider'],
     slide: function (event, ui) {
       clamped = clamp(ui.value, 0, dataset.nodes.length);
       $(this).slider('option', 'value', clamped);
@@ -67,7 +71,7 @@ $( document ).ready(function() {
     min: 0,
     max: 1.00,
     step: 0.01,
-    value: 0.0,
+    value: initial_values['edge_weight_slider'],
     slide: function (event, ui) {
       clamped = clamp(ui.value, 0.0, 1.0)
       $(this).slider('option', 'value', clamped);
@@ -110,9 +114,6 @@ $( document ).ready(function() {
   simulation.force('link')
       .id(function(d) {return d.id})
       .links(dataset.links);
-  
-  var curNodes = allNodes.slice(0, 10);
-  var curLinks = getLinksByNodes(curNodes, 0);
 
   linkElements = g.append('g')
           .attr("class", "links")
