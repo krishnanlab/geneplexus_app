@@ -226,9 +226,9 @@
                             </div>
                             <hr>
                             <div class="mb-3 row">
-                                <label for="static_id" class="col-4">ID</label>
+                                <label for="static_id" class="col-4">Entrez</label>
                                 <div class="col">
-                                  <span id="static_id"></span>
+                                  <a id="static_id"></a>
                                 </div>
                               </div>
                               <div class="mb-3 row">
@@ -279,33 +279,40 @@
                                       <span id="static_swissprot"></span>
                                   </div>
                               </div>
-                              <div class="mb-3 row">
-                                <label for="static_site" class="col-4">NCBI Info</label>
-                                <div class="col">
-                                    <span><a id="static_site" href="" target="_blank"></a></span>
+                                <div id="node_prob_container" class="row mb-3">
+                                    <div class="mb-4 row form-inline">
+                                        <label for="node_prob_label" class="col-form-label">Minimum gene probability</label>
+                                        <div id="node_prob_label"></div>
+                                    </div>
+                                    <div class="row content">
+                                        <label class="col-1 sliderLabel">0</label><div id="node_prob_slider" class="col-9 ms-3"></div><label class="col-1 sliderLabel">1</label>
+                                        <div id="node_prob_tooltip"></div>
+                                    </div>
                                 </div>
-                              </div>
-                              <div class="mb-3 row">
-                                  <label for="static_description" class="col-4">Description</label>
-                                  <div class="col">
-                                      <span id="desc_first"></span><span id="read_more_elipsis" hidden>...</span><a href="#" id="read_more_link" hidden>Read More</a><span id="desc_last" hidden></span><a href="#" id="read_less_link" hidden>Read Less</a>
-                                  </div>
-                              </div>
+                                <div id="node_count_container" class="row mb-3">
+                                    <div class="mb-4 row form-inline">
+                                        <label for="node_count_label" class="col-form-label">Node count</label>
+                                        <div id="node_count_label"></div>
+                                    </div>
+                                    <div class="row content">
+                                        <label class="col-1 sliderLabel">0</label><div id="node_count_slider" class="col-9 ms-3"></div><label class="col-1 sliderLabel">50</label>
+                                        <div id="node_count_tooltip"></div>
+                                    </div>
+                                </div>
+                                <div id="edge_weight_container" class="row mb-3">
+                                    <div class="mb-4 row form-inline">
+                                        <label for="edge_weight_label" class="col-form-label">Minimum edge weight</label>
+                                        <div id="edge_weight_label"></div>
+                                    </div>
+                                    <div class="row content">
+                                        <label class="col-1 sliderLabel">0</label><div id="edge_weight_slider" class="col-9 ms-3"></div><label class="col-1 sliderLabel">1</label>
+                                        <div id="edge_weight_tooltip"></div>
+                                    </div>
+                                </div>
                         </div>
                         <div id="graph_area" class="col-9">
-                            <div id="sliders" class="row">
-                                <div id="slider_containers" class="col mb-3">
-                                    <div class="mb-3 row form-inline">
-                                        <label for="node_sliders" class="col-form-label">Node probabilities</label>
-                                        <div id="node_sliders">
-                                            <input type="text" readonly class="col-1 slider-labels" id="node_lower" value="0.00"> - <input type="text" readonly class="col-1 slider-labels" id="node_upper" value="1.00">
-                                        </div>
-                                    </div>
-                                    <div id="node_slider" class="row slider"></div>
-                                </div>
-                            </div>
                             <div id="graph" class="row">
-                                <svg width="1100" height="550"></svg>
+                                <svg width="1100" height="900"></svg>
                             </div>
                             
                         </div>

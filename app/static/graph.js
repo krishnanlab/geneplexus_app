@@ -1,3 +1,9 @@
+function clamp(n, min, max) {
+  return Math.min(Math.max(n, min), max);
+}
+
+allNodes = dataset.nodes.sort((a, b) => (a.Probability - b.Probability));
+maxNodesValue = dataset.nodes.length;
 $( document ).ready(function() {
   graph_aspect_ratio = 2;
   r = 0;
@@ -11,35 +17,84 @@ $( document ).ready(function() {
       .attr('height', height);
   });
   var api_endpoint = 'http://mygene.info/v3/query/q=entrezgene:'
-  var allNodes = dataset.nodes.sort((a, b) => (a.Probability - b.Probability))
   var width = $('.result_container').width() * (8/12);
   var height = width / graph_aspect_ratio;
   selectedNode = null;
   selectedEdges = [];
 
   const svg = d3.select('svg');
+  var border=1;
+  var bordercolor='black';
+  const borderRect = svg.append("rect")
+  .attr("x", 0)
+  .attr("y", 0)
+  .attr("height", 900)
+  .attr("width", 1100)
+  .style("stroke", bordercolor)
+  .style("fill", "none")
+  .style("stroke-width", border);
   const g = svg.append('g');
 
-  $('#node_slider').slider({
-    range: true,
-    min: 0.00,
+  initial_values = {'node_prob_slider': 0.0, 'node_count_slider': 10, 'edge_weight_slider': 0.0}
+  var sliderTooltip = function(event, ui) {
+    var curValue = ui.value || initial_values[$(event.target).attr('id')]; // current value (when sliding) or initial value (at start)
+
+    var tooltip = '<div class="tooltip"><div class="tooltip-inner">' + curValue + '</div><div class="tooltip-arrow"></div></div>';
+
+    $(this).find('.ui-slider-handle').html(tooltip); //attach tooltip to the slider handle
+  }
+
+  $('#node_prob_slider').slider({
+    min: 0,
     max: 1.00,
-    values: [0.00, 1.00],
     step: 0.01,
-    slide: function( event, ui ) {
-      $('#node_lower').val(ui.values[0].toFixed(2));
-      $('#node_upper').val(ui.values[1].toFixed(2));
-      modifyNodeCount(ui.values[0], ui.values[1]);
-    }
+    value: 0.0,
+    slide: function (event, ui) {
+      clamped = clamp(ui.value, 0.0, 1.0)
+      $(this).slider('option', 'value', clamped);
+      modifyByNodeProbability(clamped);
+      updateSliderTooltips();
+    },
+    create: sliderTooltip
+
   });
 
+  $('#node_count_slider').slider({
+    min: 0,
+    max: dataset.nodes.length,
+    step: 1,
+    value: 10,
+    slide: function (event, ui) {
+      clamped = clamp(ui.value, 0, dataset.nodes.length);
+      $(this).slider('option', 'value', clamped);
+      modifyByNodeCount(clamped);
+      updateSliderTooltips();
+    },
+    create: sliderTooltip
+  });
+
+  $('#edge_weight_slider').slider({
+    min: 0,
+    max: 1.00,
+    step: 0.01,
+    value: 0.0,
+    slide: function (event, ui) {
+      clamped = clamp(ui.value, 0.0, 1.0)
+      $(this).slider('option', 'value', clamped);
+      nodeCount = $('#node_count_slider').slider('option', 'value');
+      modifyByEdgeWeight(nodeCount, clamped);
+      updateSliderTooltips();
+    },
+    create: sliderTooltip
+
+  });
   const forceProperties = {
     charge: {
       strength: -75,
     },
     collide: {
       strength: 0.3,
-      radius: 5,
+      radius: 20,
     },
 
   }
@@ -47,35 +102,50 @@ $( document ).ready(function() {
     .force('link', d3.forceLink())
     .force('charge', d3.forceManyBody()) 
     .force('collide', d3.forceCollide())
-    .force('center', d3.forceCenter(width / 2, height / 2))
+    //.force('center', d3.forceCenter(width / 2, height / 2))
     .force("forceX", d3.forceX(width/2).strength(.05) )
     .force("forceY", d3.forceY(height/2).strength(.05) );
 
-  var nodescale = d3.scaleLinear().domain([0, .3]).range([1, 5])
-
   var data = ['P','U','N']
   var myColor = d3.scaleOrdinal().domain(data)
-      .range(["#00ccbc","#6598bf","#CC333F"])
+      .range(["#648FFF","#97B4FF","#FFB000"])
+  
+  simulation.nodes(dataset.nodes).on('tick', onTick);
+
+  simulation.force('charge')
+    .strength(forceProperties.charge.strength);
+  simulation.force('collide')
+    .strength(forceProperties.collide.strength)
+    .radius(forceProperties.collide.radius);
+  simulation.force('link')
+      .id(function(d) {return d.id})
+      .links(dataset.links);
+  
+  var curNodes = allNodes.slice(0, 10);
+  var curLinks = getLinksByNodes(curNodes, 0);
 
   linkElements = g.append('g')
           .attr("class", "links")
           .selectAll("line")
-          .data(dataset.links)
+          .data(curLinks)
+          //.data(dataset.links)
           .enter().append("line")
           .style("stroke", "#ADA9A8")
-          .style("stroke-width", function(d) { return (d.weight); });
+          .style('stroke-width', '2')
+          //.style("stroke-width", function(d) { return (d.weight); });
 
-    nodeElements = g.append('g')
+  nodeElements = g.append('g')
     .attr('class', 'nodes')
     .selectAll('circle')
-    .data(allNodes)
+    .data(curNodes)
     .enter()
     .append('g')
     .attr('class', 'nodeHolder');
 
-    nodeElements
+  nodeElements
     .append('circle')
-    .attr('r', function(d){return nodescale(d.Probability)})
+    .attr('r', '10')
+    //.attr('r', function(d){return nodescale(d.Probability)})
     .attr('fill', function(d){return myColor(d.Class) })
     .classed('node', true)
     .classed("fixed", d => d.fx !== undefined);
@@ -90,7 +160,7 @@ $( document ).ready(function() {
   nodeElements.append("text")
   .attr("text-anchor", "middle")
   .text(function(d) { return d.Symbol; })
-  .attr('alignment-baseline', 'middle')
+  .style('transform', 'translate(0px, -15px)')
   .style("font-size", "50%");
   
   nodeElements.call(d3.drag()
@@ -100,16 +170,6 @@ $( document ).ready(function() {
   .on('click', onClick)
   .on('dblclick', onDblClick);
 
-  simulation.nodes(allNodes).on('tick', onTick);
-
-  simulation.force('charge')
-    .strength(forceProperties.charge.strength);
-  simulation.force('collide')
-    .strength(forceProperties.collide.strength)
-    .radius(forceProperties.collide.radius);
-  simulation.force('link')
-      .id(function(d) {return d.id})
-      .links(dataset.links);
   function onTick() {
     nodeElements
       .attr("transform", function(d) {
@@ -124,7 +184,8 @@ $( document ).ready(function() {
   }
 
   function onZoomAction(){
-    g.attr("transform", d3.event.transform)
+    toScale = d3.event.transform
+    g.attr("transform", toScale)
   }
 
   function onDragStarted(d) {
@@ -159,13 +220,13 @@ $( document ).ready(function() {
 
   function setSidebarInformation(d) {
     $('#static_id').text(d.id);
-    $('#static_class').text(d.Class);
+    $('#static_id').attr('href', 'https://www.ncbi.nlm.nih.gov/gene/' + d.id, '_blank');
+    $('#static_class').text(d['Training-Label']);
     $('#static_known').text(d['Known/Novel'])
     $('#static_name').text(d.Name);
-    $('#static_prob').text(d.Probability);
+    $('#static_prob').text(d.Probability.toPrecision(2));
     $('#static_rank').text(d.Rank);
     $('#static_symbol').text(d.Symbol);
-    $('#static_site').attr('href', 'https://www.ncbi.nlm.nih.gov/gene/' + d.id, '_blank');
     $('#static_site').text('Click here');
     $.ajax({
       method: 'GET',
@@ -183,22 +244,6 @@ $( document ).ready(function() {
         else {
           $('#static_swissprot').text('');
         }
-        if(typeof result.summary != 'undefined') {
-          description_parts = [result.summary.substring(0, 100), result.summary.substring(100)];
-          $('#desc_first').text(description_parts[0]);
-          $('#desc_last').text(description_parts[1]);
-          $('#desc_last').prop('hidden', true);
-          $('#read_more_elipsis').prop('hidden', false);
-          $('#read_more_link').prop('hidden', false);
-          $('#read_less_link').prop('hidden', true);
-        }
-        else {
-          $('#desc_first').text('None');
-          $('#desc_last').prop('hidden', true);
-          $('#read_more_elipsis').prop('hidden', true);
-          $('#read_more_link').prop('hidden', true);
-          $('#read_less_link').prop('hidden', true);
-        }
       },
       complete: function(xhr, status) {
 
@@ -206,119 +251,107 @@ $( document ).ready(function() {
     });
   }
 
-  $('#read_more_link').on('click', function (e) {
-    e.preventDefault();
-    $('#desc_last').prop('hidden', false);
-    $('#read_more_link').prop('hidden', true);
-    $('#read_more_elipsis').prop('hidden', true);
-    $('#read_less_link').prop('hidden', false);
-  });
-
-  $('#read_less_link').on('click', function (e) {
-    e.preventDefault();
-    $('#desc_last').prop('hidden', true);
-    $('#read_more_link').prop('hidden', false);
-    $('#read_more_elipsis').prop('hidden', false);
-    $('#read_less_link').prop('hidden', true);
-  });
-
-  function unclick() {
-    console.log(d3.select(this));
-    if (selectedNode == null) { return; }
-    console.log('In unclick');
-    selectedNode.style('stroke', 'transparent');
-    selectedNode = null;
-    $('#static_id').text('');
-    $('#static_class').text('');
-    $('#static_known').text('')
-    $('#static_name').text('');
-    $('#static_prob').text('');
-    $('#static_rank').text('');
-    $('#static_symbol').text('');
-    $('#static_site').attr('href', '');
-    $('#static_site').text('');
+  function updateSliderTooltips() {
+    edgeWeight = $('#edge_weight_slider').slider('value');
+    nodeCount = $('#node_count_slider').slider('value');
+    nodeProb = $('#node_prob_slider').slider('value');
+    $('#edge_weight_slider').find('div.tooltip-inner').text(edgeWeight);
+    $('#node_count_slider').find('div.tooltip-inner').text(nodeCount);
+    $('#node_prob_slider').find('div.tooltip-inner').text(nodeProb);
   }
 
-  function modifyNodeCount(startThresh, endThresh) {
-    d3.selectAll('g.nodes').remove();
-    d3.selectAll('g.links').remove();
-    //allNodes = dataset.nodes.sort((a, b) => (a.Probability - b.Probability))
-    newNodes = []
-    oldNodes = []
-    for (let i = 0; i < dataset.nodes.length; i++) {
-      n = dataset.nodes[i]
-      if (n.Probability >= startThresh && n.Probability <= endThresh) {
+  function modifyByNodeCount(nodeCount) {
+    var newNodes = [];
+    console.log(nodeCount);
+    var minProb = 0.0;
+    if (nodeCount > 0) {
+      newNodes = allNodes.slice(0, nodeCount);
+      minProb = newNodes[newNodes.length - 1].Probability;
+    }
+    threshold = $('#edge_weight_slider').slider('option', 'value');
+    newLinks = getLinksByNodes(newNodes, threshold);
+    if (minProb < $('#node_prob_slider').slider('option', 'value')) {
+      $('#node_prob_slider').slider('option', 'value', minProb);
+    }
+    regenerateGraph(newNodes, newLinks);
+  }
+
+  function modifyByNodeProbability(nodeProbability) {
+    newNodes = [];
+    for (let i = 0; i < allNodes.length; i++) {
+      n = allNodes[i]
+      if (n.Probability >= nodeProbability) {
         newNodes.push(n)
       }
-      else {
-        oldNodes.push(n)
-      }
     }
-    newLinks = dataset.links.filter(
-      function(l) {
-          for(let i = 0; i < oldNodes.length; i++){
-              if (l.source.id == oldNodes[i].id || l.target.id == oldNodes[i].id) {
-                  return false;
-              }
-          }
-          return true;
-      }
-  )
-  linkElements = g.append('g')
-  .attr("class", "links")
-  .selectAll("line")
-  .data(newLinks)
-  .enter().append("line")
-  .style("stroke", "#ADA9A8")
-  .style("stroke-width", function(d) { return (d.weight); });
+    threshold = $('#edge_weight_slider').slider('option', 'value');
+    newLinks = getLinksByNodes(newNodes, threshold);
+    $('#node_count_slider').slider('option', 'value', newNodes.length);
+    regenerateGraph(newNodes, newLinks);
+  }
 
-//const nodeElements = svg.append('g')
-/*nodeElements = svg.append('g')
-.attr('class', 'nodes')
-.selectAll('circle')
-.data(allNodes)
-.enter()
-.append('circle')
-.attr('r', function(d){return nodescale(d.Probability)})
-.attr('fill', function(d){return myColor(d.Class) })
-.classed('node', true)
-.classed("fixed", d => d.fx !== undefined);*/
+  function modifyByEdgeWeight(nodeCount, edgeWeight) {
+    newNodes = allNodes.slice(0, nodeCount);
+    newLinks = getLinksByNodes(newNodes, edgeWeight);
+    regenerateGraph(newNodes, newLinks);
+  }
 
-nodeElements = g.append('g')
-.attr('class', 'nodes')
-.selectAll('circle')
-.data(newNodes)
-.enter()
-.append('g')
-.attr('class', 'nodeHolder');
+  function regenerateGraph(nodes, links) {
+    d3.selectAll('g.nodes').remove();
+    d3.selectAll('g.links').remove();
+      linkElements = g.append('g')
+      .attr("class", "links")
+      .selectAll("line")
+      .data(links)
+      .enter().append("line")
+      .style("stroke", "#ADA9A8");
 
-nodeElements
-.append('circle')
-.attr('r', function(d){return nodescale(d.Probability)})
-.attr('fill', function(d){return myColor(d.Class) })
-.classed('node', true)
-.classed("fixed", d => d.fx !== undefined);
+    nodeElements = g.append('g')
+    .attr('class', 'nodes')
+    .selectAll('circle')
+    .data(nodes)
+    .enter()
+    .append('g')
+    .attr('class', 'nodeHolder');
 
-//svg.call(d3.zoom().on('zoom', onZoomAction)).on("dblclick.zoom", null);
-zoom_handler = d3.zoom().on('zoom', onZoomAction);
-zoom_handler(svg);
-//zoom_handler(svg).on("dblclick.zoom", null);
-svg.call(zoom_handler.transform, d3.zoomIdentity.scale(0.8));
-svg.on("dblclick.zoom", null);
+    nodeElements
+    .append('circle')
+    .attr('r', '10')
+    .attr('fill', function(d){return myColor(d.Class) })
+    .classed('node', true)
+    .classed("fixed", d => d.fx !== undefined);
 
-nodeElements.append("text")
-.attr("text-anchor", "middle")
-.text(function(d) { return d.Symbol; })
-.attr('alignment-baseline', 'middle')
-.style("font-size", "50%");
+    zoom_handler = d3.zoom().on('zoom', onZoomAction);
+    zoom_handler(svg);
+    svg.call(zoom_handler.transform, d3.zoomIdentity.scale(0.8));
+    svg.on("dblclick.zoom", null);
 
-nodeElements.call(d3.drag()
-.on("start", onDragStarted)
-.on("drag", onDrag)
-.on("end", onDragEnded))
-.on('click', onClick)
-.on('dblclick', onDblClick);
+    nodeElements.append("text")
+    .attr("text-anchor", "middle")
+    .text(function(d) { return d.Symbol; })
+    .style('transform', 'translate(0px, -15px)')
+    .style("font-size", "50%");
+
+    nodeElements.call(d3.drag()
+    .on("start", onDragStarted)
+    .on("drag", onDrag)
+    .on("end", onDragEnded))
+    .on('click', onClick)
+    .on('dblclick', onDblClick);
     simulation.alpha(1).restart();
+  }
+
+  function getLinksByNodes(nodeList, threshold = 0) {
+    var nodeIds = [];
+    for (let i = 0; i < nodeList.length; i++) {
+      nodeIds.push(nodeList[i].id);
+    }
+    console.log(nodeIds);
+    return dataset.links.filter(
+      function(l) {
+        return nodeIds.indexOf(l.source.id) > -1 && nodeIds.indexOf(l.target.id) > -1 && l.weight > threshold;
+      }
+    )
   }
 
   d3.select("#download_as_png")
