@@ -23,16 +23,6 @@ $( document ).ready(function() {
   selectedEdges = [];
 
   const svg = d3.select('svg');
-  var border=1;
-  var bordercolor='black';
-  const borderRect = svg.append("rect")
-  .attr("x", 0)
-  .attr("y", 0)
-  .attr("height", 900)
-  .attr("width", 1100)
-  .style("stroke", bordercolor)
-  .style("fill", "none")
-  .style("stroke-width", border);
   const g = svg.append('g');
 
   initial_values = {'node_prob_slider': 0.0, 'node_count_slider': 10, 'edge_weight_slider': 0.0}
@@ -297,6 +287,7 @@ $( document ).ready(function() {
   }
 
   function regenerateGraph(nodes, links) {
+    currentTransform = g.attr('transform');
     d3.selectAll('g.nodes').remove();
     d3.selectAll('g.links').remove();
       linkElements = g.append('g')
@@ -323,7 +314,8 @@ $( document ).ready(function() {
 
     zoom_handler = d3.zoom().on('zoom', onZoomAction);
     zoom_handler(svg);
-    svg.call(zoom_handler.transform, d3.zoomIdentity.scale(0.8));
+    g.attr('transform', currentTransform);
+    //svg.call(zoom_handler.transform, d3.zoomIdentity.scale(0.8));
     svg.on("dblclick.zoom", null);
 
     nodeElements.append("text")
