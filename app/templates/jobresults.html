@@ -209,77 +209,9 @@
                     </div>
                 
                     <div id="graph_container" class="row">
-                        <div id="info_area" class="mr-3 ml-3 mb-3 col-3 border">
+                        <div id="info_area" class="mr-1 ml-1 col-3">  
                             <div class="row ml-2">
-                                <!-- <div class="container"> -->
-                                    <div class='my-legend'>
-                                        <div class='legend-title'>Gene node colors and their meanings</div>
-                                        <div class='legend-scale'>
-                                          <ul class='legend-labels'>
-                                            <li><span style='background:#648FFF;'></span>Positive</li>
-                                            <li><span style='background:#97B4FF;'></span>Unlabeled</li>
-                                            <li><span style='background:#FFB000;'></span>Negative</li>
-                                          </ul>
-                                        </div>
-                                    </div>
-                                <!-- </div> -->
-                            </div>
-                            <hr>
-                            <div class="mb-3 row">
-                                <label for="static_id" class="col-4">Entrez</label>
-                                <div class="col">
-                                  <a id="static_id"></a>
-                                </div>
-                              </div>
-                              <div class="mb-3 row">
-                                <label for="static_class" class="col-4">Class</label>
-                                <div class="col">
-                                  <span id="static_class"></span>
-                                </div>
-                              </div>
-                              <div class="mb-3 row">
-                                <label for="static_known" class="col-4">Known/Novel</label>
-                                <div class="col">
-                                  <span id="static_known"></span>
-                                </div>
-                              </div>
-                              <div class="mb-3 row">
-                                <label for="static_name" class="col-4">Name</label>
-                                <div class="col">
-                                  <span id="static_name"></span>
-                                </div>
-                              </div>
-                              <div class="mb-3 row">
-                                <label for="static_prob" class="col-4">Probability</label>
-                                <div class="col">
-                                  <span id="static_prob"></span>
-                                </div>
-                              </div>
-                              <div class="mb-3 row">
-                                <label for="static_rank" class="col-4">Rank</label>
-                                <div class="col">
-                                    <span id="static_rank"></span>
-                                </div>
-                              </div>
-                              <div class="mb-3 row">
-                                <label for="static_symbol" class="col-4">Symbol</label>
-                                <div class="col">
-                                    <span id="static_symbol"></span>
-                                </div>
-                              </div>
-                              <div class="mb-3 row">
-                                  <label for="static_genetype" class="col-4">Gene Type</label>
-                                  <div class="col">
-                                      <span id="static_genetype"></span>
-                                  </div>
-                              </div>
-                              <div class="mb-3 row">
-                                  <label for="static_swissprot" class="col-4">Swiss-Prot</label>
-                                  <div class="col">
-                                      <span id="static_swissprot"></span>
-                                  </div>
-                              </div>
-                                <div id="node_prob_container" class="row mb-3">
+                                <div id="node_prob_container" class="row mb-1">
                                     <div class="mb-4 row form-inline">
                                         <label for="node_prob_label" class="col-form-label">Minimum gene probability</label>
                                         <div id="node_prob_label"></div>
@@ -289,7 +221,7 @@
                                         <div id="node_prob_tooltip"></div>
                                     </div>
                                 </div>
-                                <div id="node_count_container" class="row mb-3">
+                                <div id="node_count_container" class="row mb-1">
                                     <div class="mb-4 row form-inline">
                                         <label for="node_count_label" class="col-form-label">Node count</label>
                                         <div id="node_count_label"></div>
@@ -299,7 +231,7 @@
                                         <div id="node_count_tooltip"></div>
                                     </div>
                                 </div>
-                                <div id="edge_weight_container" class="row mb-3">
+                                <div id="edge_weight_container" class="row mb-1">
                                     <div class="mb-4 row form-inline">
                                         <label for="edge_weight_label" class="col-form-label">Minimum edge weight</label>
                                         <div id="edge_weight_label"></div>
@@ -309,12 +241,63 @@
                                         <div id="edge_weight_tooltip"></div>
                                     </div>
                                 </div>
+
+                                <div class='my-legend '>
+                                    <div class='legend-title'>Gene node colors and their meanings</div> 
+                                        <div class='legend-scale'>
+                                        <ul class='legend-labels'>
+                                        <li><span style='background:#648FFF;'></span>Positive</li>
+                                        <li><span style='background:#97B4FF;'></span>Unlabeled</li>
+                                        <li><span style='background:#FFB000;'></span>Negative</li>
+                                        </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            <div class="card">
+                                <ul class="list-group">
+                                    <li class="list-group-item">
+                                        <span class="graphinfo-label">Entrez ID </span>
+                                        <span id="static_id" " class="graphinfo" ></span>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span class="graphinfo-label">Class </span>
+                                        <span id="static_class"  class="graphinfo" ></span>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span class="graphinfo-label">Known/Novel </span>
+                                        <span id="static_known" class="graphinfo" ></span>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span class="graphinfo-label">Name </span>
+                                        <span id="static_name" class="graphinfo" ></span>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span class="graphinfo-label">Probability </span>
+                                        <span id="static_prob" class="graphinfo" ></span>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span class="graphinfo-label">Rank </span>
+                                        <span id="static_rank" class="graphinfo" ></span>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span class="graphinfo-label">Symbol </span>
+                                        <span id="static_symbol" class="graphinfo" ></span>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span class="graphinfo-label">Gene Type </span>
+                                        <span id="static_genetype" class="graphinfo" ></span>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span class="graphinfo-label">Swiss-Prot </span>
+                                        <span id="static_swissprot" class="graphinfo" ></span>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                         <div id="graph_area" class="col-9">
                             <div id="graph" class="row">
                                 <svg width="1100" height="1100"></svg>
-                            </div>
-                            
+                            </div>                            
                         </div>
                     </div>
                 </div>
