@@ -187,29 +187,20 @@
                 </div>
             </div>
             <div class="tab-pane fade" id="netgraph">
-                <div>
+                <div class="table_container">
                     <div class="row">
                         <div class="box_padding m-3">
-                            <p>The visualization below shows the network of the top 50 genes based on predicted probability.</p>
-                            <p>Directions:</p>
+                            <p>The visualization below shows the network of the top 50 genes based on predicted probability.<br/>
+                            <em>Directions:</em></p>
                             <ul>
                                 <li>Click a node to display additional information about the gene on the left panel.</li>
-                                <li>Drag a node to make it sticky (it will no longer move by itself). Double click a sticky node to allow it to move freely again.</li>
+                                <li>Drag a node to fix its position; double-click release. Use typical trackpad/mouse controls to pan/zoom the entire graph</li>
                                 <li>Use the slider to select more or less genes (nodes) to show based on gene probability.</li>
+                                <li>The network graph is not currently optimized for larger monitors and may appear off-center</li>
+
                             </ul>
                                 
-                            <p>The current view of the graph can be exported as a PNG or SVG file. The entire list of edges as a tab-separated file.
-<!--                                 
-                            <p>The graph below shows the network connectivity of the top 50 genes based on prediction probability. The edges used in the graph come 
-                                from the adjacency matrix representation of the network used to train the machine learning model. 
-                                Directions: <br>
-                                <ul>
-                                    <li>Clicking a node will display additional information about the gene on the left side</li>
-                                    <li>Dragging a node will make it sticky (it will no longer move by itself). Double clicking on a sticky node will allow it to move freely again</li>
-                                    <li>The slider below allows you to select which nodes will show up based on gene probability</li>
-                                </ul>
-                                The current view of the graph can be exported as a PNG, SVG file or the entire edgelist can be downloaded as a tab separated file: -->
-
+                            <p> The graph can be exported as a PNG or SVG file and the entire list of edges as a tab-separated file.
                                 <a id="download_as_png" class="btn btn-outline-success "  href="#">PNG</a>
                                 <a id="download_as_svg" class="btn btn-outline-success "  href="#">SVG</a>
                                 <a class="btn  btn-outline-success " " href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_edgelist_file']}}" >Edgelist</a>                               
@@ -218,39 +209,38 @@
                     </div>
                 
                     <div id="graph_slider_area" class = "row">
-                        <!-- <div id="graph_sliders" class = "col-12"> -->
-                            <div id="node_prob_container" class="col-4 mb-1">
-                                <div class="mb-4 row form-inline">
-                                    <label for="node_prob_label" class="col-form-label">Minimum gene probability</label>
-                                    <div id="node_prob_label"></div>
-                                </div>
-                                <div class="row content">
-                                    <label class="col-1 sliderLabel">0</label><div id="node_prob_slider" class="col-9 ms-3"></div><label class="col-1 sliderLabel">1</label>
-                                    <div id="node_prob_tooltip"></div>
-                                </div>
+                        <div id="node_prob_container" class="col-4 mb-1">
+                            <div class="mb-4 row form-inline">
+                                <label for="node_prob_label" class="col-form-label">Minimum gene probability</label>
+                                <div id="node_prob_label"></div>
                             </div>
-                            <div id="node_count_container" class="col-4 mb-1">
-                                <div class="mb-4 row form-inline">
-                                    <label for="node_count_label" class="col-form-label">Node count</label>
-                                    <div id="node_count_label"></div>
-                                </div>
-                                <div class="row content">
-                                    <label class="col-1 sliderLabel">0</label><div id="node_count_slider" class="col-9 ms-3"></div><label class="col-1 sliderLabel">50</label>
-                                    <div id="node_count_tooltip"></div>
-                                </div>
+                            <div class="row content">
+                                <label class="col-1 sliderLabel">0</label><div id="node_prob_slider" class="col-9 ms-3"></div><label class="col-1 sliderLabel">1</label>
+                                <div id="node_prob_tooltip"></div>
                             </div>
-                            <div id="edge_weight_container" class="col-4 mb-1">
-                                <div class="mb-4 row form-inline">
-                                    <label for="edge_weight_label" class="col-form-label">Minimum edge weight</label>
-                                    <div id="edge_weight_label"></div>
-                                </div>
-                                <div class="row content">
-                                    <label class="col-1 sliderLabel">0</label><div id="edge_weight_slider" class="col-9 ms-3"></div><label class="col-1 sliderLabel">1</label>
-                                    <div id="edge_weight_tooltip"></div>
-                                </div>
-                            </div>
-
                         </div>
+                        <div id="node_count_container" class="col-4 mb-1">
+                            <div class="mb-4 row form-inline">
+                                <label for="node_count_label" class="col-form-label">Node count</label>
+                                <div id="node_count_label"></div>
+                            </div>
+                            <div class="row content">
+                                <label class="col-1 sliderLabel">0</label><div id="node_count_slider" class="col-9 ms-3"></div><label class="col-1 sliderLabel">50</label>
+                                <div id="node_count_tooltip"></div>
+                            </div>
+                        </div>
+                        <div id="edge_weight_container" class="col-4 mb-1">
+                            <div class="mb-4 row form-inline">
+                                <label for="edge_weight_label" class="col-form-label">Minimum edge weight</label>
+                                <div id="edge_weight_label"></div>
+                            </div>
+                            <div class="row content">
+                                <label class="col-1 sliderLabel">0</label><div id="edge_weight_slider" class="col-9 ms-3"></div><label class="col-1 sliderLabel">1</label>
+                                <div id="edge_weight_tooltip"></div>
+                            </div>
+                        </div>
+
+                    </div>
                     <div id="graph_container" class="row">
                         
                         <div id="info_area" class="mr-1 ml-1 col-3">  
@@ -259,12 +249,12 @@
                                 <div class='my-legend '>
                                     <div class='legend-title'>Gene node colors and their meanings</div> 
                                         <div class='legend-scale'>
-                                        <ul class='legend-labels'>
-                                        <!-- var graph_node_colors = ["#648FFF","#97B4FF","#FFB000"]; -->
-                                        <li><span class="legendcolor" id="Plegend" style='background:#648FFF;'></span>Positive</li>
-                                        <li><span class="legendcolor" id="Ulegend" style='background:#FFBF32;'></span>Unlabeled</li>
-                                        <li><span class="legendcolor" id="Nlegend" style='background:#FFB000;'></span>Negative</li>
-                                        </ul>
+                                            <ul class='legend-labels'>
+                                            <!-- var graph_node_colors = ["#648FFF","#97B4FF","#FFB000"]; -->
+                                            <li><span class="legendcolor" id="Plegend" style='background:#648FFF;'></span>Positive</li>
+                                            <li><span class="legendcolor" id="Ulegend" style='background:#FFBF32;'></span>Unlabeled</li>
+                                            <li><span class="legendcolor" id="Nlegend" style='background:#FFB000;'></span>Negative</li>
+                                            </ul>
                                         </div>
                                     </div>
                                 </div>
@@ -316,6 +306,7 @@
                             </div>                            
                         </div>
                     </div>
+                    
                 </div>
             </div>
             <div class="tab-pane fade" id="validation">
