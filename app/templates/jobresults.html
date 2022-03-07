@@ -208,44 +208,50 @@
                         </div>
                     </div>
                 
+                    <div id="graph_slider_area" class = "row">
+                        <!-- <div id="graph_sliders" class = "col-12"> -->
+                            <div id="node_prob_container" class="col-4 mb-1">
+                                <div class="mb-4 row form-inline">
+                                    <label for="node_prob_label" class="col-form-label">Minimum gene probability</label>
+                                    <div id="node_prob_label"></div>
+                                </div>
+                                <div class="row content">
+                                    <label class="col-1 sliderLabel">0</label><div id="node_prob_slider" class="col-9 ms-3"></div><label class="col-1 sliderLabel">1</label>
+                                    <div id="node_prob_tooltip"></div>
+                                </div>
+                            </div>
+                            <div id="node_count_container" class="col-4 mb-1">
+                                <div class="mb-4 row form-inline">
+                                    <label for="node_count_label" class="col-form-label">Node count</label>
+                                    <div id="node_count_label"></div>
+                                </div>
+                                <div class="row content">
+                                    <label class="col-1 sliderLabel">0</label><div id="node_count_slider" class="col-9 ms-3"></div><label class="col-1 sliderLabel">50</label>
+                                    <div id="node_count_tooltip"></div>
+                                </div>
+                            </div>
+                            <div id="edge_weight_container" class="col-4 mb-1">
+                                <div class="mb-4 row form-inline">
+                                    <label for="edge_weight_label" class="col-form-label">Minimum edge weight</label>
+                                    <div id="edge_weight_label"></div>
+                                </div>
+                                <div class="row content">
+                                    <label class="col-1 sliderLabel">0</label><div id="edge_weight_slider" class="col-9 ms-3"></div><label class="col-1 sliderLabel">1</label>
+                                    <div id="edge_weight_tooltip"></div>
+                                </div>
+                            </div>
+
+                        </div>
                     <div id="graph_container" class="row">
+                        
                         <div id="info_area" class="mr-1 ml-1 col-3">  
                             <div class="row ml-2">
-                                <div id="node_prob_container" class="row mb-1">
-                                    <div class="mb-4 row form-inline">
-                                        <label for="node_prob_label" class="col-form-label">Minimum gene probability</label>
-                                        <div id="node_prob_label"></div>
-                                    </div>
-                                    <div class="row content">
-                                        <label class="col-1 sliderLabel">0</label><div id="node_prob_slider" class="col-9 ms-3"></div><label class="col-1 sliderLabel">1</label>
-                                        <div id="node_prob_tooltip"></div>
-                                    </div>
-                                </div>
-                                <div id="node_count_container" class="row mb-1">
-                                    <div class="mb-4 row form-inline">
-                                        <label for="node_count_label" class="col-form-label">Node count</label>
-                                        <div id="node_count_label"></div>
-                                    </div>
-                                    <div class="row content">
-                                        <label class="col-1 sliderLabel">0</label><div id="node_count_slider" class="col-9 ms-3"></div><label class="col-1 sliderLabel">50</label>
-                                        <div id="node_count_tooltip"></div>
-                                    </div>
-                                </div>
-                                <div id="edge_weight_container" class="row mb-1">
-                                    <div class="mb-4 row form-inline">
-                                        <label for="edge_weight_label" class="col-form-label">Minimum edge weight</label>
-                                        <div id="edge_weight_label"></div>
-                                    </div>
-                                    <div class="row content">
-                                        <label class="col-1 sliderLabel">0</label><div id="edge_weight_slider" class="col-9 ms-3"></div><label class="col-1 sliderLabel">1</label>
-                                        <div id="edge_weight_tooltip"></div>
-                                    </div>
-                                </div>
-
+                              
                                 <div class='my-legend '>
                                     <div class='legend-title'>Gene node colors and their meanings</div> 
                                         <div class='legend-scale'>
                                         <ul class='legend-labels'>
+                                        <!-- var graph_node_colors = ["#648FFF","#97B4FF","#FFB000"]; -->
                                         <li><span style='background:#648FFF;'></span>Positive</li>
                                         <li><span style='background:#97B4FF;'></span>Unlabeled</li>
                                         <li><span style='background:#FFB000;'></span>Negative</li>
@@ -375,7 +381,7 @@
     <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
     <script src="{{url_for('static', filename='d3-v4-contextmenu.js')}}"></script>
     <script src="{{url_for('static', filename='d3-tip.js')}}"></script>
-    <script src="{{url_for('static', filename='graph.js')}}"></script>
+    <script src="{{url_for('static', filename='graph2.js')}}"></script>
     <script src="{{url_for('static', filename='results_datatable.js')}}"></script>
     <script src="{{url_for('static', filename='results_index.js')}}"></script>
     <script src="{{url_for('static', filename='results_validation.js')}}"></script>
