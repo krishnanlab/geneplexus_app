@@ -6,14 +6,14 @@ var graph_aspect_ratio = 2;
 var graph_initial_node_count = 20;
 var graph_initiaL_min_edge_weight = 0.5;
 var graph_initial_node_prob = 0.0;
-var graph_node_colors = ["#648FFF","#97B4FF","#FFB000"];
+var graph_node_colors = ["#648FFF","#FFBF32","#FFB000"];
 
 
 function clamp(n, min, max) {
   return Math.min(Math.max(n, min), max);
 }
 
-allNodes = dataset.nodes.sort((a, b) => (a.Probability - b.Probability));
+allNodes = dataset.nodes.sort((a, b) => (b.Probability - a.Probability));
 
 maxNodesValue = dataset.nodes.length;
 
