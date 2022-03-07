@@ -13,7 +13,6 @@
     {# stylesheets manually put in results_base, confirm if we need thse or not? #}
     <!-- <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.6/css/responsive.dataTables.min.css"> -->
     <link rel="stylesheet" href="//code.jquery.com/ui/1.13.0/themes/base/jquery-ui.css">
-    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='results_main.css') }}">
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='results.css') }}">
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='graph.css') }}">
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='d3-tip.css') }}">
@@ -252,50 +251,51 @@
                                         <div class='legend-scale'>
                                         <ul class='legend-labels'>
                                         <!-- var graph_node_colors = ["#648FFF","#97B4FF","#FFB000"]; -->
-                                        <li><span style='background:#648FFF;'></span>Positive</li>
-                                        <li><span style='background:#97B4FF;'></span>Unlabeled</li>
-                                        <li><span style='background:#FFB000;'></span>Negative</li>
+                                        <li><span class="legendcolor" id="Plegend" style='background:#648FFF;'></span>Positive</li>
+                                        <li><span class="legendcolor" id="Ulegend" style='background:#97B4FF;'></span>Unlabeled</li>
+                                        <li><span class="legendcolor" id="Nlegend" style='background:#FFB000;'></span>Negative</li>
                                         </ul>
                                         </div>
                                     </div>
                                 </div>
                             <div class="card">
+                                <!-- Rank, Entrez, Symbol, Name, Probability, Known/Novel, Class-Label. -->
                                 <ul class="list-group">
                                     <li class="list-group-item">
-                                        <span class="graphinfo-label">Entrez ID </span>
-                                        <span id="static_id" " class="graphinfo" ></span>
+                                        <span class="text-muted">Rank:&nbsp; </span>
+                                        <span id="static_rank" class=" fw-bold graphinfo" ></span>
                                     </li>
                                     <li class="list-group-item">
-                                        <span class="graphinfo-label">Class </span>
-                                        <span id="static_class"  class="graphinfo" ></span>
+                                        <span class="text-muted">Entrez ID:&nbsp; </span>
+                                        <a href="" id="static_id" class=" fw-bold graphinfo" ></a>
                                     </li>
                                     <li class="list-group-item">
-                                        <span class="graphinfo-label">Known/Novel </span>
-                                        <span id="static_known" class="graphinfo" ></span>
+                                        <span class="text-muted">Symbol:&nbsp; </span>
+                                        <span id="static_symbol" class=" fw-bold graphinfo" ></span>
                                     </li>
                                     <li class="list-group-item">
-                                        <span class="graphinfo-label">Name </span>
-                                        <span id="static_name" class="graphinfo" ></span>
+                                        <span class="text-muted">Name:&nbsp; </span>
+                                        <span id="static_name" class=" fw-bold graphinfo" ></span>
                                     </li>
                                     <li class="list-group-item">
-                                        <span class="graphinfo-label">Probability </span>
-                                        <span id="static_prob" class="graphinfo" ></span>
+                                        <span class="text-muted">Probability:&nbsp;</span>
+                                        <span id="static_prob" class=" fw-bold graphinfo" ></span>
                                     </li>
                                     <li class="list-group-item">
-                                        <span class="graphinfo-label">Rank </span>
-                                        <span id="static_rank" class="graphinfo" ></span>
+                                        <span class="text-muted">Known/Novel:&nbsp; </span>
+                                        <span id="static_known" class=" fw-bold graphinfo" ></span>
                                     </li>
                                     <li class="list-group-item">
-                                        <span class="graphinfo-label">Symbol </span>
-                                        <span id="static_symbol" class="graphinfo" ></span>
+                                        <span class="text-muted">Class-label:&nbsp;</span>
+                                        <span id="static_class"  class=" fw-bold graphinfo" ></span>
                                     </li>
                                     <li class="list-group-item">
-                                        <span class="graphinfo-label">Gene Type </span>
-                                        <span id="static_genetype" class="graphinfo" ></span>
+                                        <span class="text-muted">Gene Type:&nbsp; </span>
+                                        <span id="static_genetype" class=" fw-bold graphinfo" ></span>
                                     </li>
                                     <li class="list-group-item">
-                                        <span class="graphinfo-label">Swiss-Prot </span>
-                                        <span id="static_swissprot" class="graphinfo" ></span>
+                                        <span class="text-muted">Swiss-Prot:&nbsp; </span>
+                                        <span id="static_swissprot" class=" fw-bold graphinfo" ></span>
                                     </li>
                                 </ul>
                             </div>
