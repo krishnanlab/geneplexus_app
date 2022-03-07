@@ -68,12 +68,12 @@
             <div class="col-3 float-right">
                 <a href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['jobname']}}.zip"
                     class="btn btn-success">
-                    Download all results data as zip file
+                    Download all results as zip file
                 </a>
-                <a href="#" data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="right"
+                <!-- <a href="#" data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="right"
                 data-bs-content="Download all the tables, edge list, and this result 
                 file contained in a single zip file named for the job name">
-                <i class="fas fa-question-circle"></i></a>
+                <i class="fas fa-question-circle"></i></a> -->
             </div>
         </div>
     </h4>
@@ -112,23 +112,31 @@
         </div>
     </div>
     <br>
-    <div role="tabpanel">
+    <style> .nav-pills {
+        border-bottom: 2px solid black;
+        }
+        a.nav-link.active {
+           background-color: Black !important;
+        }
+        </style>
+
+    <div role="tabpanel border-2">
         <!-- Nav tabs -->
-        <ul class="nav nav-tabs" role="tablist">
+        <ul class="nav nav-pills nav-fill border-2  border-bottom-2 text-white" role="tablist">
             <li class="nav-item">
-                <a href="#predictions" class="nav-link text-dark active" data-bs-toggle="tab">Gene Predictions</a>
+                <a href="#predictions" class="nav-link  active" data-bs-toggle="tab">Gene Predictions</a>
             </li>
             <li class="nav-item">
-                <a href="#sim_go" class="nav-link text-dark" data-bs-toggle="tab">Similarities to Biological Processes</a>
+                <a href="#sim_go" class="nav-link " data-bs-toggle="tab">Similarities to Biological Processes</a>
             </li>
             <li class="nav-item">
-                <a href="#sim_dis" class="nav-link text-dark" data-bs-toggle="tab">Similarities to Disease</a>
+                <a href="#sim_dis" class="nav-link " data-bs-toggle="tab">Similarities to Diseases</a>
             </li>
             <li class="nav-item">
-                <a id="nettab" href="#netgraph" class="nav-link text-dark" data-bs-toggle="tab">Network Graph</a>
+                <a id="nettab" href="#netgraph" class="nav-link" data-bs-toggle="tab">Network Graph</a>
             </li>
             <li class="nav-item">
-                <a href="#validation" class="nav-link text-dark" data-bs-toggle="tab">Validation Data</a>
+                <a href="#validation" class="nav-link " data-bs-toggle="tab">Input Genes</a>
             </li>
         </ul>
 
@@ -137,18 +145,17 @@
             <div role="tabpanel" class="tab-pane fade show active" id="predictions">
                 <div class="table_container">
                     <div class="box_padding">
-                        <p>The table below shows the top 500 genes with the highest prediction probability. 
-                            The <b>Probability</b> of each gene is bounded between 0 and 1, and indicates the gene’s functional similarity 
-                            to the input genes in the selected network. The <b>Rank</b> column indicates the rank of the gene when sorted by 
-                            the full probability value (up to several decimals). The <b>Training-Labels</b> are: P – gene was considered in 
-                            positive class during training, N – gene was considered in negative class during training, 
-                            and U – gene was not considered at all during training. <b>Known/Novel</b> indicates whether the gene was part of 
-                            the input gene list (therefore ‘Known’) or not (therefore ‘Novel’).
-                            <br><br>
-                            To download the current subset of the table use the Copy, Excel or PDF buttons on the top right of the table. At most the table will display the top 500 results. 
-                            To download the prediction probability of all the genes in the network as a tab separated values file click the following button:
-                            <a href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_probs_file']}}" class="btn btn-sm btn-primary">Download All Predictions</a>                                    
+                        <p>The table below shows the top 500 genes with the highest prediction probability.
+                            <ul>
+                            <li>Probability: Indicates the gene</strong>s network-based similarity to the input genes.</li>
+                            <li>Rank: Rank of the gene when sorted by prediction probability (up to several decimals).</li>
+                            <li>Class-Labels: <strong>P</strong> – gene was considered in positive class during training, <strong>N</strong> – gene was considered in negative class during training, and <strong>U</strong> – gene was not considered at all during training.</li>
+                            <li>Known/Novel: Indicates whether the gene was part of the input gene list (therefore <strong>Known</strong>) or not (therefore <strong>Novel</strong>).</li>
+                            </ul>
+                        <p>Use the buttons on the top-right of the table to download the top predictions. Download the prediction probability of all the genes in the network as a tab-separated file at this link. 
+                            <a href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_probs_file']}}" class="btn btn-outline-success">Download All Predictions</a>
                         </p>
+
                     </div>
                     {{ df_table(df=job_output['df_probs'], table_id="probstable") }}
                 </div>
@@ -157,14 +164,10 @@
             <div class="tab-pane fade" id="sim_go">
                 <div class="table_container">
                     <div class="box_padding">
-                        <p>The table below shows the similarity of machine learning models trained on sets of
-                            genes associated with Gene Ontology Biological Process terms to the custom model
-                            trained on the input genes. See the Help page for more information about
-                            the similarity measure.
-                            <br><br>
-                            To download the current subset of the table use the Copy, Excel or PDF buttons on the top right of the table. At most the table will display the top 500 results. 
-                            To download the similarity to all Biological Processes as a tab separated values file click the following button:
-                            <a href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_GO_file']}}" class="btn btn-sm btn-primary">Download All Similarities</a>
+                        <p>The table below shows network-based ML models trained on sets of genes associated with Gene Ontology Biological Process terms ranked by their similarity to the custom ML model trained on the input genes. See the Help page for more information.</p>
+
+                        <p>Use the buttons on the top-right of the table to download the table of terms shown below. Download the similarity to all Biological Processes as a tab-separated file at this link.
+                            <a href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_GO_file']}}" class="btn btn-outline-success">Download All Similarities</a>
                         </p>
                     </div>
                     {{ df_table(df=job_output['df_GO'], table_id="gotable") }}
@@ -174,14 +177,10 @@
             <div class="tab-pane fade" id="sim_dis">
                 <div class="table_container">
                     <div class="box_padding">
-                        <p>The table below shows the similarity of machine learning models trained on sets of
-                            genes associated with diseases in the DisGeNET database to the custom model
-                            trained on the input genes. See the Help page for more information about
-                            the similarity measure.
-                            <br><br>
-                            To download the current subset of the table use the Copy, Excel or PDF buttons on the top right of the table. At most the table will display the top 500 results. 
-                            To download the similarity to all Diseases as a tab separated values file click the following button:
-                            <a href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_dis_file']}}" class="btn btn-sm btn-primary">Download All Similarities</a>
+                        <p>The table below shows network-based ML models trained on sets of genes associated with diseases in the DisGeNet database ranked by their similarity to the custom ML model trained on the input genes. See the Help page for more information.
+
+                        <p>Use the buttons on the top-right of the table to download the table of terms shown below. Download the similarity to all Diseases as a tab-separated file at this link.
+                            <a href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_dis_file']}}" class="btn  btn-outline-success">Download All Similarities</a>
                         </p>
                     </div>
                     {{ df_table(df=job_output['df_dis'], table_id="distable") }}
@@ -191,18 +190,29 @@
                 <div>
                     <div class="row">
                         <div class="box_padding m-3">
+                            <p>The visualization below shows the network of the top 50 genes based on predicted probability.</p>
+                            <p>Directions:</p>
+                            <ul>
+                                <li>Click a node to display additional information about the gene on the left panel.</li>
+                                <li>Drag a node to make it sticky (it will no longer move by itself). Double click a sticky node to allow it to move freely again.</li>
+                                <li>Use the slider to select more or less genes (nodes) to show based on gene probability.</li>
+                            </ul>
+                                
+                            <p>The current view of the graph can be exported as a PNG or SVG file. The entire list of edges as a tab-separated file.
+<!--                                 
                             <p>The graph below shows the network connectivity of the top 50 genes based on prediction probability. The edges used in the graph come 
                                 from the adjacency matrix representation of the network used to train the machine learning model. 
                                 Directions: <br>
                                 <ul>
-                                    <li>Clicking a node will display additional information about the gene on the right side</li>
+                                    <li>Clicking a node will display additional information about the gene on the left side</li>
                                     <li>Dragging a node will make it sticky (it will no longer move by itself). Double clicking on a sticky node will allow it to move freely again</li>
                                     <li>The slider below allows you to select which nodes will show up based on gene probability</li>
                                 </ul>
-                                The current view of the graph can be exported as a PNG, SVG file or the entire edgelist can be downloaded as a tab separated file:
-                                <a id="download_as_png" class="btn btn-sm btn-primary m-1" style="width: 5%" href="#">PNG</a>
-                                <a id="download_as_svg" class="btn btn-sm btn-primary m-1" style="width: 5%" href="#">SVG</a>
-                                <a class="btn btn-sm btn-primary m-1" style="width: 8%" href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_edgelist_file']}}" >Edgelist</a>                               
+                                The current view of the graph can be exported as a PNG, SVG file or the entire edgelist can be downloaded as a tab separated file: -->
+
+                                <a id="download_as_png" class="btn btn-outline-success "  href="#">PNG</a>
+                                <a id="download_as_svg" class="btn btn-outline-success "  href="#">SVG</a>
+                                <a class="btn  btn-outline-success " " href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_edgelist_file']}}" >Edgelist</a>                               
                             </p>
                         </div>
                     </div>
@@ -317,7 +327,7 @@
                             <br><br>
                             To download the current subset of the table use the Copy, Excel or PDF buttons on the top right of the table. At most the table will display the top 500 results. 
                             To download the validation data as a tab separated values file click the following button:
-                            <a href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_convert_out_subset_file']}}" class="btn btn-sm btn-primary">Download Validation Data</a>
+                            <a href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_convert_out_subset_file']}}" class="btn btn-outline-success">Download Validation Data</a>
                         </p>
                     </div>
 

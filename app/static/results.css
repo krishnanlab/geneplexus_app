@@ -21,10 +21,10 @@ body {
       background-color: #efefef;
   }
   
-  .btn-sm{
+  /* .btn-sm{
       width: 250px;
       text-align: center;
-  }
+  } */
   
   table.dataframe.data {
       border-collapse: collapse;
