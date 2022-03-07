@@ -74,13 +74,14 @@ def intial_ID_convert(input_genes):
 def make_validation_df(df_convert_out):
     table_summary = []
     #num_converted_to_Entrez = df_convert_out[~(df_convert_out['ID_converted_to_Entrez']=='Could Not be mapped to Entrez')].shape[0]
+    edge_counts = {'BioGRID': 484356,'STRING': 5521113,'STRING-EXP': 2121428,'GIANT-TN': 38904929}
     input_count = df_convert_out.shape[0]
     converted_genes = df_convert_out['ID_converted_to_Entrez'].to_numpy()
     for anet in ['BioGRID','STRING','STRING-EXP','GIANT-TN']:
         net_genes = load_txtfile('net_genes',net_type_=anet)
         df_tmp = df_convert_out[df_convert_out['ID_converted_to_Entrez'].isin(net_genes)]
         pos_genes_in_net = np.intersect1d(converted_genes,net_genes)
-        table_row = {'Network': anet, 'NetworkGenes': len(net_genes), 'PositiveGenes': len(pos_genes_in_net)}
+        table_row = {'Network': anet, 'NetworkGenes': len(net_genes), 'NetworkEdges': edge_counts[anet], 'PositiveGenes': len(pos_genes_in_net)}
         table_summary.append(dict(table_row))
         tmp_ins = np.full(len(converted_genes),'N',dtype=str)
         tmp_ins[df_tmp.index.to_numpy()] = 'Y'
@@ -177,7 +178,7 @@ def make_prob_df(net_genes,probs,pos_genes_in_net,negative_genes):
         except KeyError:
             name_tmp = 'N/A'
         prob_results.append([net_genes[idx],syms_tmp,name_tmp,probs[idx],novel_label,class_label])
-    df_probs = pd.DataFrame(prob_results,columns=['Entrez','Symbol','Name','Probability','Known/Novel','Class-Label'])
+    df_probs = pd.DataFrame(prob_results,columns=['Entrez','Symbol','Name','Probability','Known/Novel','Training-Label'])
     df_probs = df_probs.astype({'Entrez':str,'Probability':float})
     df_probs = df_probs.sort_values(by=['Probability'],ascending=False)
     df_probs['Rank'] = rankdata(1/(df_probs['Probability'].to_numpy()+1e-9),method='min')

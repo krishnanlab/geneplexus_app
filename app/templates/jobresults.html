@@ -63,7 +63,7 @@
     <h4 class="col-12">
         <div class="row">
             <span class="col-9">
-        Prediction results
+                Prediction results
             </span>
             <!-- add large button on same row as header -->
             <div class="col-3 float-right">
@@ -141,7 +141,7 @@
                         <p>The table below shows the top 500 genes with the highest prediction probability. 
                             The <b>Probability</b> of each gene is bounded between 0 and 1, and indicates the gene’s functional similarity 
                             to the input genes in the selected network. The <b>Rank</b> column indicates the rank of the gene when sorted by 
-                            the full probability value (up to several decimals). The <b>Class-Labels</b> are: P – gene was considered in 
+                            the full probability value (up to several decimals). The <b>Training-Labels</b> are: P – gene was considered in 
                             positive class during training, N – gene was considered in negative class during training, 
                             and U – gene was not considered at all during training. <b>Known/Novel</b> indicates whether the gene was part of 
                             the input gene list (therefore ‘Known’) or not (therefore ‘Novel’).
@@ -268,10 +268,28 @@
                                 </div>
                               </div>
                               <div class="mb-3 row">
+                                  <label for="static_genetype" class="col-4">Gene Type</label>
+                                  <div class="col">
+                                      <span id="static_genetype"></span>
+                                  </div>
+                              </div>
+                              <div class="mb-3 row">
+                                  <label for="static_swissprot" class="col-4">Swiss-Prot</label>
+                                  <div class="col">
+                                      <span id="static_swissprot"></span>
+                                  </div>
+                              </div>
+                              <div class="mb-3 row">
                                 <label for="static_site" class="col-4">NCBI Info</label>
                                 <div class="col">
                                     <span><a id="static_site" href="" target="_blank"></a></span>
                                 </div>
+                              </div>
+                              <div class="mb-3 row">
+                                  <label for="static_description" class="col-4">Description</label>
+                                  <div class="col">
+                                      <span id="desc_first"></span><span id="read_more_elipsis" hidden>...</span><a href="#" id="read_more_link" hidden>Read More</a><span id="desc_last" hidden></span><a href="#" id="read_less_link" hidden>Read Less</a>
+                                  </div>
                               </div>
                         </div>
                         <div id="graph_area" class="col-9">
@@ -330,22 +348,36 @@
 
 {% else %}
 
-<div class="container">
-    <div id="content-padding" class="pl-4 pt-4">
-        <h4>Job incomplete</h4>
-        <p>Sorry,  No results yet for the job '{jobname}'  </p>
-    </div>
-</div>
-
+        <div class="col-12">
+            <div class="row">
+                <div id="content-padding" class=" col-3 pl-4 pt-4">
+                    <h4>Job incomplete</h4>
+                    <p><em>Sorry, no results yet.</em> </p>
+                    <ul class="list-group">
+                        <li class="list-group-item bg-primary text-white"> Name: <strong>{{jobname}}</strong> </li>
+                        <li class="list-group-item">submitted: <strong>{{job_info['submit_time']}}</strong></li>
+                        {% if job_info['params'] %}
+                        <li class="list-group-item"> Parameters: <strong>{{job_info['params']['GP_NET_TYPE']}}; {{job_info['params']['GP_FEATURES']}}; {{job_info['params']['GP_GSC']}}</strong></li>
+                        {% endif %}
+                        <li class="list-group-item">Job status: <strong>{{job_info['status']}}</strong></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+</div> <!-- redundant close div from above (so modal is not part of this snippet)-->
 {% endif %} {# job was found and had results #}
 {% else %}  {# invalid job name #}
-      <!-- no job found-->
-      <div class="container">
-          <div id="content-padding" class="pl-4 pt-4">
-              <h4>No job Found</h4>
-              <p>Sorry, but no GenePlexus job with that name exists on our server. ( {{ jobname }} )  </p>
-          </div>
-      </div>
+      <!-- no job found -->
+      
+        <div class="col-12">
+            <div class="row">
+                <div id="content-padding" class="pl-4 pt-4">
+                    <h4>No job found</h4>
+                    <p>Sorry, but no GenePlexus job with that name exists on our server. ( {{ jobname }} )  </p>
+                </div>
+            </div>
+        </div>
+</div> <!-- redundant close div from above (so modal is not part of this snippet)-->
 {% endif %}
    
 {% endblock %}

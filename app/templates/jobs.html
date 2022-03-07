@@ -17,7 +17,7 @@
     
     <hr class="mt-3">
 
-    <h4 class="mt-4">Jobs submitted ( for this session ) </h4>
+    <h4 class="mt-4">Jobs Submitted ( in this session ) </h4>
         
     {% if joblist %}
         <hr>
@@ -64,21 +64,22 @@
         <hr class="mt-3">
 
         <h4 class="mt-3">Job Lookup</h4>
-        <form class="form-inline" method="post">
-            <div class="form-group">
-                <label class="m-2 for="jobname">                    
-                    Recall job results by name
-                    &nbsp;
+        <p>Recall job results by name</p>
+        <form class="row g-3" method="post">
+            <div class="col-auto">
+                <label for="jobname" class="pt-2">                                        
+                    <strong>Job Name:&nbsp;</strong>
                     <a href="#" data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="right"
                     data-bs-content="Only jobs from this browser session are available in this list. Enter the job name (name only) to find a previous job (exact match)
                     or copy and paste the job url in your browser.">
-                    <i class="fas fa-question-circle"></i></a>                      
+                    <i class="fas fa-question-circle"></i></a>    
                 </label>
-                
-                {{ form.jobname(class="form-control ml-4", placeholder="job name") }}                    
             </div>
-            <div class="form-group mx-3">
-                {{ form.lookup(class="btn btn-sm btn-primary m-3")}}
+            <div class="col-auto pr-2">
+                {{ form.jobname(class="form-control", placeholder="job name") }}                    
+            </div>
+            <div class="col-auto">            
+                {{ form.lookup(class="btn btn-sm btn-primary pt-2 mb-3")}}
             </div>    
         </form>             
 
