@@ -6,12 +6,12 @@ allNodes = dataset.nodes.sort((a, b) => (a.Probability - b.Probability));
 maxNodesValue = dataset.nodes.length;
 $( document ).ready(function() {
   graph_aspect_ratio = 2;
-  r = 0;
+  // r = 0;
   $('body').on('click', '#graph_tab', function() {
     
     var width = $('.result_container').width() * (8/12);
     var height = width / graph_aspect_ratio;
-    r = -parseInt(Math.min(width, height) / 4)
+    // r = -parseInt(Math.min(width, height) / 4)
     svg
       .attr('width', width)
       .attr('height', height);
@@ -100,22 +100,11 @@ $( document ).ready(function() {
     .force("forceX", d3.forceX(width/2).strength(.05) )
     .force("forceY", d3.forceY(height/2).strength(.05) );
 
-  var data = ['P','U','N']
+  var data = ['P','U','N'];
   var myColor = d3.scaleOrdinal().domain(data)
-      .range(["#648FFF","#97B4FF","#FFB000"])
-  
-  simulation.nodes(dataset.nodes).on('tick', onTick);
-
-  simulation.force('charge')
-    .strength(forceProperties.charge.strength);
-  simulation.force('collide')
-    .strength(forceProperties.collide.strength)
-    .radius(forceProperties.collide.radius);
-  simulation.force('link')
-      .id(function(d) {return d.id})
-      .links(dataset.links);
-
-  linkElements = g.append('g')
+      .range(["#648FFF","#97B4FF","#FFB000"]);
+ 
+  var linkElements = g.append('g')
           .attr("class", "links")
           .selectAll("line")
           .data(curLinks)
@@ -125,7 +114,7 @@ $( document ).ready(function() {
           .style('stroke-width', '2')
           //.style("stroke-width", function(d) { return (d.weight); });
 
-  nodeElements = g.append('g')
+  var nodeElements = g.append('g')
     .attr('class', 'nodes')
     .selectAll('circle')
     .data(curNodes)
@@ -141,7 +130,18 @@ $( document ).ready(function() {
     .classed('node', true)
     .classed("fixed", d => d.fx !== undefined);
   
-  //svg.call(d3.zoom().on('zoom', onZoomAction)).on("dblclick.zoom", null);
+  simulation.nodes(dataset.nodes).on('tick', onTick);
+
+  simulation.force('charge')
+    .strength(forceProperties.charge.strength);
+  simulation.force('collide')
+    .strength(forceProperties.collide.strength)
+    .radius(forceProperties.collide.radius);
+  simulation.force('link')
+      .id(function(d) {return d.id})
+      .links(dataset.links);
+  
+      //svg.call(d3.zoom().on('zoom', onZoomAction)).on("dblclick.zoom", null);
   zoom_handler = d3.zoom().on('zoom', onZoomAction);
   zoom_handler(svg);
   //zoom_handler(svg).on("dblclick.zoom", null);
