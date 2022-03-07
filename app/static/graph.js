@@ -325,7 +325,8 @@ $( document ).ready(function() {
       .selectAll("line")
       .data(links)
       .enter().append("line")
-      .style("stroke", "#ADA9A8");
+      .style("stroke", "#ADA9A8")
+      .style("opacity", 0.5);
 
     nodeElements = g.append('g')
     .attr('class', 'nodes')
