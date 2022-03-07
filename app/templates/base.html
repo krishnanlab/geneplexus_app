@@ -27,15 +27,24 @@
         <div class="container-fluid mb-5">            
 
             {% block body %} 
-            {% endblock %}    
-            
-    
-        </div>
-        <footer class="footer mt-auto py-3 bg-light fixed-bottom">
-            <div class="container">
-            <span class="text-muted">&copy; 2022 Krishnan Lab and Michigan State University Board of Trustees</span>
-            </div>
+            {% endblock %}                
+        
+        <footer class="row align-items-center py-3 my-4 border-top">
+              <div class="col-md-4 d-flex align-items-center">
+                <span class="text-muted">Geneplexus application &copy; 2022 Krishnan Lab</span>
+              </div>
+          
+              <ul class="nav col-md-8 justify-content-end list-unstyled d-flex">
+                <li class="ms-3"><a class="" href="#">Contact help[at]geneplexus.net</a></li>
+                <li class="ms-3"><a class="" href="https://thekrishnanlab.org">Krishnan Lab</a></li>
+              </ul>
         </footer>
+        </div>
+        <!-- <footer class="footer mt-auto py-3 bg-light border-top-1 fixed-bottom">
+            <div class="container">
+                <span class="text-muted">Geneplexus application &copy; 2022 Krishnan Lab  | Contact help[at]geneplexus.net "</span>
+            </div>
+        </footer> -->
 
         {% include 'cookies.html' %}
 
