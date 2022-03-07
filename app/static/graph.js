@@ -19,17 +19,17 @@ maxNodesValue = dataset.nodes.length;
 
 $( document ).ready(function() {
   // r = 0;
-  /*$('body').on('click', '#graph_tab', function() {
+  $('body').on('click', '.result_container', function() {
     
     var width = $('.result_container').width() * (8/12);
-    var height = width / graph_aspect_ratio;
+    var height = width;
     // r = -parseInt(Math.min(width, height) / 4)
     svg
       .attr('width', width)
       .attr('height', height);
-  });*/
+  });
   var api_endpoint = 'https://mygene.info/v3/query/q=entrezgene:'
-  var width = $('#graph_container').width() * (8/12);
+  var width = $('.result_container').width() * (8/12);
   var height = width;
   selectedNode = null;
   selectedEdges = [];
@@ -40,7 +40,7 @@ $( document ).ready(function() {
   svg.style('max-height', 650);
 
   function onWindowResize() {
-    var width = $('#graph_container').width() * (8/12);
+    var width = $('.result_container').width() * (8/12);
     var height = width;
     svg.attr('width', width);
     svg.attr('height', height);
