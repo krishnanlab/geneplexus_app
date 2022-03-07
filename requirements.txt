@@ -6,12 +6,12 @@ python-dotenv==0.15.0
 pytz==2020.4
 Werkzeug==1.0.1
 WTForms==2.3.3
-numpy
-scipy
-scikit-learn
-pandas
+numpy==1.19.4
+scipy==1.5.3
+scikit-learn==0.23.2
+pandas=1.1.4
 python-slugify==4.0.1
-requests
-sendgrid
-email_validator
+requests===2.25.0
+sendgrid==6.9.2
+email_validator==1.1.3
 
