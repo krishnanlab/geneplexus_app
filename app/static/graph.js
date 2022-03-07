@@ -22,26 +22,25 @@ $( document ).ready(function() {
   $('body').on('click', '.result_container', function() {
     
     var width = $('.result_container').width() * (8/12);
-    var height = width;
+    var height = Math.min(650, width);
     // r = -parseInt(Math.min(width, height) / 4)
     svg
       .attr('width', width)
       .attr('height', height);
   });
   var api_endpoint = 'https://mygene.info/v3/query/q=entrezgene:'
-  var width = $('.result_container').width() * (8/12);
-  var height = width;
+  width = $('.result_container').width() * (8/12);
+  height = Math.min(650, width);
   selectedNode = null;
   selectedEdges = [];
 
   const svg = d3.select('svg');
   svg.attr('width', width);
   svg.attr('height', height);
-  svg.style('max-height', 650);
 
   function onWindowResize() {
     var width = $('.result_container').width() * (8/12);
-    var height = width;
+    var height = Math.min(650, width);
     svg.attr('width', width);
     svg.attr('height', height);
   }
@@ -50,6 +49,17 @@ $( document ).ready(function() {
   const data = ['P','U','N'];
   const myColor = d3.scaleOrdinal().domain(data)
        .range(graph_node_colors);
+
+  function onWindowResize() {
+    width = $('.result_container').width() * (8/12);
+    height = Math.min(650, width);
+    // r = -parseInt(Math.min(width, height) / 4)
+    svg
+      .attr('width', width)
+      .attr('height', height);
+  }
+
+  window.onresize = onWindowResize;
 
   var curNodes = allNodes.slice(0, graph_initial_node_count);
   console.log(curNodes);
