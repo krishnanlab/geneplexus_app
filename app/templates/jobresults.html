@@ -311,9 +311,9 @@
             <div class="tab-pane fade" id="validation">
                 <div class="table_container">
                     <div class="box_padding">
-                        <p>The number of genes in the input file was {{ input_count }}.
+                        <p>The number of genes in the input file was {{ job_output.get('input_count') }}.
                         The number of those genes that were uniquely mapped to an Entrez ID
-                                and were also in the network is {{positive_genes}}.
+                                and were also in the network is {{ job_output.get('positive_genes')}}.
                             <br><br>
                             To download the current subset of the table use the Copy, Excel or PDF buttons on the top right of the table. At most the table will display the top 500 results. 
                             To download the validation data as a tab separated values file click the following button:
