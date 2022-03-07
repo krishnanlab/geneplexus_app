@@ -4,7 +4,7 @@ var graph_text_size = '75%'
 var graph_initial_zoom = 1;
 var graph_aspect_ratio = 2;
 var graph_initial_node_count = 20;
-var graph_initiaL_min_edge_weight = 1;
+var graph_initiaL_min_edge_weight = 0.5;
 var graph_initial_node_prob = 0.0;
 var graph_node_colors = ["#648FFF","#97B4FF","#FFB000"];
 
@@ -41,7 +41,14 @@ $( document ).ready(function() {
        .range(graph_node_colors);
 
   var curNodes = allNodes.slice(0, graph_initial_node_count);
-  var curLinks = getLinksByNodes(curNodes, graph_initiaL_min_edge_weight);
+  console.log(curNodes);
+
+  var curLinks = initialGetLinksByNodes(curNodes, dataset.links, graph_initiaL_min_edge_weight);
+  //getLinksByNodes(curNodes, graph_initiaL_min_edge_weight);
+  
+  console.log('currLinks before graph');
+  console.log(curLinks);
+
   graph_initial_node_prob = curNodes[curNodes.length-1].Probability.toPrecision(2);
 
   initial_slider_values = {'node_prob_slider': graph_initial_node_prob, 'node_count_slider': graph_initial_node_count, 'edge_weight_slider': graph_initiaL_min_edge_weight}
@@ -357,6 +364,16 @@ $( document ).ready(function() {
     .on('dblclick', onDblClick);
 
     simulation.alpha(1).restart();
+  }
+
+  function initialGetLinksByNodes(nodeList, links, threshold) {
+    var nodeIds = nodeList.map(({ id }) => id);
+    console.log(links)
+    return links.filter(
+      function(l) {
+        return (nodeIds.indexOf(parseInt(l.source)) > -1 && nodeIds.indexOf(parseInt(l.target)) > -1 && l.weight > threshold);
+      }
+    )
   }
 
   function getLinksByNodes(nodeList, threshold = 0) {
