@@ -43,13 +43,11 @@ $( document ).ready(function() {
   var curNodes = allNodes.slice(0, graph_initial_node_count);
   console.log(curNodes);
 
+  // get the current link subset, but use the version of the function prior to graph init, when links is an array of arrays, not objectified
+  // note at this stage, getLinksByNodes() will not work on the array of links
   var curLinks = initialGetLinksByNodes(curNodes, dataset.links, graph_initiaL_min_edge_weight);
-  //getLinksByNodes(curNodes, graph_initiaL_min_edge_weight);
-  
-  console.log('currLinks before graph');
-  console.log(curLinks);
 
-  graph_initial_node_prob = curNodes[curNodes.length-1].Probability.toPrecision(2);
+  var graph_initial_node_prob = curNodes[curNodes.length-1].Probability.toPrecision(2);
 
   initial_slider_values = {'node_prob_slider': graph_initial_node_prob, 'node_count_slider': graph_initial_node_count, 'edge_weight_slider': graph_initiaL_min_edge_weight}
      
@@ -366,6 +364,9 @@ $( document ).ready(function() {
     simulation.alpha(1).restart();
   }
 
+  // this version of this function is necessary as, prior to using the links from original data, 
+  // it's a simple array of arrays and sources and targets are strings.  
+  // after it's used the link list becomes an array of objects 
   function initialGetLinksByNodes(nodeList, links, threshold) {
     var nodeIds = nodeList.map(({ id }) => id);
     console.log(links)
@@ -376,6 +377,7 @@ $( document ).ready(function() {
     )
   }
 
+  // subset links by threshold and node list.  Use after initialization of the graph
   function getLinksByNodes(nodeList, threshold = 0) {
     var nodeIds = [];
     for (let i = 0; i < nodeList.length; i++) {
