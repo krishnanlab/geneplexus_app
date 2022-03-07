@@ -1,11 +1,23 @@
+//////////// OPTIONS
+var graph_node_size = 10;
+var graph_text_size = '75%'
+var graph_initial_zoom = 1;
+var graph_aspect_ratio = 2;
+var graph_initial_node_count = 20;
+var graph_initiaL_min_edge_weight = 1;
+var graph_initial_node_prob = 0.0;
+var graph_node_colors = ["#648FFF","#97B4FF","#FFB000"];
+
+
 function clamp(n, min, max) {
   return Math.min(Math.max(n, min), max);
 }
 
 allNodes = dataset.nodes.sort((a, b) => (a.Probability - b.Probability));
+
 maxNodesValue = dataset.nodes.length;
+
 $( document ).ready(function() {
-  graph_aspect_ratio = 2;
   // r = 0;
   $('body').on('click', '#graph_tab', function() {
     
@@ -16,7 +28,7 @@ $( document ).ready(function() {
       .attr('width', width)
       .attr('height', height);
   });
-  var api_endpoint = 'http://mygene.info/v3/query/q=entrezgene:'
+  var api_endpoint = 'https://mygene.info/v3/query/q=entrezgene:'
   var width = $('.result_container').width() * (8/12);
   var height = width / graph_aspect_ratio;
   selectedNode = null;
@@ -24,25 +36,31 @@ $( document ).ready(function() {
 
   const svg = d3.select('svg');
   const g = svg.append('g');
+  const data = ['P','U','N'];
+  const myColor = d3.scaleOrdinal().domain(data)
+       .range(graph_node_colors);
 
-  initial_values = {'node_prob_slider': 0.0, 'node_count_slider': 10, 'edge_weight_slider': 0.0}
+  var curNodes = allNodes.slice(0, graph_initial_node_count);
+  var curLinks = getLinksByNodes(curNodes, graph_initiaL_min_edge_weight);
+  graph_initial_node_prob = curNodes[curNodes.length-1].Probability.toPrecision(2);
+
+  initial_slider_values = {'node_prob_slider': graph_initial_node_prob, 'node_count_slider': graph_initial_node_count, 'edge_weight_slider': graph_initiaL_min_edge_weight}
+     
+
   var sliderTooltip = function(event, ui) {
-    var curValue = ui.value || initial_values[$(event.target).attr('id')]; // current value (when sliding) or initial value (at start)
+    var curValue = ui.value  || initial_slider_values[$(event.target).attr('id')]; // current value (when sliding) or initial value (at start)
 
     var tooltip = '<div class="tooltip"><div class="tooltip-inner">' + curValue + '</div><div class="tooltip-arrow"></div></div>';
 
     $(this).find('.ui-slider-handle').html(tooltip); //attach tooltip to the slider handle
   }
 
-  var curNodes = allNodes.slice(0, 10);
-  var curLinks = getLinksByNodes(curNodes, 0);
-  initial_values['node_prob_slider'] = curNodes[curNodes.length-1].Probability.toPrecision(2);
-
+  
   $('#node_prob_slider').slider({
     min: 0,
     max: 1.00,
     step: 0.01,
-    value: initial_values['node_prob_slider'],
+    value: initial_slider_values['node_prob_slider'],
     slide: function (event, ui) {
       clamped = clamp(ui.value, 0.0, 1.0)
       $(this).slider('option', 'value', clamped);
@@ -57,7 +75,7 @@ $( document ).ready(function() {
     min: 0,
     max: dataset.nodes.length,
     step: 1,
-    value: initial_values['node_count_slider'],
+    value: initial_slider_values['node_count_slider'],
     slide: function (event, ui) {
       clamped = clamp(ui.value, 0, dataset.nodes.length);
       $(this).slider('option', 'value', clamped);
@@ -71,7 +89,7 @@ $( document ).ready(function() {
     min: 0,
     max: 1.00,
     step: 0.01,
-    value: initial_values['edge_weight_slider'],
+    value: initial_slider_values['edge_weight_slider'],
     slide: function (event, ui) {
       clamped = clamp(ui.value, 0.0, 1.0)
       $(this).slider('option', 'value', clamped);
@@ -82,16 +100,20 @@ $( document ).ready(function() {
     create: sliderTooltip
 
   });
+
   const forceProperties = {
     charge: {
       strength: -75,
     },
     collide: {
       strength: 0.3,
-      radius: 20,
+      radius: graph_node_size *2
     },
 
   }
+
+
+
   const simulation = d3.forceSimulation()
     .force('link', d3.forceLink())
     .force('charge', d3.forceManyBody()) 
@@ -100,66 +122,66 @@ $( document ).ready(function() {
     .force("forceX", d3.forceX(width/2).strength(.05) )
     .force("forceY", d3.forceY(height/2).strength(.05) );
 
-  var data = ['P','U','N'];
-  var myColor = d3.scaleOrdinal().domain(data)
-      .range(["#648FFF","#97B4FF","#FFB000"]);
- 
-  var linkElements = g.append('g')
-          .attr("class", "links")
-          .selectAll("line")
-          .data(curLinks)
-          //.data(dataset.links)
-          .enter().append("line")
-          .style("stroke", "#ADA9A8")
-          .style('stroke-width', '2')
-          //.style("stroke-width", function(d) { return (d.weight); });
-
-  var nodeElements = g.append('g')
-    .attr('class', 'nodes')
-    .selectAll('circle')
-    .data(curNodes)
-    .enter()
-    .append('g')
-    .attr('class', 'nodeHolder');
-
-  nodeElements
-    .append('circle')
-    .attr('r', '10')
-    //.attr('r', function(d){return nodescale(d.Probability)})
-    .attr('fill', function(d){return myColor(d.Class) })
-    .classed('node', true)
-    .classed("fixed", d => d.fx !== undefined);
-  
   simulation.nodes(dataset.nodes).on('tick', onTick);
 
-  simulation.force('charge')
-    .strength(forceProperties.charge.strength);
-  simulation.force('collide')
-    .strength(forceProperties.collide.strength)
-    .radius(forceProperties.collide.radius);
-  simulation.force('link')
-      .id(function(d) {return d.id})
-      .links(dataset.links);
+  simulation.force('charge').strength(forceProperties.charge.strength);
+  simulation.force('collide').strength(forceProperties.collide.strength).radius(forceProperties.collide.radius);
+  simulation.force('link').id(function(d) {return d.id}).links(dataset.links);
   
-      //svg.call(d3.zoom().on('zoom', onZoomAction)).on("dblclick.zoom", null);
-  zoom_handler = d3.zoom().on('zoom', onZoomAction);
-  zoom_handler(svg);
-  //zoom_handler(svg).on("dblclick.zoom", null);
-  svg.call(zoom_handler.transform, d3.zoomIdentity.scale(0.8));
-  svg.on("dblclick.zoom", null);
+  // create a new graph from initial data and parameters 
+  regenerateGraph(curNodes, curLinks) 
 
-  nodeElements.append("text")
-  .attr("text-anchor", "middle")
-  .text(function(d) { return d.Symbol; })
-  .style('transform', 'translate(0px, -15px)')
-  .style("font-size", "50%");
+  // NOTE this is commented out here in favor of identical code in the 'regenerateGraph() function
   
-  nodeElements.call(d3.drag()
-  .on("start", onDragStarted)
-  .on("drag", onDrag)
-  .on("end", onDragEnded))
-  .on('click', onClick)
-  .on('dblclick', onDblClick);
+  // var linkElements = g.append('g')
+  //         .attr("class", "links")
+  //         .selectAll("line")
+  //         .data(curLinks)
+  //         //.data(dataset.links)
+  //         .enter().append("line")
+  //         .style("stroke", "#ADA9A8")
+  //         .style('stroke-width', '2')
+  //         //.style("stroke-width", function(d) { return (d.weight); });
+
+  // var nodeElements = g.append('g')
+  //   .attr('class', 'nodes')
+  //   .attr('r', graph_node_size)
+  //   .selectAll('circle')
+  //   .data(curNodes)
+  //   .enter()
+  //   .append('g')
+  //   .attr('class', 'nodeHolder');
+
+  // nodeElements
+  //   .append('circle')
+  //   .attr('r', graph_node_size)
+  //   //.attr('r', function(d){return nodescale(d.Probability)})
+  //   .attr('fill', function(d){return myColor(d.Class) })
+  //   .classed('node', true)
+  //   .classed("fixed", d => d.fx !== undefined);
+  
+
+  
+  //     //svg.call(d3.zoom().on('zoom', onZoomAction)).on("dblclick.zoom", null);
+  // zoom_handler = d3.zoom().on('zoom', onZoomAction);
+  // zoom_handler(svg);
+  // //zoom_handler(svg).on("dblclick.zoom", null);
+  // svg.call(zoom_handler.transform, d3.zoomIdentity.scale(0.8));
+  // svg.on("dblclick.zoom", null);
+
+  // nodeElements.append("text")
+  // .attr("text-anchor", "middle")
+  // .classed("nodelabel")
+  // .text(function(d) { return d.Symbol; })
+  // .style('transform', 'translate(0px, -15px)')
+  // .style("font-size", "50%");
+  
+  // nodeElements.call(d3.drag()
+  // .on("start", onDragStarted)
+  // .on("drag", onDrag)
+  // .on("end", onDragEnded))
+  // .on('click', onClick)
+  // .on('dblclick', onDblClick);
 
   function onTick() {
     nodeElements
@@ -186,7 +208,7 @@ $( document ).ready(function() {
   function onDrag(d) {
     d.fx = d3.event.x;
     d.fy = d3.event.y;
-    simulation.alpha(0.1).restart();
+    // simulation.alpha(0.1).restart();
   }
 
   function onDragEnded(d) {
@@ -291,7 +313,8 @@ $( document ).ready(function() {
     currentTransform = g.attr('transform');
     d3.selectAll('g.nodes').remove();
     d3.selectAll('g.links').remove();
-      linkElements = g.append('g')
+
+    linkElements = g.append('g')
       .attr("class", "links")
       .selectAll("line")
       .data(links)
@@ -308,7 +331,7 @@ $( document ).ready(function() {
 
     nodeElements
     .append('circle')
-    .attr('r', '10')
+    .attr('r', graph_node_size)
     .attr('fill', function(d){return myColor(d.Class) })
     .classed('node', true)
     .classed("fixed", d => d.fx !== undefined);
@@ -323,7 +346,7 @@ $( document ).ready(function() {
     .attr("text-anchor", "middle")
     .text(function(d) { return d.Symbol; })
     .style('transform', 'translate(0px, -15px)')
-    .style("font-size", "50%");
+    .style("font-size", graph_text_size);
 
     nodeElements.call(d3.drag()
     .on("start", onDragStarted)
@@ -331,6 +354,7 @@ $( document ).ready(function() {
     .on("end", onDragEnded))
     .on('click', onClick)
     .on('dblclick', onDblClick);
+
     simulation.alpha(1).restart();
   }
 
@@ -339,7 +363,7 @@ $( document ).ready(function() {
     for (let i = 0; i < nodeList.length; i++) {
       nodeIds.push(nodeList[i].id);
     }
-    console.log(nodeIds);
+    // console.log(nodeIds);
     return dataset.links.filter(
       function(l) {
         return nodeIds.indexOf(l.source.id) > -1 && nodeIds.indexOf(l.target.id) > -1 && l.weight > threshold;
