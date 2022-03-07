@@ -58,13 +58,6 @@ body {
       display: flex;
       min-height: 100vh
   }
-
-
-  div.container {
-    padding: 60px 15px 0;
-    margin-left: 290px;
-    height: 100%;
- }
   
   #divLoading {
     margin: 0px;
