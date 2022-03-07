@@ -1,7 +1,7 @@
 # DockerFile for geneplexus Python/Flask application server
 # for running on Azure App Service.  Note that Docker is not required to run the 
 # Geneplexus Flask application for testing.  This is for deployment to Azure
-FROM python:3.9
+FROM python:3.8
 
 
 
@@ -28,8 +28,8 @@ EXPOSE 8000 2222
 # these may not be used depending on ENV config
 # then do what's needed to make azure app service ssh work
 RUN apt-get update \
-    && apt-get install -y  locales locales-all openssh-server tcptraceroute libxext6 libsm6 libxrender1 curl libglib2.0-0 \
-       dialog wget bzip2 ca-certificates git \
+    && apt-get install -y --no-install-recommends locales locales-all openssh-server tcptraceroute libxext6 libsm6 libxrender1 curl libglib2.0-0 \
+     gfortran libopenblas-dev liblapack-dev  dialog wget bzip2 ca-certificates git \
     && apt-get clean \
     && locale-gen en_US.UTF-8 \
     && mkdir -p /etc/ssh \ 
