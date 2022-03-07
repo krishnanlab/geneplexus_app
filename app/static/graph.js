@@ -232,8 +232,9 @@ $( document ).ready(function() {
   }
 
   function setSidebarInformation(d) {
-    $('#static_id').text(d.id);
-    $('#static_id').attr('href', 'https://www.ncbi.nlm.nih.gov/gene/' + d.id, '_blank');
+    $('#static_id').text(d.id)
+      .attr('href', 'https://www.ncbi.nlm.nih.gov/gene/' + d.id)
+      .attr('target', '_blank');
     $('#static_class').text(d['Training-Label']);
     $('#static_known').text(d['Known/Novel'])
     $('#static_name').text(d.Name);
@@ -332,7 +333,7 @@ $( document ).ready(function() {
     nodeElements
     .append('circle')
     .attr('r', graph_node_size)
-    .attr('fill', function(d){return myColor(d.Class) })
+    .attr('fill', function(d){return myColor(d["Training-Label"]) })  // previously was Class, requires [] since column has a hypen in it
     .classed('node', true)
     .classed("fixed", d => d.fx !== undefined);
 
