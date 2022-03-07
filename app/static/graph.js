@@ -19,7 +19,7 @@ maxNodesValue = dataset.nodes.length;
 
 $( document ).ready(function() {
   // r = 0;
-  $('body').on('click', '#graph_tab', function() {
+  /*$('body').on('click', '#graph_tab', function() {
     
     var width = $('.result_container').width() * (8/12);
     var height = width / graph_aspect_ratio;
@@ -27,14 +27,25 @@ $( document ).ready(function() {
     svg
       .attr('width', width)
       .attr('height', height);
-  });
+  });*/
   var api_endpoint = 'https://mygene.info/v3/query/q=entrezgene:'
-  var width = $('.result_container').width() * (8/12);
-  var height = width / graph_aspect_ratio;
+  var width = $('#graph_container').width() * (8/12);
+  var height = width;
   selectedNode = null;
   selectedEdges = [];
 
   const svg = d3.select('svg');
+  svg.attr('width', width);
+  svg.attr('height', height);
+  svg.style('max-height', 650);
+
+  function onWindowResize() {
+    var width = $('#graph_container').width() * (8/12);
+    var height = width;
+    svg.attr('width', width);
+    svg.attr('height', height);
+  }
+  window.onresize = onWindowResize;
   const g = svg.append('g');
   const data = ['P','U','N'];
   const myColor = d3.scaleOrdinal().domain(data)
