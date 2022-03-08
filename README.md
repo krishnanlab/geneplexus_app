@@ -11,5 +11,6 @@ This repository contains the code used to implement the web application includin
  - Training the model and generate the results
  - Creating Docker containers to deploy on the cloud
 
+The GenePlexus method has been extensively benchmarked in the Bioinformatics article titled Supervised learning is an accurate method for network-based gene classification. The code-base used to reproduce the results in that manuscript are found at https://github.com/krishnanlab/GenePlexus.
 
 For more information or help contact us at help[at]geneplexus.net
