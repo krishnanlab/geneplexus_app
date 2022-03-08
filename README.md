@@ -15,12 +15,10 @@ The GenePlexus method has been extensively benchmarked in the Bioinformatics art
 
 For more information or help contact us at help[at]geneplexus.net or see the [Web application documentation](https://geneplexus.net/help)
 
-![Network Visualization](app/static/geneplexus_example_screenshot.png | width=250)
+<img src="app/static/geneplexus_example_screenshot.png" width="300px">
 
 
-
-
-*The network connectivity of the top associated genes from the Geneplexus are displayed as an interactive graph.* 
+*The network connectivity of the top associated genes are displayed as an interactive graph.* 
 
 
 
