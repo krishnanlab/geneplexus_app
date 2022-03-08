@@ -13,4 +13,14 @@ This repository contains the code used to implement the web application includin
 
 The GenePlexus method has been extensively benchmarked in the Bioinformatics article titled Supervised learning is an accurate method for network-based gene classification. The code-base used to reproduce the results in that manuscript are found at https://github.com/krishnanlab/GenePlexus.
 
-For more information or help contact us at help[at]geneplexus.net
+For more information or help contact us at help[at]geneplexus.net or see the [Web application documentation](https://geneplexus.net/help)
+
+![Network Visualization](app/static/geneplexus_example_screenshot.png | width=250)
+
+
+
+
+*The network connectivity of the top associated genes from the Geneplexus are displayed as an interactive graph.* 
+
+
+
