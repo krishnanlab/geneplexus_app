@@ -13,7 +13,13 @@ $(document).ready( function () {
             }
         ],
         pagingType: "full_numbers",
-        buttons: ['pageLength','copy', 'excel', 'pdf' ],
+        buttons: ['pageLength','copy', 'excel', 'pdf',
+        {
+            text: 'TSV',
+            extend: 'csvHtml5',
+            fieldSeparator: '\t',
+            extension: '.tsv'
+        }],
         initComplete: function(){
             $("#validatetable").show();
         }

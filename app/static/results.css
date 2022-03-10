@@ -166,12 +166,12 @@ body {
   
   div.dom_wrapper {
     width: 100%;
-    padding: 5px;
     background: rgba(255, 255, 255, 1);  /* hide the scrolling table */
   }
   
   div.dt-buttons {
       float: right;
+      margin-bottom: 1%;
       margin-left:10px;
   }
   

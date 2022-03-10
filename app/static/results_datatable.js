@@ -2,7 +2,12 @@ $(document).ready( function () {
     $('#probstable').DataTable({
         "lengthChange": true,
         dom: '<"dom_wrapper fh-fixedHeader"Bf>tip',
-        buttons: ['pageLength','copy', 'excel', 'pdf'],
+        buttons: ['pageLength','copy', 'excel', 'pdf', {
+            text: 'TSV',
+            extend: 'csvHtml5',
+            fieldSeparator: '\t',
+            extension: '.tsv'
+        }],
         fixedHeader: true,
         order: [[ 3, "desc" ]],
         columnDefs: [
@@ -60,7 +65,12 @@ $(document).ready( function () {
 
     $('#gotable').DataTable({
         dom: '<"dom_wrapper fh-fixedHeader"Bf>tip',
-        buttons: ['pageLength','copy', 'excel', 'pdf'],
+        buttons: ['pageLength','copy', 'excel', 'pdf', {
+            text: 'TSV',
+            extend: 'csvHtml5',
+            fieldSeparator: '\t',
+            extension: '.tsv'
+        }],
         fixedHeader: true,
         order: [[ 2, "desc" ]],
         columnDefs: [
@@ -102,7 +112,12 @@ $(document).ready( function () {
 
     $('#distable').DataTable({
         dom: '<"dom_wrapper fh-fixedHeader"Bf>tip',
-        buttons: ['pageLength','copy', 'excel', 'pdf' ],
+        buttons: ['pageLength','copy', 'excel', 'pdf', {
+            text: 'TSV',
+            extend: 'csvHtml5',
+            fieldSeparator: '\t',
+            extension: '.tsv'
+        } ],
         fixedHeader: true,
         order: [[ 2, "desc" ]],
         columnDefs: [
@@ -154,7 +169,12 @@ $(document).ready( function () {
             }
         ],
         pagingType: "full_numbers",
-        buttons: ['pageLength','copy', 'excel', 'pdf' ],
+        buttons: ['pageLength','copy', 'excel', 'pdf', {
+            text: 'TSV',
+            extend: 'csvHtml5',
+            fieldSeparator: '\t',
+            extension: '.tsv'
+        }],
         initComplete: function(){
             $("#validateresults").show();
         }
