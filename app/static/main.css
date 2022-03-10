@@ -160,11 +160,12 @@ div.item-content{
 
 div.dom_wrapper {
   width: 100%;
-  padding: 5px;
   background: rgba(255, 255, 255, 1);  /* hide the scrolling table */
 }
 
+
 div.dt-buttons {
+    margin-bottom: 1%;
     float: right;
     margin-left:10px;
 }
