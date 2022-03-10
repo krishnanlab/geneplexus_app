@@ -182,6 +182,12 @@ div.dt-buttons {
     padding-top: 15px !important;
 }
 
+.page-link {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: #fff
+}
+
 #probstable {
     display: none;
 }
