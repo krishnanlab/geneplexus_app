@@ -8,14 +8,14 @@
                    <div class="button_padding">
                        <!-- Button trigger modal -->
                        <label>
-                           1. Enter/Load Gene Set
+                           Enter/Upload Gene List
                        </label>
-                       <a href="#" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-placement="right"
+                       <a href="#" data-bs-toggle="popover"  data-bs-trigger="hover" data-bs-placement="right" id="enterGeneID"
                         data-bs-content="Manually input a gene set or upload a file containing a gene set as well as see examples for both">
                             <i class="fas fa-question-circle"></i></a>
                        <div class="mb-2">
                         <button type="button" id="geneBtn" class="btn btn-sm sidenav-btn btn-primary"  data-bs-toggle="modal" data-bs-target="#geneModal">
-                          {% if valid_form is defined %}Edit Loaded Genes{% else %}Add Genes{% endif %}
+                          {% if valid_form is defined %}Edit Loaded Genes / Add New Genes{% else %}Add Genes{% endif %}
                         </button>
                        </div>
                    </div>
@@ -31,24 +31,7 @@
             <br>
                 <fieldset class="border box_padding fieldset">
                     <label>
-                        2. Job Name
-                    </label>
-                    <a href="#" data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="right"
-                        data-bs-content="The default job name is a unique identifier that will be assigned
-                        once the model is run.  Optionally, a prefix can be added for easier identification
-                            by typing text into the box below. The character limit is {{ prefix_limit }}. Anything longer
-                            will be truncated when you submit a job">
-                            <i class="fas fa-question-circle"></i></a>
-                    <div>
-                        <label>(Optional) Add a prefix to the job</label>
-                        <div class="d-flex">
-                            <span class="flex-grow-1">{{ valid_form.prefix(class_="sidenav-prefix") }}</span>   -   <span>{{ valid_form.jobid(class_="form-control-plaintext sidenav-suffix") }}</span>
-                        </div>
-                        <small id="char_limit" class="form-text" style="color:red"></small>
-                    </div>
-                    <br>
-                    <label>
-                        3. Select Molecular Network
+                        1. Select Molecular Network
                     </label>
                     <a href="#" data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="right"
                         data-bs-content="Select the molecular network that will be used in training the model.">
@@ -58,7 +41,7 @@
                     </div>
                     <br>
                     <label>
-                        4. Select Feature Type
+                        2. Select Feature Type
                     </label>
                     <a href="#" data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="right"
                     data-bs-content="Select how the connections of chosen network will be represented as features in the machine learning model.">
@@ -68,7 +51,7 @@
                     </div>
                     <br>
                     <label>
-                        5. Select Negative Gene Class
+                        3. Select Negative Gene Class
                     </label>
                     <a href="#" data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="right"
                     data-bs-content="Select the type of genes in the negative class – genes annotated to Gene Ontology Biological Processes or to disease in the DisGeNet database – based on whether the input genes represent a process/pathway or a disease.">
@@ -77,7 +60,22 @@
                         {{ valid_form.negativeclass }}
                     </div>
                     <br>
-                    6. (Optional) Notification Email Address
+                    <label>
+                        4. Job Name
+                    </label>
+                    <a href="#" data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="right"
+                        data-bs-content="A unique job identifier will be auto-generated. To make the model easy to identify, you can add an optional prefix to the job ID by typing text into the box below. Max 32 characters; anything longer will be truncated.">
+                            <i class="fas fa-question-circle"></i></a>
+                    <div>
+                        <label>(Optional) Add a prefix to the job name</label>
+                        <div class="d-flex">
+                            <span class="flex-grow-1">{{ valid_form.prefix(class_="sidenav-prefix") }}</span>   -   <span>{{ valid_form.jobid(class_="form-control-plaintext sidenav-suffix", style="position: relative; bottom: 15%") }}</span>
+                        </div>
+                        <small id="char_limit" class="form-text" style="color:red"></small>
+                    </div>
+                    <br>
+                    <label>
+                    5. (Optional) Notification Email Address
                     </label><a href="#" data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="right"
                     data-bs-content="Optionally enter an email address for job notifications.  We will never share your email address outside of this application, add you to a mailing list, or send unsolicited communication.">
                     <i class="fas fa-question-circle"></i></a>
