@@ -279,34 +279,34 @@ def make_graph(df_edge, df_probs):
 def run_model(convert_IDs, net_type, GSC, features, logger = logging.getLogger(__name__)
 ):
 
-    logger.info('1/10:get genes in-network')
+    logger.info('Step 1/9: Finding genes in the network')
     pos_genes_in_net, genes_not_in_net, net_genes = get_genes_in_network(convert_IDs,
                                                                                 net_type)  # genes_not_in_net could be an output file
-    logger.info('2/10:get negatives..')
+    logger.info('Step 2 of 9: Selecting negative genes')
     negative_genes = get_negatives(pos_genes_in_net, net_type, GSC)
 
-    logger.info('3/10:run_SL... features=%s, features')
+    logger.info('Step 3 of 9: Training machine learning model')
     mdl_weights, probs, avgps = run_SL(pos_genes_in_net, negative_genes, net_genes, net_type, features)
 
-    logger.info('4/10:get_negatives...')
+    # don't log 
     negative_genes = get_negatives(pos_genes_in_net, net_type, GSC)
 
-    logger.info('5/10:probabilities')
+    logger.info('Step 4 of 9: Making genome-wide predictions')
     df_probs, Entrez_to_Symbol = make_prob_df(net_genes, probs, pos_genes_in_net, negative_genes)
 
-    logger.info('6/10:similiarities')
+    logger.info('Step 5 of 9: Finding similarities to known genesets')
     df_GO, df_dis, weights_dict_GO, weights_dict_Dis = make_sim_dfs(mdl_weights, GSC, net_type,
                                                                            features)  # both of these dfs will be displaed on the webserver
-    logger.info('7/10:small edgelist')
+    logger.info('Step 6 of 9: Finding network connectivity of top genes')
     df_edge, isolated_genes, df_edge_sym, isolated_genes_sym = make_small_edgelist(df_probs, net_type,
                                                                                           Entrez_to_Symbol)
-    logger.info('8/10:graph')
+    logger.info('Step 7 of 9: Making D3 readable network')
     graph = make_graph(df_edge, df_probs)
 
-    logger.info('9/10:export edge list')
+    logger.info('Step 8 of 9: Exporting small edgelist')
     df_edgelist = export_small_edgelist(df_probs, net_type)
     
-    logger.info('10/10:finishing')
+    logger.info('Step 9 of 9: Finishing')
     return graph, df_probs, df_GO, df_dis, avgps, df_edgelist
 
 
