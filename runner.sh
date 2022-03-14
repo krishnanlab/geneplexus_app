@@ -63,7 +63,8 @@ function post_status ()
 
   STATUS_DATA='{"status":'$1'}'
 
-  curl --header "Content-Type: application/json" \
+  # using silent flag so the % completion doesn't go into the log
+  curl --silent --header "Content-Type: application/json" \
     --request POST \
     --data $STATUS_DATA \
     $url
