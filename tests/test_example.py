@@ -2,28 +2,27 @@ from time import sleep
 
 import pytest
 
+from selenium import webdriver
 from selenium.webdriver.common.by import By
 
-# To run: py.test -s --driver Chrome --driver-path ./driver/chromedriver
-# Current issue: getting an access denied on chrome
+# Browsers can sometimes load elements into the page slowly because of Javascript so this is a way to be tolerant of that
+def try_get_element(driver, element_type: By, element_name: str, max_attempts: int = 3, wait_interval: float = 1.0):
+    for _ in range(max_attempts):
+        try:
+            element = driver.find_element(element_type, element_name)
+        except Exception as e:
+            sleep(wait_interval)
+            continue
+        return element
+    return None
 
-'''
-Steps for setup (by browser):
-    Safari:
-        - Open Safari
-        - If you have not yet, go to (in the menu) Safari -> Preferences -> Advanced -> Show Develop menu in menu bar
-        - In the Develop menu make sure "Allow Remote Automation" is checked
-        - Open a terminal and type "sudo safaridriver --enable" and enter your password if prompted
-'''
-
-# from https://pytest-flask.readthedocs.io/en/latest/features.html#start-live-server-start-live-server-automatically-default
-@pytest.mark.usefixtures('live_server')
-def test_homepage(selenium):
-    print(selenium)
-    selenium.get('http://127.0.0.1:5000/')
-    sleep(10)
-    print('\n---------------------------------------------------------------')
-    print(selenium.title)
-    print('---------------------------------------------------------------')
-    geneBtn = selenium.find_element(By.ID, 'geneBtn')
-    return True
+def test_show_modal(driver):
+    driver.get('http://127.0.0.1:5000/')
+    geneBtn = try_get_element(driver, By.ID, 'geneBtn')
+    assert geneBtn is not None, 'Gene insert/upload button not found'
+    geneBtn.click()
+    geneModal = try_get_element(driver, By.ID, 'geneModal')
+    assert geneModal is not None, 'Gene modal not found'
+    sleep(1) # This is required so that Bootstrap can update the classes to add "show"
+    modalClasses = geneModal.get_attribute('class').split(' ')
+    assert 'show' in modalClasses, 'Modal not showing'

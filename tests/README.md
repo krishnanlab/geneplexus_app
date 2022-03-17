@@ -1,0 +1,29 @@
+# GenePlexus Testing Documentation
+
+## To run
+
+From a command line, in the base folder of this project enter `py.test -s` (the `-s` is only if you want to see print statements in tests)
+
+**PLEASE NOTE**
+
+Selenium tests will only work locally. You need to start a Flask server in a separate terminal (via `flask run`) before running tests
+
+## Steps for setup by browser
+- Safari:
+    1. Open Safari
+    2. If you have not yet, go to (in the menu) Safari -> Preferences -> Advanced -> Show Develop menu in menu bar
+    3. In the Develop menu make sure "Allow Remote Automation" is checked
+    4. Open a terminal and type "sudo safaridriver --enable" and enter your password if prompted
+- Chrome:
+    1. No setup needed
+- Firefox:
+    1. No setup needed
+
+## Writing tests
+
+Two different fixtures have been written to help with testing. A fixture can be used in a test by including the fixture name in the arguments for the test
+
+- `app`
+    - This is an instance of the flask app (not physically running). This can be used to test routes (such as GET and POST return values) as well as some of the internal functionality of the app (such as unit testing functions).
+- `driver`
+    - This is an instance of a Selenium Webdriver object. This allows you to simulate and test actions a user can physically perform on a page (such as ensuring a modal will pop up when a specific button is pressed). You can read more about it [here](https://selenium-python.readthedocs.io/)
