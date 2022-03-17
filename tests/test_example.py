@@ -44,3 +44,7 @@ def test_sample_button(driver):
     assert inputGeneArea is not None, 'Sample gene area not found'
     inputGeneText = inputGeneArea.get_attribute('value').split('\n')
     assert inputGeneText == exampleGenes, 'Example gene list button did not product expected results'
+
+@pytest.mark.dependency(name='upload_file', depends=['modal_show'])
+def test_modal_upload(driver):
+    driver.get('http://127.0.0.1:5000/')
