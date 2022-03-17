@@ -4,6 +4,7 @@ import pytest
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+import requests
 
 # Browsers can sometimes load elements into the page slowly because of Javascript so this is a way to be tolerant of that
 def try_get_element(driver, element_type: By, element_name: str, max_attempts: int = 3, wait_interval: float = 1.0):
@@ -58,3 +59,27 @@ def test_modal_upload(driver):
     assert inputGeneArea is not None, 'Sample gene area not found'
     inputGeneText = inputGeneArea.get_attribute('value').split('\n')
     assert inputGeneText == exampleGenes, 'Example gene list button did not product expected results'
+
+@pytest.mark.dependency(name='download_file', depends=['modal_show'])
+def test_modal_download(driver):
+    driver.get('http://127.0.0.1:5000/')
+    inputGeneBtn = try_get_element(driver, By.ID, 'geneBtn').click()
+    sleep(1)
+    downloadBtn = try_get_element(driver, By.ID, 'sampleBtn')
+    assert downloadBtn is not None, 'Link to download a sample list cannot be found'
+    payload = requests.get(downloadBtn.get_attribute('href'))
+    assert payload.status_code == 200, 'Sample download link returned a bad request status code: {}'.format(payload.status_code)
+
+@pytest.mark.dependency(name='test_clear', depends=['modal_show', 'sample_insert'])
+def test_clear_input(driver):
+    driver.get('http://127.0.0.1:5000/')
+    try_get_element(driver, By.ID, 'geneBtn').click()
+    sleep(1)
+    addExampleBtn = try_get_element(driver, By.ID, 'exampleGeneBtn')
+    addExampleBtn.click()
+    clearBtn = try_get_element(driver, By.ID, 'clearButton')
+    assert clearBtn is not None, 'Clear button not found'
+    clearBtn.click()
+    inputGeneArea = try_get_element(driver, By.ID, 'enterGenes')
+    inputGeneText = inputGeneArea.get_attribute('value')
+    assert inputGeneText == '', 'Clear button did not clear out all text'
