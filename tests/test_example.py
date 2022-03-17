@@ -16,7 +16,8 @@ def try_get_element(driver, element_type: By, element_name: str, max_attempts: i
         return element
     return None
 
-def test_show_modal(driver):
+@pytest.mark.dependency(name='modal_show')
+def test_modal(driver):
     driver.get('http://127.0.0.1:5000/')
     geneBtn = try_get_element(driver, By.ID, 'geneBtn')
     assert geneBtn is not None, 'Gene insert/upload button not found'
@@ -26,3 +27,20 @@ def test_show_modal(driver):
     sleep(1) # This is required so that Bootstrap can update the classes to add "show"
     modalClasses = geneModal.get_attribute('class').split(' ')
     assert 'show' in modalClasses, 'Modal not showing'
+
+exampleGenes = ['CCNO','CENPF','LRRC56','ODAD3','DNAAF1','DNAAF6','DNAAF4','DNAH5','DNAH9','CFAP221','RSPH9',
+    'FOXJ1','LRRC6','GAS2L2','DNAH1','GAS8','DNAI1','STK36','MCIDAS','RSPH4A','DNAAF3','DNAJB13','CCDC103','NME8',
+    'ZMYND10','HYDIN','DNAAF5','CCDC40','ODAD2','DNAAF2','IFT122','INPP5E','CFAP298','DNAI2','SPAG1','SPEF2','ODAD4',
+    'DNAL1','RSPH3','OFD1','CFAP300','CCDC65','DNAH11','RSPH1','DRC1','ODAD1']
+@pytest.mark.dependency(name='sample_insert', depends=['modal_show'])
+def test_sample_button(driver):
+    driver.get('http://127.0.0.1:5000/')
+    try_get_element(driver, By.ID, 'geneBtn').click()
+    sleep(1)
+    addExampleBtn = try_get_element(driver, By.ID, 'exampleGeneBtn')
+    assert addExampleBtn is not None, 'Add example geneset button not found'
+    addExampleBtn.click()
+    inputGeneArea = try_get_element(driver, By.ID, 'enterGenes')
+    assert inputGeneArea is not None, 'Sample gene area not found'
+    inputGeneText = inputGeneArea.get_attribute('value').split('\n')
+    assert inputGeneText == exampleGenes, 'Example gene list button did not product expected results'
