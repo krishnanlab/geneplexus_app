@@ -1011,7 +1011,8 @@ az_count_acis ()
 
 az_delete_completed_acis ()
 {
-    # this deletes all container groups in a resource group.  this could be done using az cli json query but...
+    # this deletes all container groups in the current resource group that have completed
+    
     for n in `az container list -g $AZRG  --query "[].name" -o tsv`; do
         # get status of first container (only one container for these ACI groups)
         ACISTATE=`az container show -g $AZRG --name $n --query "containers[0].instanceView.currentState.detailStatus"`
