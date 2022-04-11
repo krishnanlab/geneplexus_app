@@ -996,3 +996,29 @@ az_storage_endpoint_info ()
 # NOTE the destination MUST be single-quoted as there are special chars in the SAS URL 'sig' parameter
 # azcopy copy /mnt/ufs18/rs-027/compbio/krishnanlab/projects/GenePlexus/repos/GenePlexusBackend/data_backend2 'https://geneplexusdev.file.core.windows.net/geneplexus-files-dev?Z4FS10CC9zGyudRa8wdbfuS4CW%2BhdGeu6I5iu9edy8o'
 # AZSASTOKEN='?sv=2020-02-10&ss=f&srt=sco&sp=rwdlc&se=2021-03-27T00:54:34Z&st=2021-03-25T16:54:34Z&sip=172.16.93.1-172.16.93.255&spr=https,http&sig=SOMELONGSTRINGWITH%ANDOTHERCHARS'
+
+
+### container group management
+
+# at one point the container groups were not auto deleted post-job and must be manually managed
+# the following functions will count group in the resource group for the env set above, and delete them
+
+az_count_acis ()
+{
+    echo "number container groups in resource group $AZRG:"
+    az container list -g $AZRG --query "[].name" -o tsv | wc -l
+}
+
+az_delete_completed_acis ()
+{
+    # this deletes all container groups in the current resource group that have completed
+    
+    for n in `az container list -g $AZRG  --query "[].name" -o tsv`; do
+        # get status of first container (only one container for these ACI groups)
+        ACISTATE=`az container show -g $AZRG --name $n --query "containers[0].instanceView.currentState.detailStatus"`
+        if [[ "$ACISTATE" == "\"Completed\"" ]]; then
+            echo "deleting ACI $n"
+            az container delete -g $AZRG --name $n -y
+        fi
+    done
+}
