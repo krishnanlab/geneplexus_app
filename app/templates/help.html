@@ -12,15 +12,17 @@
     <div>
         <div id="content-padding" class="ps-3 pe-4 pt-2">
         <h1 id="geneplexus-help-page">GenePlexus Help Page</h1>
-        <p>The help page provides various help, advice, and interpretation of the various inputs and outputs on the GenePlexus webserver. </p>
+        <p>The help page provides various help, advice, and interpretation of the various inputs and outputs on the GenePlexus webserver.</p>
         <h3 id="inputs">Inputs</h3>
         <ul>
         <li><a class="anchor" href="#supplying-input-genes">Supplying input genes</a></li>
         <li><a href="#choosing-a-molecular-network">Choosing a molecular network</a></li>
         <li><a href="#choosing-a-way-to-represent-network-features">Choosing a way to represent network features</a></li>
         <li><a href="#choosing-negative-genes">Choosing negative genes</a></li>
+        <li><a href="#guidelines-for-best-settings">Guidelines for choosing the best job settings</a></li>
+        <li><a href="#effect-of-gene">Effect of the user-supplied gene set on model performance</a></li>
         </ul>
-        <div  id="supplying-input-genes"></div>
+        <div id="supplying-input-genes"></div>
         <h4>Supplying input genes</h4>
         <p>The user can supply a list of genes by either uploading a file of genes or manually entering the genes in a text box. In both cases, each gene needs to be on a new line. </p>
         <p>Here is an example gene list file : <a href="/uploads/DOID-9562-STRING-Adjacency-DisGeNet-Symbols.txt" download>download DOID-9562-STRING-Adjacency-DisGeNet-Symbols.txt</a> </p>    
@@ -67,9 +69,29 @@
         <li>Performing a hypergeometric test between the genes in the positive class and the lists of genes annotated to every term in the selected geneset collection. If the value of this hypergeometric test is less than 0.05, all genes from the given term are also removed from the pool of possible negative genes.</li>
         <li>Declaring all the remaining genes in the pool of possible negative genes as the negative class.</li>
         </ol>
-        <p>Looking at the score for the cross-validation on the top of the results page may also help the user choose which network, feature type, and negative class is best for their gene list. Below is a figure showing a summary of results generated from our recent <a href="https://academic.oup.com/bioinformatics/article/36/11/3457/5780279">work</a> benchmarking this method.</p>
+
+        <div id="guidelines-for-best-settings"></div>
+        <h4>Guidelines for choosing the best job settings</h4>
+        <ol>
+            <li><p>The first step is choosing the network. If your gene set of interest comes from a curated database or it was generated while studying a specific process/pathway or disease, the best network to choose is STRING as this network is a highly curated network that uses prior knowledge from gene set databases in building the network. If you would like to only consider experimental interactions, then the network to use is STRING-EXP, and if you would further only like to consider physical interactions, choose BioGRID. The GIANT-TN network is best to use for two cases. First, since it offers the highest gene coverage, it enables the user to see predictions on many more understudied genes. Second, as GIANT-TN is a very dense network that does not directly incorporate gene set database information, this network performs well on larger gene sets that may be derived from high-throughput experiments.</p>
+            <li><p>The next step is to choose the way the network is represented as features in the machine learning model.</p>
+            <ol type="a">
+                <li>For BioGIRD, using Adjacency or Embedding usually results very similar performance</li>
+                <li>For STRING-EXP, using Adjacency is usually the best feature representation.</li>
+                <li>For GIANT-TN, Influence is usually the best representation.</li>
+                <li>For STRING, if your input gene set size is smaller or if the gene set is similar to a specific biological process, then using Adjacency is the best choice. If the gene set size is larger or if the gene set corresponds to a complex phenotype, then use Influence.</li>
+            </ol></li>
+            <li><p>The next step is to choose the background used to determine the genes used as negative examples in the machine learning model. If your gene set corresponds to a biological process or pathway, choose GO. Instead, if it corresponds more closely to a disease or a complex phenotype, then choose DisGeNet.</p></li>
+        </ol>
+        <p>The best way to determine if the chosen job options worked well is to look at the cross-validation score at the top of the results page. It could be useful to compare the cross validation score for a few different combinations of job options to help the user find the optimal set of options. Additionally, the figure below shows a summary of results generated from our recent work benchmarking GenePlexus and could help a user pick the best job parameters.</p>
         <p><img class="img-fluid" src="{{url_for('static', filename='help_page_fig.png')}}" alt="help_page_fig" /><br>
         <em>This figure displays results from the paper <a href="https://academic.oup.com/bioinformatics/article/36/11/3457/5780279?login=true">Supervised learning is an accurate method for network-based gene classification</a> where the parameters are options in the GenePlexus webserver. The left panel is for models trained for Gene Ontology biological prcoesses and the right panel is for models trained for DisGeNet diseases. Each boxplot contains the results of anywhere between 89 and 160 models. Each model was trained using the study-bias holdout method, where for each geneset in a geneset collection, the most well studied genes were used to train the model and the least studied genes were used for testing. This figure can be used to help users pick the network, feature type and negative selection class that best suits their input gene list. It is worth noting that the STRING network is built in part by using Gene Ontology and DisGeNet annotations, and this circularity could be the reason for the enhanced performance of the STRING network in this evaluation.</em>  </p>
+        <div id="effect-of-gene"></div>
+        <h4>Effect of the user-supplied gene set on model performance</h4>
+        <p>The GenePlexus method has been extensively benchmarked on models that used between 10 and ~400 genes in the training set. We have found that, while there is some decrease in performance as the number of genes in the gene set increases (far left panel in the figure below), the major driving force is how “connected” the genes are in the network (center and right panel in the figure below). This is understandable as GenePlexus heavily leverages the underlying network when training the model. We have found that the GIANT-TN network shows the least decrease in performance as the gene set size increases and thus we recommend this network for use with larger gene sets like those that are generated directly from high-throughput experiments. As mentioned above, the cross-validation score is very useful in determining if a given model worked well on the user-supplied gene list.</p>
+        <img class="img-fluid" src="{{url_for('static', filename='WebConnectivity.png')}}" alt="help_pag_fig2" /><br>
+        <p></p><em>This figure shows results from the paper Supervised learning is an accurate method that looks into how different properties of the gene set affect the model performance. Here, the edge density is a measure of how connected a gene set is to itself in the network and segregation is how isolated the gene set is from the rest of the network. While there is decrease in performance as the number of genes is increased, the major driving force for the model is how connected the gene set is in the network. The results here are shown for the STRING network.</em>
+        </p>
         <h3 id="outputs">Outputs</h3>
         <ul>
         <li><a href="#information-at-the-top">Information at the top</a></li>
@@ -124,11 +146,12 @@
             
         <h5>STRING and STRING-EXP</h5>
             
-            <p>Szklarczyk D, Franceschini A, Wyder S, Forslund K, Heller D, Huerta-Cepas J, Simonovic M, Roth A, Santos A, Tsafou KP, Kuhn M, Bork P, Jensen LJ, von Mering C. (2015) STRING v10: protein-protein interaction networks, integrated over the tree of life. <em>Nucleic Acids Research</em> 43:D447-452.</p>
+            <p>Szklarczyk,D., Gable,A.L., Lyon,D., Junge,A., Wyder,S., Huerta-Cepas,J., Simonovic,M., Doncheva,N.T., Morris,J.H., Bork,P., et al. (2019) STRING v11: protein–protein association networks with increased coverage, supporting functional discovery in genome-wide experimental datasets. Nucleic Acids Research, <em>Nucleic Acids Research</em> 47:D607–D613.</p>
 
         <h5 id="biogrid">BioGRID</h5>
 
             <p>Stark C, Breitkreutz BJ, Reguly T, Boucher L, Breitkreutz A, Tyers M. (2006) BioGRID: a general repository for interaction datasets. <em>Nucleic Acids Research</em> 34:D535-539.</p>
+            <p>Oughtred,R., Stark,C., Breitkreutz,B.-J., Rust,J., Boucher,L., Chang,C., Kolas,N., O’Donnell,L., Leung,G., McAdam,R., et al. (2019) The BioGRID interaction database: 2019 update. <em>Nucleic Acids Research</em>, 47:D529–D541</p>
 
         <h4 id="geneset-collections">Geneset collections</h4>
         <h5 id="gene-ontology">Gene Ontology</h5>

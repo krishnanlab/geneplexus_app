@@ -37,7 +37,7 @@ class ValidateForm(FlaskForm):
     jobid = StringField('jobid', render_kw={'readonly': True}, validators=[DataRequired()])
     prefix = StringField('prefix', validators=[Optional()])
     #genes = FileField('genes', validators=[DataRequired()])
-    network = SelectField('network', choices=networks, default=None, validators=[DataRequired()])
+    network = SelectField('network', choices=networks, default='STRING', validators=[DataRequired()])
     features = SelectField('features', choices=features, default=None, validators=[DataRequired()])
     negativeclass = SelectField('negativeclass', choices=negativeclass, default=None, validators=[DataRequired()])
     notifyaddress = StringField('notifyaddress',validators=[Email()])
