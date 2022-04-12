@@ -51,7 +51,7 @@
                     <div class="row">
                         <div class="col-xs-12 col-sm-12">
                             {# avgps is a list of strings of these values #}
-                            <label>Results for 3-fold cross validation in terms of <em>log2(auPRC/prior)</em>: <strong>{{ avgps|join(", ") }}.</strong>
+                            <label>Results for {{job_output['avgps']|length}}-fold cross validation in terms of <em>log2(auPRC/prior)</em>: <strong>{{ avgps|join(", ") }}.</strong>
                             </label>
                             <a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
                                   data-content="If the number of genes in the positive class is greater than 15,
