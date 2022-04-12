@@ -51,9 +51,8 @@
                     <div class="row">
                         <div class="col-xs-12 col-sm-12">
                             {# avgps is a list of strings of these values #}
-                            <label>The values of the log2(auPRC/prior)
-                                for each 3-fold cross validation are &nbsp</label>{{ avgps|join(", ") }}.
-                            </label>&nbsp
+                            <label>Results for 3-fold cross validation in terms of <em>log2(auPRC/prior)</em>: <strong>{{ avgps|join(", ") }}.</strong>
+                            </label>
                             <a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
                                   data-content="If the number of genes in the positive class is greater than 15,
                                   this metric reports the fold change of the area under the precision-recall curve
