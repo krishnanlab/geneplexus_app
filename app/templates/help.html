@@ -100,8 +100,11 @@
         <li><a href="#network-graph">Network graph</a></li>
         <li><a href="#validation-data">Validation data</a></li>
         </ul>
+        
         <h4 id="information-at-the-top">Information at the top</h4>
-        <p>The box at the top displays the parameters of the job along with the job name. If the number of genes in the positive class is greater than 20, then the median value of the 5-fold cross validation performance is displayed in terms of <code>log2(auPRC/prior)</code>. This metric reports the 2-fold change of the area under the precision-recall curve (auPRC) over the prior auPRC expected by random chance. For example, a value of 1 indicates a model that performs twice as good as the expected result.</p>
+        <p>The box at the top displays the parameters of the job along with the job name. If the number of genes in the positive class is greater than 15, then the
+            results of 3-fold cross validation performance is displayed in terms of <code>log2(auPRC/prior)</code>.  This metric reports the 2-fold change of the area under the precision-recall curve (auPRC) over the prior auPRC expected by random chance. For example, a value of 1 indicates a model that performs twice as good as the expected result.</p>
+
         <h4 id="gene-predictions">Gene predictions</h4>
         <p>This table contains the prediction probability for every gene in the network, indicating its membership in the positive class. The probabilities are bounded from 0 to 1 with 1 being the highest probability of being in the positive class.</p>
         <p>The possible Known/Novel column values are:</p>
