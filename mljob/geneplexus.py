@@ -122,7 +122,7 @@ def get_negatives(pos_genes_in_net, net_type, GSC):
     return negative_genes
 
 
-def run_SL(pos_genes_in_net, negative_genes, net_genes, net_type, features):
+def run_SL(pos_genes_in_net, negative_genes, net_genes, net_type, features, min_pos_genes = 15, n_folds = 3):
     pos_inds = [np.where(net_genes == agene)[0][0] for agene in pos_genes_in_net]
     neg_inds = [np.where(net_genes == agene)[0][0] for agene in negative_genes]
     data = load_npyfile('data', features_=features, net_type_=net_type)
@@ -136,23 +136,25 @@ def run_SL(pos_genes_in_net, negative_genes, net_genes, net_type, features):
     mdl_weights = np.squeeze(clf.coef_)
     probs = clf.predict_proba(data)[:, 1]
 
-    if len(pos_genes_in_net) < 20:
+    if len(pos_genes_in_net) < min_pos_genes:
         avgp = 'Not enough positive genes'
     else:
         avgps = []
-        n_folds = 5
+        
         skf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=None)
         for trn_inds, tst_inds in skf.split(Xdata, ydata):
             clf_cv = LogisticRegression(max_iter=10000, solver='lbfgs', penalty='l2', C=1.0)
             clf_cv.fit(Xdata[trn_inds], ydata[trn_inds])
             probs_cv = clf_cv.predict_proba(Xdata[tst_inds])[:, 1]
-            avgp = average_precision_score(ydata[tst_inds], probs_cv)
+            avgp =average_precision_score(ydata[tst_inds], probs_cv)
             num_tst_pos = np.sum(ydata[tst_inds])
             prior = num_tst_pos / Xdata[tst_inds].shape[0]
             log2_prior = np.log2(avgp / prior)
-            avgps.append(log2_prior)
-        avgp = '{0:.2f}'.format(np.median(avgps))
-    return mdl_weights, probs, avgp
+            avgps.append('{0:.2f}'.format(log2_prior))  # string version of value with 2 decimal place accuracy
+            # previously returned  a scalar (median) but now returning a list
+            # avgp = '{0:.2f}'.format(np.median(avgps))
+            
+    return mdl_weights, probs, avgps
 
 
 def make_prob_df(net_genes,probs,pos_genes_in_net,negative_genes):

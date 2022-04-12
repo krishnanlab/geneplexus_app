@@ -50,11 +50,12 @@
                     <br>
                     <div class="row">
                         <div class="col-xs-12 col-sm-12">
-                            <label>The median value of the log2(auPRC/prior)
-                                for 5-fold cross validation is &nbsp</label>{{( avgps )}}.
+                            {# avgps is a list of strings of these values #}
+                            <label>The values of the log2(auPRC/prior)
+                                for each 3-fold cross validation are &nbsp</label>{{ avgps|join(", ") }}.
                             </label>&nbsp
                             <a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                                  data-content="If the number of genes in the positive class is greater than 20,
+                                  data-content="If the number of genes in the positive class is greater than 15,
                                   this metric reports the fold change of the area under the precision-recall curve
                                   (auPRC) over the prior auPRC expected by random chance. For example, a value of 1
                                   indicates that the model performs twice as good as a random ranking of genes.">
