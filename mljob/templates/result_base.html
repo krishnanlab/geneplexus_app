@@ -25,10 +25,9 @@
                     class="btn btn-success float-right">
                     Download all results data as zip file
                 </a>
-                <a href="#" data-toggle="popover" data-trigger="hover" data-placement="right"
-                data-content="Download all the tables, edge list, and this result 
-                file contained in a single zip file named for the job name">
-              <i class="fas fa-question-circle"></i>
+                <a href="#" tabindex="0" role="button" data-bs-toggle="popover"  data-bs-trigger="manual" data-bs-placement="right" data-bs-html="true"
+                data-bs-content="Download all the tables, edge list, and this result file contained in a single zip file named for the job name">
+              <i class="fas fa-question-circle"></i></a>
             </h4>
 
            <div class="border border-dark">
@@ -290,7 +289,22 @@
         <script>{{ datatable_js }}</script>
         <script>{{ save_svg_as_png_js }}</script>
         <script>
-            $('[data-toggle="popover"]').popover();
+            $("[data-bs-toggle=popover]")
+                .popover({ html: true})
+                    .on("focus", function () {
+                        $(this).popover("show");
+                    }).on("focusout", function () {
+                        var _this = this;
+                        if (!$(".popover:hover").length) {
+                            $(this).popover("hide");
+                        }
+                        else {
+                            $('.popover').mouseleave(function() {
+                                $(_this).popover("hide");
+                                $(this).off('mouseleave');
+                            });
+                        }
+                    });
         </script>
         <style>
             .modal {
