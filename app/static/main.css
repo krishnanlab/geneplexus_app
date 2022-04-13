@@ -1,3 +1,10 @@
+html { 
+    /*  when following link with an anchor, 
+    the  text linked by anchor is obscured by the 56px nav bar.  
+    this prevents that */
+    scroll-padding-top: 60px; 
+}
+
 body {
   margin: 0;
   width: 100%;
