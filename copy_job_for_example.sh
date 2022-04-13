@@ -9,7 +9,7 @@ cp -R "$JOB_PATH/$EXAMPLEJOB" "$JOB_PATH/$EXAMPLENAME"
 cd  "$JOB_PATH/$EXAMPLENAME"
 # rename all the files
 
-for f in ${EXAMPLEJOB}*.*; do 
+for f in "$JOB_PATH/${EXAMPLEJOB}*.*; do 
     newname=${f/"$EXAMPLEJOB"/"$EXAMPLENAME"}
     mv "$f" "$newname"
 done
