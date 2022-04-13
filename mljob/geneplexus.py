@@ -184,6 +184,9 @@ def make_prob_df(net_genes,probs,pos_genes_in_net,negative_genes):
     df_probs = df_probs.astype({'Entrez':str,'Probability':float})
     df_probs = df_probs.sort_values(by=['Probability'],ascending=False)
     df_probs['Rank'] = rankdata(1/(df_probs['Probability'].to_numpy()+1e-9),method='min')
+    cols = df_probs.columns.tolist()
+    cols = cols[-1:] + cols[:-1]
+    df_probs = df_probs.reindex(columns=cols)
     return df_probs, Entrez_to_Symbol
 
 
@@ -214,6 +217,9 @@ def make_sim_dfs(mdl_weights,GSC,net_type,features):
             results_tmp.append([ID_tmp,Name_tmp,z_tmp])
         df_tmp = pd.DataFrame(results_tmp,columns=['ID','Name','Similarity']).sort_values(by=['Similarity'],ascending=False)
         df_tmp['Rank'] = rankdata(1/(df_tmp['Similarity'].to_numpy()+1e-9),method='min')
+        cols = df_tmp.columns.tolist()
+        cols = cols[-1:] + cols[:-1]
+        df_tmp = df_tmp.reindex(columns=cols)
         dfs_out.append(df_tmp)
     return dfs_out[0], dfs_out[1], weights_dict_GO, weights_dict_Dis
 

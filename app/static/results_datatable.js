@@ -9,11 +9,18 @@ $(document).ready( function () {
             extension: '.tsv'
         }],
         fixedHeader: true,
-        order: [[ 3, "desc" ]],
+        order: [[ 0, "asc" ]],
         columnDefs: [
+        
             {
                 
-                targets: [0],
+                targets: [ 0 ],
+                width: '4%',
+                className: "dt-right"
+            },
+            {
+                
+                targets: [1],
                 className: "dt-left",
                 render: function (data, type, row, meta) {
                     if(type === 'display') {
@@ -25,12 +32,20 @@ $(document).ready( function () {
             },
             {
                 
-                targets: [1, 2],
+                targets: [2],
+                width: '14%',
                 className: "dt-left"
             },
             {
                 
-                targets: [ 3 ],
+                targets: [3],
+                width: '26%',
+                className: "dt-left"
+            },
+            {
+                
+                targets: [ 4 ],
+                width: '14%',
                 className: "dt-right",
                 defaultOrder: true,
                 sortOrder: 'desc',
@@ -40,19 +55,16 @@ $(document).ready( function () {
             },
             {
                 
-                targets: [ 4 ],
+                targets: [ 5 ],
+                width: '14%',
                 className: "dt-center"
             },
             {
                 
-                targets: [ 5 ],
+                targets: [ 6 ],
+                width: '14%',
                 className: "dt-center"
             }  ,
-            {
-                
-                targets: [ 6 ],
-                className: "dt-right"
-            }
         ],
         pagingType: "full_numbers",
         initComplete: function(){
@@ -72,11 +84,16 @@ $(document).ready( function () {
             extension: '.tsv'
         }],
         fixedHeader: true,
-        order: [[ 2, "desc" ]],
+        order: [[ 0, "asc" ]],
         columnDefs: [
             {
-                responsivePriority: 1,
                 targets: [0],
+                className: "dt-right all"
+
+            },
+            {
+                responsivePriority: 1,
+                targets: [1],
                 className: "dt-left all",
                 render: function (data, type, row, meta) {
                     if(type === 'display') {
@@ -86,11 +103,11 @@ $(document).ready( function () {
                 }
             },
             {
-                targets: [1],
+                targets: [2],
                 className: "dt-left all"
             },
             {
-                targets: [2],
+                targets: [3],
                 className: "dt-right all",
                 defaultOrder: true,
                 sortOrder: 'desc',
@@ -98,11 +115,6 @@ $(document).ready( function () {
                     return parseFloat(data).toFixed(2);
                 }
             },
-            {
-                targets: [3],
-                className: "dt-right all"
-
-            }
         ],
         pagingType: "full_numbers",
         initComplete: function(){
@@ -119,10 +131,15 @@ $(document).ready( function () {
             extension: '.tsv'
         } ],
         fixedHeader: true,
-        order: [[ 2, "desc" ]],
+        order: [[ 0, "asc" ]],
         columnDefs: [
             {
                 targets: [0],
+                className: "dt-right all"
+
+            },
+            {
+                targets: [1],
                 className: "dt-left",
                 render: function (data, type, row, meta) {
                     if(type === 'display') {
@@ -132,11 +149,11 @@ $(document).ready( function () {
                 }
             },
             {
-                targets: [1],
+                targets: [2],
                 className: "dt-left"
             },
             {
-                targets: [2],
+                targets: [3],
                 className: "dt-right",
                 defaultOrder: true,
                 sortOrder: 'desc',
@@ -144,11 +161,6 @@ $(document).ready( function () {
                     return parseFloat(data).toFixed(2);
                 }
             },
-            {
-                targets: [3],
-                className: "dt-right all"
-
-            }
         ],
         pagingType: "full_numbers",
         initComplete: function(){
