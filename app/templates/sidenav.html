@@ -28,13 +28,15 @@
         <div class="item-content">
             <span>
             {{ valid_form.csrf_token }}
-            <br>
+            <p>For more information on which parameters to select, 
+               see the <a href="{{ url_for('help', _anchor='guidelines-for-best-settings') }}">'Guidelines for best settings'</a> 
+               help page section</p>
                 <fieldset class="border box_padding fieldset">
                     <label>
                         1. Select Molecular Network
                     </label>
                     <a href="#" tabindex="0" role="button" data-bs-toggle="popover" data-bs-trigger="manual" data-bs-placement="right" data-bs-html="true"
-                        data-bs-content="Select the molecular network that will be used in training the model. Click <a href='{{ url_for('help') }}'>here</a> for additional help.">
+                        data-bs-content="Select the molecular network that will be used in training the model.   See <a href='{{ url_for('help', _anchor='choosing-a-molecular-network') }}'>Choosing a molecular network</a> and <a href='{{ url_for('help', _anchor='networks') }}'>Network References</a>">
                     <i class="fas fa-question-circle"></i></a>
                     <div>
                     {{ valid_form.network }}
@@ -44,7 +46,7 @@
                         2. Select Feature Type
                     </label>
                     <a href="#" tabindex="0" role="button" data-bs-toggle="popover" data-bs-trigger="manual" data-bs-placement="right" data-bs-html="true"
-                    data-bs-content="Select how the connections of chosen network will be represented as features in the machine learning model. Click <a href='{{ url_for('help') }}'>here</a> for additional help.">
+                    data-bs-content="Select how the connections of chosen network will be represented as features in the machine learning model.  See <a href='{{ url_for('help', _anchor='choosing-a-way-to-represent-network-features') }}'>Choosing a molecular network</a> ">
                     <i class="fas fa-question-circle"></i></a>
                     <div class="select">
                         {{ valid_form.features }}
@@ -54,7 +56,7 @@
                         3. Select Negative Gene Class
                     </label>
                     <a href="#" tabindex="0" role="button" data-bs-toggle="popover" data-bs-trigger="manual" data-bs-placement="right" data-bs-html="true"
-                    data-bs-content="Select the type of genes in the negative class – genes annotated to Gene Ontology Biological Processes or to disease in the DisGeNet database – based on whether the input genes represent a process/pathway or a disease. Click <a href='{{ url_for('help') }}'>here</a> for additional help.">
+                    data-bs-content="Select the type of genes in the negative class – genes annotated to Gene Ontology Biological Processes or to disease in the DisGeNet database – based on whether the input genes represent a process/pathway or a disease. See <a href='{{ url_for('help', _anchor='#choosing-negative-genes') }}'>Choosing a way to represent network features</a>">
                     <i class="fas fa-question-circle"></i></a>
                     <div class="select">
                         {{ valid_form.negativeclass }}
@@ -64,7 +66,7 @@
                         4. Job Name
                     </label>
                     <a href="#" tabindex="0" role="button" data-bs-toggle="popover" data-bs-trigger="manual" data-bs-placement="right" data-bs-html="true"
-                        data-bs-content="A unique job identifier will be auto-generated. To make the model easy to identify, you can add an optional prefix to the job ID by typing text into the box below. Max 32 characters; anything longer will be truncated. Click <a href='{{ url_for('help') }}'>here</a> for additional help.">
+                        data-bs-content="A unique job identifier will be auto-generated. To make the model easy to identify, you can add an optional prefix to the job ID by typing text into the box below. Max 32 characters; anything longer will be truncated. ">
                             <i class="fas fa-question-circle"></i></a>
                     <div>
                         <label>(Optional) Add a prefix to the job name</label>
