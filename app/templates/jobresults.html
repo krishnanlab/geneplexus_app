@@ -173,7 +173,7 @@
                         </p>
 
                     </div>
-                    {{ df_table(df=job_output['df_probs'], table_id="probstable") }}
+                    {{job_output['df_probs'].reindex(columns=['Rank', 'Entrez', 'Symbol', 'Name', 'Probability', 'Known/Novel', 'Training-Label']).head(500).to_html(index=False, classes='datatables table table-striped table-bordered, width: 100%;', table_id = "probstable")   |safe }}
                 </div>
             </div>
 
@@ -186,7 +186,7 @@
                             <a href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_GO_file']}}" class="btn btn-outline-success">Download All Similarities</a>
                         </p>
                     </div>
-                    {{ df_table(df=job_output['df_GO'], table_id="gotable") }}
+                    {{job_output['df_GO'].head(500).reindex(columns=['Rank', 'ID', 'Name', 'Similarity']).to_html(index=False, classes='datatables table table-striped table-bordered, width: 100%;', table_id = "gotable")   |safe }}
                 </div>
             </div>
 
@@ -199,7 +199,7 @@
                             <a href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_dis_file']}}" class="btn  btn-outline-success">Download All Similarities</a>
                         </p>
                     </div>
-                    {{ df_table(df=job_output['df_dis'], table_id="distable") }}
+                    {{job_output['df_dis'].head(500).reindex(columns=['Rank', 'ID', 'Name', 'Similarity']).to_html(index=False, classes='datatables table table-striped table-bordered, width: 100%;', table_id = "distable")   |safe }}
                 </div>
             </div>
             <div class="tab-pane fade" id="netgraph">
