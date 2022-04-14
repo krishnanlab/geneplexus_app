@@ -1,5 +1,6 @@
 $(document).ready( function () {
     $('#probstable').DataTable({
+        "autoWidth": false,
         "lengthChange": true,
         dom: '<"dom_wrapper fh-fixedHeader"Bf>tip',
         buttons: ['pageLength','copy', 'excel', 'pdf', {
@@ -15,7 +16,6 @@ $(document).ready( function () {
             {
                 
                 targets: [ 0 ],
-                width: '4%',
                 className: "dt-right"
             },
             {
@@ -33,19 +33,16 @@ $(document).ready( function () {
             {
                 
                 targets: [2],
-                width: '14%',
                 className: "dt-left"
             },
             {
                 
                 targets: [3],
-                width: '26%',
                 className: "dt-left"
             },
             {
                 
                 targets: [ 4 ],
-                width: '14%',
                 className: "dt-right",
                 defaultOrder: true,
                 sortOrder: 'desc',
@@ -56,13 +53,11 @@ $(document).ready( function () {
             {
                 
                 targets: [ 5 ],
-                width: '14%',
                 className: "dt-center"
             },
             {
                 
                 targets: [ 6 ],
-                width: '14%',
                 className: "dt-center"
             }  ,
         ],
