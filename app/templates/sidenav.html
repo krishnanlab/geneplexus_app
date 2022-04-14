@@ -10,7 +10,7 @@
                        <label>
                            Enter/Upload Gene List
                        </label>
-                       <a href="#" tabindex="0" role="button" data-bs-toggle="popover"  data-bs-trigger="manual" data-bs-placement="right" id="enterGeneID" data-bs-html="true"
+                       <a tabindex="0" role="button" data-bs-toggle="popover"  data-bs-trigger="manual" data-bs-placement="right" id="enterGeneID" data-bs-html="true"
                         data-bs-content="Manually input a gene set or upload a file containing a gene set as well as see examples for both. The performance of the model can not be determined if <15 genes are supplied. For more information on how model performance changes with the number of genes, please see the <a href='{{ url_for('help') }}'>help page</a>.">
                             <i class="fas fa-question-circle"></i></a>
                        <div class="mb-2">
@@ -35,7 +35,7 @@
                     <label>
                         1. Select Molecular Network
                     </label>
-                    <a href="#" tabindex="0" role="button" data-bs-toggle="popover" data-bs-trigger="manual" data-bs-placement="right" data-bs-html="true"
+                    <a tabindex="0" role="button" data-bs-toggle="popover" data-bs-trigger="manual" data-bs-placement="right" data-bs-html="true"
                         data-bs-content="Select the molecular network that will be used in training the model.   See <a href='{{ url_for('help', _anchor='choosing-a-molecular-network') }}'>Choosing a molecular network</a> and <a href='{{ url_for('help', _anchor='networks') }}'>Network References</a>">
                     <i class="fas fa-question-circle"></i></a>
                     <div>
@@ -45,7 +45,7 @@
                     <label>
                         2. Select Feature Type
                     </label>
-                    <a href="#" tabindex="0" role="button" data-bs-toggle="popover" data-bs-trigger="manual" data-bs-placement="right" data-bs-html="true"
+                    <a tabindex="0" role="button" data-bs-toggle="popover" data-bs-trigger="manual" data-bs-placement="right" data-bs-html="true"
                     data-bs-content="Select how the connections of chosen network will be represented as features in the machine learning model.  See <a href='{{ url_for('help', _anchor='choosing-a-way-to-represent-network-features') }}'>Choosing a molecular network</a> ">
                     <i class="fas fa-question-circle"></i></a>
                     <div class="select">
@@ -55,7 +55,7 @@
                     <label>
                         3. Select Negative Gene Class
                     </label>
-                    <a href="#" tabindex="0" role="button" data-bs-toggle="popover" data-bs-trigger="manual" data-bs-placement="right" data-bs-html="true"
+                    <a tabindex="0" role="button" data-bs-toggle="popover" data-bs-trigger="manual" data-bs-placement="right" data-bs-html="true"
                     data-bs-content="Select the type of genes in the negative class – genes annotated to Gene Ontology Biological Processes or to disease in the DisGeNet database – based on whether the input genes represent a process/pathway or a disease. See <a href='{{ url_for('help', _anchor='#choosing-negative-genes') }}'>Choosing a way to represent network features</a>">
                     <i class="fas fa-question-circle"></i></a>
                     <div class="select">
@@ -65,7 +65,7 @@
                     <label>
                         4. Job Name
                     </label>
-                    <a href="#" tabindex="0" role="button" data-bs-toggle="popover" data-bs-trigger="manual" data-bs-placement="right" data-bs-html="true"
+                    <a tabindex="0" role="button" data-bs-toggle="popover" data-bs-trigger="manual" data-bs-placement="right" data-bs-html="true"
                         data-bs-content="A unique job identifier will be auto-generated. To make the model easy to identify, you can add an optional prefix to the job ID by typing text into the box below. Max 32 characters; anything longer will be truncated. ">
                             <i class="fas fa-question-circle"></i></a>
                     <div>
@@ -78,13 +78,13 @@
                     <br>
                     <label>
                     5. (Optional) Notification Email Address 
-                    </label><a href="#" tabindex="0" role="button" data-bs-toggle="popover" data-bs-trigger="manual" data-bs-placement="right" data-bs-html="true"
+                    </label><a tabindex="0" role="button" data-bs-toggle="popover" data-bs-trigger="manual" data-bs-placement="right" data-bs-html="true"
                     data-bs-content="Optionally enter an email address for job notifications.  We will never share your email address outside of this application, add you to a mailing list, or send unsolicited communication. Click <a href='{{ url_for('help') }}'>here</a> for additional help."><i class="fas fa-question-circle"></i></a>
                     <div class="select">{{ valid_form.notifyaddress(class_="sidenav-email") }}</div>
                     <br>
                     
                     {{ valid_form.runbatch(class_="btn btn-sm btn-primary", style="width: 85%") }}
-                    <a href="#" tabindex="0" role="button" data-bs-toggle="popover" data-bs-trigger="manual" data-bs-placement="right" data-bs-html="true"
+                    <a tabindex="0" role="button" data-bs-toggle="popover" data-bs-trigger="manual" data-bs-placement="right" data-bs-html="true"
                     data-bs-content="Hitting this button will launch a process in the cloud to train the machine learning model.
                     The link to view the results will be available in the Jobs tab when completed. Click <a href='{{ url_for('help') }}'>here</a> for additional help.">
                     <i class="fas fa-question-circle"></i></a>
