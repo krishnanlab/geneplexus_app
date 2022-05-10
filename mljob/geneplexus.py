@@ -1,3 +1,4 @@
+import json
 import numpy as np
 import pandas as pd
 import pickle
@@ -16,6 +17,8 @@ import os, logging
 
 # for serializing output
 from mljob.model_output import save_output
+
+from geneplexus import geneplexus
 
 
 # these are currently global vars within this module
@@ -278,12 +281,19 @@ def make_graph(df_edge, df_probs):
 
     return graph
 
-def run_model(convert_IDs, net_type, GSC, features, logger = logging.getLogger(__name__)
-):
-
+def run_model(convert_IDs, net_type, GSC, features, logger = logging.getLogger(__name__)):
+    gp = geneplexus.GenePlexus(data_path, net_type, features, GSC, auto_download=True)
+    gp.load_genes(convert_IDs)
+    probs, avgps, df_probs = gp.fit_and_predict()
+    df_sim_go, df_sim_dis, weights_go, weights_dis = gp.make_sim_dfs()
+    df_edge, isolated_genes, df_edge_sym, isolated_genes_sym = gp.make_small_edgelist()
+    graph = make_graph(df_edge, avgps)
+    return graph, df_probs, df_sim_go, df_sim_dis, avgps, df_edge
+    '''
     logger.info('Step 1/9: Finding genes in the network')
     pos_genes_in_net, genes_not_in_net, net_genes = get_genes_in_network(convert_IDs,
                                                                                 net_type)  # genes_not_in_net could be an output file
+    
     logger.info('Step 2 of 9: Selecting negative genes')
     negative_genes = get_negatives(pos_genes_in_net, net_type, GSC)
 
@@ -310,6 +320,7 @@ def run_model(convert_IDs, net_type, GSC, features, logger = logging.getLogger(_
     
     logger.info('Step 9 of 9: Finishing')
     return graph, df_probs, df_GO, df_dis, avgps, df_edgelist
+    '''
 
 
 def make_results_html(jobname, net_type, features, GSC, 
@@ -411,14 +422,15 @@ def run_and_render(input_genes,
     warnings.filterwarnings('ignore')
     
     # read gene file and convert it
-    convert_IDs, df_convert_out = intial_ID_convert(input_genes)
+    #convert_IDs, df_convert_out = intial_ID_convert(input_genes)
 
     # prep and validate input, save validation for presentation
-    df_convert_out, table_summary, input_count = make_validation_df(df_convert_out)
-    df_convert_out_subset, positive_genes = alter_validation_df(df_convert_out,table_summary,net_type)
+    #df_convert_out, table_summary, input_count = make_validation_df(df_convert_out)
+    #df_convert_out_subset, positive_genes = alter_validation_df(df_convert_out,table_summary,net_type)
     
     # run model, assumes data_path global is set correctly
-    graph, df_probs, df_GO, df_dis, avgps, df_edgelist = run_model(convert_IDs, net_type, GSC, features, logger)
+    #graph, df_probs, df_GO, df_dis, avgps, df_edgelist = run_model(convert_IDs, net_type, GSC, features, logger)
+    graph, df_probs, df_GO, df_dis, avgps, df_edgelist = run_model(input_genes, net_type, GSC, features, logger)
 
     # save output if a path was provided, using methods from model_output module
     # 
@@ -442,7 +454,7 @@ def run_and_render(input_genes,
 
 def load_txtfile(file_type, dtype_=str, net_type_=None, GSC_=None, target_set_=None):
     if file_type == 'net_genes':
-        output_txt = np.loadtxt(f'{data_path}Node_Orders/{net_type_}_nodelist.txt', dtype=dtype_)
+        output_txt = np.loadtxt(f'{data_path}NodeOrder_{net_type_}.txt', dtype=dtype_)
 
     elif file_type == 'uni_genes':
         output_txt = np.loadtxt(f'{data_path}GSCs/{GSC_}_{net_type_}_universe.txt', dtype=dtype_)
@@ -479,23 +491,23 @@ def load_df(file_type, sep_='\t', header_=None, net_type_=None):
 
 def load_dict(file_type, anIDtype_=None, GSC_=None, net_type_=None, target_set_=None, features_=None):
     if file_type == 'to_Entrez':
-        with open(f'{data_path}ID_conversion/Homo_sapiens__{anIDtype_}-to-Entrez__All-Mappings.pickle','rb') as handle:
-            output_dict = pickle.load(handle)
+        with open(f'{data_path}IDconversion_Homo-sapiens_{anIDtype_}-to-Entrez.json', 'r') as handle:
+            output_dict = json.load(handle)
 
     elif file_type == 'good_sets':
-        with open(f'{data_path}GSCs/{GSC_}_{net_type_}_GoodSets.pickle', 'rb') as handle:
-            output_dict = pickle.load(handle)
+        with open(f'{data_path}GSC_{GSC_}_{net_type_}_GoodSets.json', 'r') as handle:
+            output_dict = json.load(handle)
 
     elif file_type == 'Entrez_to_Symbol':
-        with open(f'{data_path}ID_conversion/Homo_sapiens__Entrez-to-Symbol__All-Mappings.pickle','rb') as handle:
-            output_dict = pickle.load(handle)
+        with open(f'{data_path}ID_conversion_Homo_sapiens_Entrez-to-Symbol.json', 'r') as handle:
+            output_dict = json.load(handle)
 
     elif file_type == 'Entrez_to_Name':
-        with open(f'{data_path}ID_conversion/Homo_sapiens__Entrez-to-Name__All-Mappings.pickle','rb') as handle:
-            output_dict = pickle.load(handle)
+        with open(f'{data_path}ID_conversion_Homo_sapiens_Entrez-to-Name.json', 'r') as handle:
+            output_dict = json.load(handle)
 
     elif file_type == 'weights':
-        with open(f'{data_path}PreTrainedModels/{target_set_}_{net_type_}_{features_}_ModelWeights.pickle','rb') as handle:
-            output_dict = pickle.load(handle)
+        with open(f'{data_path}PreTrainedWeights_{target_set_}_{net_type_}_{features_}.json', 'r') as handle:
+            output_dict = json.load(handle)
  
     return output_dict
