@@ -20,6 +20,9 @@ __pycache
 # local job folder(s)
 jobs/
 
+# local data folder(s)
+data/
+
 # mac stuff
 .DS_Store
 
