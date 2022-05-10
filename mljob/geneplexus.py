@@ -284,43 +284,12 @@ def make_graph(df_edge, df_probs):
 def run_model(convert_IDs, net_type, GSC, features, logger = logging.getLogger(__name__)):
     gp = geneplexus.GenePlexus(data_path, net_type, features, GSC, auto_download=True)
     gp.load_genes(convert_IDs)
-    probs, avgps, df_probs = gp.fit_and_predict()
+    mdl_weights, df_probs, avgps = gp.fit_and_predict()
     df_sim_go, df_sim_dis, weights_go, weights_dis = gp.make_sim_dfs()
     df_edge, isolated_genes, df_edge_sym, isolated_genes_sym = gp.make_small_edgelist()
-    graph = make_graph(df_edge, avgps)
-    return graph, df_probs, df_sim_go, df_sim_dis, avgps, df_edge
-    '''
-    logger.info('Step 1/9: Finding genes in the network')
-    pos_genes_in_net, genes_not_in_net, net_genes = get_genes_in_network(convert_IDs,
-                                                                                net_type)  # genes_not_in_net could be an output file
-    
-    logger.info('Step 2 of 9: Selecting negative genes')
-    negative_genes = get_negatives(pos_genes_in_net, net_type, GSC)
-
-    logger.info('Step 3 of 9: Training machine learning model')
-    mdl_weights, probs, avgps = run_SL(pos_genes_in_net, negative_genes, net_genes, net_type, features)
-
-    # don't log 
-    negative_genes = get_negatives(pos_genes_in_net, net_type, GSC)
-
-    logger.info('Step 4 of 9: Making genome-wide predictions')
-    df_probs, Entrez_to_Symbol = make_prob_df(net_genes, probs, pos_genes_in_net, negative_genes)
-
-    logger.info('Step 5 of 9: Finding similarities to known genesets')
-    df_GO, df_dis, weights_dict_GO, weights_dict_Dis = make_sim_dfs(mdl_weights, GSC, net_type,
-                                                                           features)  # both of these dfs will be displaed on the webserver
-    logger.info('Step 6 of 9: Finding network connectivity of top genes')
-    df_edge, isolated_genes, df_edge_sym, isolated_genes_sym = make_small_edgelist(df_probs, net_type,
-                                                                                          Entrez_to_Symbol)
-    logger.info('Step 7 of 9: Making D3 readable network')
     graph = make_graph(df_edge, df_probs)
-
-    logger.info('Step 8 of 9: Exporting small edgelist')
-    df_edgelist = export_small_edgelist(df_probs, net_type)
-    
-    logger.info('Step 9 of 9: Finishing')
-    return graph, df_probs, df_GO, df_dis, avgps, df_edgelist
-    '''
+    df_convert_out, positive_genes = gp.alter_validation_df()
+    return graph, df_probs, df_sim_go, df_sim_dis, avgps, df_edge, df_convert_out, positive_genes
 
 
 def make_results_html(jobname, net_type, features, GSC, 
@@ -430,17 +399,17 @@ def run_and_render(input_genes,
     
     # run model, assumes data_path global is set correctly
     #graph, df_probs, df_GO, df_dis, avgps, df_edgelist = run_model(convert_IDs, net_type, GSC, features, logger)
-    graph, df_probs, df_GO, df_dis, avgps, df_edgelist = run_model(input_genes, net_type, GSC, features, logger)
-
+    graph, df_probs, df_GO, df_dis, avgps, df_edgelist, df_convert_out, positive_genes = run_model(input_genes, net_type, GSC, features, logger)
+    input_count = df_convert_out.shape[0]
     # save output if a path was provided, using methods from model_output module
     # 
     if ( output_path and os.path.exists(output_path) ):
         job_info = save_output(output_path, jobname, net_type, features, GSC, avgps, input_count, positive_genes, 
-    df_probs, df_GO, df_dis, df_convert_out_subset, graph, df_edgelist)
+    df_probs, df_GO, df_dis, df_convert_out, graph, df_edgelist)
 
     # generate html visualization/report
     results_html = make_results_html(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis,
-                                        input_count, positive_genes, df_convert_out_subset, graph, job_info)
+                                        input_count, positive_genes, df_convert_out, graph, job_info)
     # return HTML file
     return(results_html)
 
