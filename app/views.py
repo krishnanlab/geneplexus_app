@@ -55,10 +55,10 @@ def jobs():
     jobname = form.jobname.data
 
     if request.method == 'POST' and form.lookup.data:
-            if retrieve_job_folder(jobname, app.config):
-                return(redirect(url_for('job',jobname=jobname)))
-            else:
-                flash(f"Sorry, the job '{jobname}'' was not found")
+        if retrieve_job_folder(jobname, app.config):
+            return(redirect(url_for('job',jobname=jobname)))
+        else:
+            flash(f"Sorry, the job '{jobname}'' was not found")
 
     jobnames = []
     joblist = {}
