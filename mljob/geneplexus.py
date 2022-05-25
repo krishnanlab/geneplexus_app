@@ -108,7 +108,7 @@ def make_graph(df_edge, df_probs):
     return graph
 
 def run_model(convert_IDs, net_type, GSC, features, logger = logging.getLogger(__name__)):
-    gp = geneplexus.GenePlexus(data_path, net_type, features, GSC, auto_download=True)
+    gp = geneplexus.GenePlexus(data_path, net_type, features, GSC)
     gp.load_genes(convert_IDs)
     mdl_weights, df_probs, avgps = gp.fit_and_predict()
     df_sim_go, df_sim_dis, weights_go, weights_dis = gp.make_sim_dfs()
@@ -116,84 +116,6 @@ def run_model(convert_IDs, net_type, GSC, features, logger = logging.getLogger(_
     graph = make_graph(df_edge, df_probs)
     df_convert_out, positive_genes = gp.alter_validation_df()
     return graph, df_probs, df_sim_go, df_sim_dis, avgps, df_edge, df_convert_out, positive_genes
-
-
-def make_results_html(jobname, net_type, features, GSC, 
-            avgps, df_probs, df_GO, df_dis, input_count, positive_genes, 
-            df_convert_out_subset, graph,
-            job_info, row_limit = 500):
-
-    """Render the Jinja template, filling fields as appropriate, not relying on Flask app to be loaded
-    params: job details, and outputs data frames from jobs
-    params job_info dictionary of job information as returned from 'model_output.save_output()`
-
-    return rendered HTML
-    If a dictionary of 'job_info' is sent, then use that to add links to download these files"""
-    # Find the module absolute path and locate templates
-    
-    module_root = os.path.join(os.path.dirname(__file__), 'templates')
-    env = Environment(loader=FileSystemLoader(module_root))
-
-    # Find the absolute module path and the static files
-    context_menu_path = os.path.join(os.path.dirname(__file__), 'static', 'd3-v4-contextmenu.js')
-    with open(context_menu_path, 'r') as f:
-        context_menu_js = f.read()
-
-    tip_path = os.path.join(os.path.dirname(__file__), 'static', 'd3-tip.js')
-    with open(tip_path, 'r') as f:
-        d3_tip_js = f.read()
-
-    graph_path = os.path.join(os.path.dirname(__file__), 'static', 'graph.js')
-    with open(graph_path, 'r') as f:
-        graph_js = f.read()
-
-    datatable_path = os.path.join(os.path.dirname(__file__), 'static', 'datatable.js')
-    with open(datatable_path, 'r') as f:
-        datatable_js = f.read()
-    
-    save_as_svg_path = os.path.join(os.path.dirname(__file__), 'static', 'saveSvgAsPng.js')
-    with open(save_as_svg_path, 'r') as f:
-        save_svg_as_png_js = f.read()
-
-    main_path = os.path.join(os.path.dirname(__file__), 'static', 'results.css')
-    with open(main_path, 'r') as f:
-        main_css = f.read()
-
-    graph_css_path = os.path.join(os.path.dirname(__file__), 'static', 'graph.css')
-    with open(graph_css_path, 'r') as f:
-        graph_css = f.read()
-
-    d3_tip_css_path = os.path.join(os.path.dirname(__file__), 'static', 'd3-tip.css')
-    with open(d3_tip_css_path, 'r') as f:
-        d3_tip_css = f.read()
-
-    template = env.get_template('result_base.html').render(
-        job_info = job_info,
-        jobname=jobname,
-        network=net_type,
-        features=features,
-        negativeclass=GSC,
-        avgps=avgps,
-        input_count=input_count,
-        positive_genes=positive_genes,
-        context_menu_js=context_menu_js,
-        d3_tip_js=d3_tip_js,
-        graph_js=graph_js,
-        datatable_js=datatable_js,
-        save_svg_as_png_js=save_svg_as_png_js,
-        main_css=main_css,
-        graph_css=graph_css,
-        d3_tip_css=d3_tip_css,
-        probs_table=df_probs.head(row_limit).to_html(index=False, classes='table table-striped table-bordered" style="width: 100%;" id = "probstable"'),
-        go_table=df_GO.head(row_limit).to_html(index=False,
-                               classes='table table-striped table-bordered nowrap" style="width: 100%;" id = "gotable"'),
-        dis_table=df_dis.head(row_limit).to_html(index=False, classes='table table-striped table-bordered" style="width: 100%;" id = "distable"'),
-        validate_results=df_convert_out_subset.head(row_limit).to_html(index=False,
-                                              classes='table table-striped table-bordered" style="width: 100%;" id = "validateresults"'),
-        graph=graph)
-    
-    # return utf-8 string
-    return(template)
                             
 def run_and_render(input_genes,  
                     net_type='BioGRID', features='Embedding', GSC='GO', 
@@ -224,12 +146,6 @@ def run_and_render(input_genes,
     if ( output_path and os.path.exists(output_path) ):
         job_info = save_output(output_path, jobname, net_type, features, GSC, avgps, input_count, positive_genes, 
     df_probs, df_GO, df_dis, df_convert_out, graph, df_edgelist)
-
-    # generate html visualization/report
-    results_html = make_results_html(jobname, net_type, features, GSC, avgps, df_probs, df_GO, df_dis,
-                                        input_count, positive_genes, df_convert_out, graph, job_info)
-    # return HTML file
-    return(results_html)
 
 #######################################################################################################################
 
