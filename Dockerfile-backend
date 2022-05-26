@@ -36,11 +36,13 @@ RUN wget --quiet     https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux
 ENV PATH="/home/dockeruser:/home/dockeruser/miniconda/bin:${PATH}"
 
 COPY mljob/requirements.txt .
+COPY mljob/pip_requirements.txt .
 
 # install packages using conda, one at a time
 # the requirements file is in pip format, not conda, so need to install one a time 
 RUN conda install -y conda=${CONDA_VERSION} python=${PYTHON_VERSION} pip && \
     for p in `cat requirements.txt` ; do conda install -y -c conda-forge $p; done && \
+    pip install -r pip_requirements.txt && \
     conda clean -aqy && \
     rm -rf ~/miniconda/pkgs && \
     find ~/miniconda/ -type d -name __pycache__ -prune -exec rm -rf {} \;
