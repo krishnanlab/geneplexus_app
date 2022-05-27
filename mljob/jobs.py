@@ -345,9 +345,6 @@ def retrieve_job_info(jobname, app_config):
     }
 
     jf = retrieve_job_folder(jobname, app_config)
-    print('------------------------------------------------------------------')
-    print(jf)
-    print('------------------------------------------------------------------')
     if jf:
         job_info['is_job'] = True
         job_info['submit_time'] = datetime.fromtimestamp(os.path.getmtime(jf)).strftime("%Y-%m-%d %H:%M:%S")
@@ -389,7 +386,6 @@ def retrieve_job_status(jobname, app_config, status_file_suffix = ".log", defaul
         # try
         with open(fp, 'r') as f:
             log_contents = f.readlines()
-            print(log_contents)
             # sometimes the file is not read (may be blocked?), so don't try to read it...
             if log_contents:
                 last_line = log_contents[-1]
