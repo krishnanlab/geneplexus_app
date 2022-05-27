@@ -168,30 +168,6 @@ def load_txtfile(file_type, dtype_=str, net_type_=None, GSC_=None, target_set_=N
     return output_txt
 
 
-def load_npyfile(file_type, features_=None, net_type_=None, GSC_=None, target_set_=None):
-    if file_type == 'data':
-        output_npy = np.load(f'{data_path}{features_}/{net_type_}_data.npy')
-
-    elif file_type == 'cor_mat':
-        output_npy = np.load(f'{data_path}CorrectionMatrices/{GSC_}_{target_set_}_{net_type_}_{features_}_CorMat.npy')
-
-    return output_npy
-
-
-def load_df(file_type, sep_='\t', header_=None, net_type_=None):
-    if file_type == 'edgelist':
-
-            if net_type_ == 'BioGRID':
-                output_df = pd.read_csv(f'{data_path}Edgelists/{net_type_}.edg', sep=sep_, header=header_,
-                                        names=['Node1', 'Node2'])
-                output_df["Weight"] = 1
-            else:
-                output_df = pd.read_csv(f'{data_path}Edgelists/{net_type_}.edg', sep=sep_, header=header_,
-                                        names=['Node1', 'Node2', 'Weight'])
-
-    return output_df
-
-
 def load_dict(file_type, anIDtype_=None, GSC_=None, net_type_=None, target_set_=None, features_=None):
     if file_type == 'to_Entrez':
         with open(f'{data_path}IDconversion_Homo-sapiens_{anIDtype_}-to-Entrez.json', 'r') as handle:
