@@ -345,9 +345,6 @@ def retrieve_job_info(jobname, app_config):
     }
 
     jf = retrieve_job_folder(jobname, app_config)
-    print('------------------------------------------------------------------')
-    print(jf)
-    print('------------------------------------------------------------------')
     if jf:
         job_info['is_job'] = True
         job_info['submit_time'] = datetime.fromtimestamp(os.path.getmtime(jf)).strftime("%Y-%m-%d %H:%M:%S")
