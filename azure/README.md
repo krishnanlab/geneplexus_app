@@ -78,6 +78,21 @@ are files and python packages in the app that are unnecessary - it makes it easi
 
 The Dockerfile is `Dockerfile-backend`
 
+### Preparing data
+
+To download the data for gp, use the geneplexus package as follows (requires the geneplexus package to be installed with pip install geneplexus )
+
+```
+import geneplexus, os
+from dotenv import load_dotenv
+
+load_dotenv()
+data_dir = os.getenv('DATA_PATH')
+geneplexus.download.download_select_data(data_dir=data_dir)
+```
+
+This downloads zipped files from the data repository Zenodo, unzips and then deletes the zips in the folder you provide.
+
 
 ### build
 

@@ -68,7 +68,7 @@ def create_input_file_name(jobname):
     # return (f"{jn}_input.txt")
 
 def create_results_file_name(jobname):
-    return("results.html")
+    return("job_info.json")
     # jn = path_friendly_jobname(jobname)
     # return (f"{jn}_results.html")
 
@@ -227,12 +227,7 @@ def launch_job(genes, job_config, app_config):
 
     if app_config['RUN_LOCAL']:
         print("running job locally (may take a while")
-        html_output = run_and_render(genes, net_type=job_config['net_type'], features=job_config['features'], GSC=job_config['GSC'], jobname=jobname, output_path=local_job_folder)
-
-        # TODO find the method here that constructs a results file! 
-        results_file = os.path.join(local_job_folder, 'results.html')
-        with open(results_file, 'w') as f:
-            f.write(html_output)
+        run_and_render(genes, net_type=job_config['net_type'], features=job_config['features'], GSC=job_config['GSC'], jobname=jobname, output_path=local_job_folder)
         response = "200"
 
     else:
@@ -391,6 +386,7 @@ def retrieve_job_status(jobname, app_config, status_file_suffix = ".log", defaul
         # try
         with open(fp, 'r') as f:
             log_contents = f.readlines()
+            print(log_contents)
             # sometimes the file is not read (may be blocked?), so don't try to read it...
             if log_contents:
                 last_line = log_contents[-1]

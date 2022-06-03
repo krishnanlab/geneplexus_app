@@ -7,7 +7,8 @@ from werkzeug.exceptions import InternalServerError
 from flask import request, render_template, jsonify, session, redirect, url_for, flash, send_file, Markup, abort,send_from_directory
 from app.forms import ValidateForm, JobLookupForm
 from app import app 
-from mljob import geneplexus  # models
+from app.validation_utils import intial_ID_convert, make_validation_df
+from mljob import geneplexus
 geneplexus.data_path = app.config.get("DATA_PATH")
 
 import os
@@ -55,10 +56,10 @@ def jobs():
     jobname = form.jobname.data
 
     if request.method == 'POST' and form.lookup.data:
-            if retrieve_job_folder(jobname, app.config):
-                return(redirect(url_for('job',jobname=jobname)))
-            else:
-                flash(f"Sorry, the job '{jobname}'' was not found")
+        if retrieve_job_folder(jobname, app.config):
+            return(redirect(url_for('job',jobname=jobname)))
+        else:
+            flash(f"Sorry, the job '{jobname}'' was not found")
 
     jobnames = []
     joblist = {}
@@ -242,12 +243,12 @@ def validate():
     input_genes = session['genes']
 
     # run all the components of the model and pass to the results form
-    convert_IDs, df_convert_out = geneplexus.intial_ID_convert(input_genes)
+    convert_IDs, df_convert_out = intial_ID_convert(input_genes)
 
     jobid = generate_job_id()
     form.jobid.data = jobid
 
-    df_convert_out, table_summary, input_count = geneplexus.make_validation_df(df_convert_out)
+    df_convert_out, table_summary, input_count = make_validation_df(df_convert_out)
     pos = min([ sub['PositiveGenes'] for sub in table_summary ])
 
     session['jobid'] = jobid
