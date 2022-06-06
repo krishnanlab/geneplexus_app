@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 
 def download_missing_files(file_list, data_dir ):
     """of the files in the file list, download only those files we don't have yet in data dir"""
-    for filename in all_files():
+    for filename in file_list:
         if os.path.exists(os.path.join(data_dir, filename)):
             print(f"already downloaded {filename}")
         else:
