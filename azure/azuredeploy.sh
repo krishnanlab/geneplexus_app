@@ -117,6 +117,14 @@ az_build_all ()
         echo 'e.g., $ build_all test'
         return 1
     fi
+
+    if [ -n "$2" ]; then
+        export HPCC_FOLDER=$2
+    else
+        echo "this script copies data from HPCC, and you must provide that folder"
+        echo 'e.g., $ build_all test /mnt/ufs18/rs-027/compbio/krishnanlab/projects/GenePlexus/etcetc'
+        return 1
+    fi
     
     az_set_vars $PROJECTENV   # or other environment name
     # add variable overrides here! e.g use 
@@ -127,7 +135,6 @@ az_build_all ()
     # STORAGE
     az_create_file_storage
     # copy files from HPCC to this new storage created
-    HPCC_FOLDER=/mnt/ufs18/rs-027/compbio/krishnanlab/projects/GenePlexus/repos/GenePlexusBackend/data_backend2
     az_copy_hpcc_to_files $HPCC_FOLDER
     #read -n 1 -p "Confirm the azcopy command worked (y) to continue  or any key to stop script (y/)" CMDCONFIRM
     #if [[ "$CMDCONFIRM" == "y" || "$CMDCONFIRM" == "Y" ]]
@@ -225,8 +232,10 @@ az_set_vars ()
     # if you are testing a flask app dev server, change this to 5000
     # but don't use flask app dev server for production!
     export PORT=8000
-    # DOCKER
 
+    # STORAGE
+    # first item is the folder part of the DATA_PATH config settings
+    export PROJECT_STORAGE_FOLDER="geneplexus_data"
     export AZSTORAGENAME="${PROJECT}${PROJECTENV}"
     export AZCONTAINERNAME="${PROJECT}-container"
     export AZSHARENAME="${PROJECT}-files-$PROJECTENV"
@@ -726,9 +735,7 @@ az_app_mount_file_storage ()
     # NOTE there is a different ENV variable for where to look for jobs, but this is the same storage account (but in the /jobs folder)
 
     MOUNTPATH=/home/site/$AZSHARENAME/
-    # HARDCODED sub-folder in this deploy script.  This is where the flask app will look, 
-    # and depends on how the data is copied into storage from HPCC
-    APP_DATA_FOLDER=$MOUNTPATH/data_backend2 
+    APP_DATA_FOLDER=$MOUNTPATH/$PROJECT_STORAGE_FOLDER
     APP_JOB_FOLDER=$MOUNTPATH/jobs  #/home/site/data
 
     

@@ -9,22 +9,22 @@
 
 # required args
 if [ ! -f "$GENE_FILE" ]; then
-    echo "gene file=$GENE_FILE was not found, exiting"
+    echo "gene file=$GENE_FILE was not found, exiting" >&2
     exit 1
 fi
 
 if [ ! -d "$DATA_PATH" ]; then
-    echo "Data path $DATA_PATH not found, exiting"
+    echo "Data path $DATA_PATH not found, exiting" >&2
     exit 1
 fi 
 
 if [ -z "$DATA_PATH" ]; then 
-    echo "DATA_PATH variable must be set to location of backend data, exiting"
+    echo "DATA_PATH variable must be set to location of backend data, exiting" >&2
     exit 1
 fi
 
 if [ -z "$OUTPUT_FILE" ]; then 
-    echo "OUTPUT_FILE variable must be set for writing output, exiting"
+    echo "OUTPUT_FILE variable must be set for writing output, exiting" >&2
     exit 1
 fi
 

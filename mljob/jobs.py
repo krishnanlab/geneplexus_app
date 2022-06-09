@@ -68,9 +68,8 @@ def create_input_file_name(jobname):
     # return (f"{jn}_input.txt")
 
 def create_results_file_name(jobname):
-    return("job_info.json")
-    # jn = path_friendly_jobname(jobname)
-    # return (f"{jn}_results.html")
+    jn = path_friendly_jobname(jobname)
+    return (f"{jn}_results.txt")
 
 def create_json_file_name(jobname):
     jn = path_friendly_jobname(jobname)
@@ -147,6 +146,13 @@ def job_json(job_config, app_config):
 
     # TODO see above, set most of this when creating the logic app
     # TODO remove the hard-coded data folder, and set this as an env var
+
+    # need to get the folder where the data is, which is the last part of the $DATA_PATH config var
+    # this folder is built into the share, and the same for the app and for jobs (since it's the same share)
+    # this extracts the last part of data path (data folder ) reliably 
+    # (e.g can deal with trailing slashes, which would other wise return empty string)
+    app_config_data_folder = os.path.dirname(app_config["DATA_PATH"]).split('/')[-1]
+
     envvars = {
         "FLASK_ENV": "development",
         "FLASK_DEBUG": True,
@@ -155,7 +161,7 @@ def job_json(job_config, app_config):
         "GP_GSC": job_config['GSC'],
         "JOBNAME": job_config['jobname'],
         "JOBID": job_config['jobid'],
-        "DATA_PATH": f"{app_config['JOB_CONTAINER_FILE_MOUNT']}/data_backend2/",
+        "DATA_PATH": f"{app_config['JOB_CONTAINER_FILE_MOUNT']}/{app_config_data_folder}/",
         "GENE_FILE": f"{job_path}/{job_config['jobname']}/{input_file_name}",
         "OUTPUT_FILE": f"{job_path}/{job_config['jobname']}/{results_file_name}",
         "JOB_PATH": job_path

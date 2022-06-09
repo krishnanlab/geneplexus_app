@@ -72,25 +72,36 @@ if __name__ == "__main__":
     import sys
     logging.basicConfig(format='%(msg)s', stream=sys.stderr, level=logging.INFO)
 
+    output_path = args.output_path
+    data_path = args.data_path
+    jobname = args.jobname
 
+    # check that these paths exist
+    if not (os.path.exists(output_path) and os.path.exists(data_path)):
+        logging.log(level = logging.ERROR, msg = f"output path {output_path} not found, cancelling job" )
+        # printing twice to compare outputs log vs sys.stderr
+        print(f"can't find output folder {output_path}, cancelling job", file=sys.stderr)
+        html = ""
 
-    #### run it
-    # TODO save args in a log file, perhaps from stderr
+    else: 
 
-    input_genes = read_input_gene_file(filename=args.gene_file)
-    print(f"processing {len(input_genes)} input genes", file=sys.stderr)
-    # in models module, data_path is a global var, so set it here
+        #### run it
+        # TODO save args in a log file, perhaps from stderr
 
-    # set additional config (if needed) available for geneplexus ML
-    from dotenv import load_dotenv
-    load_dotenv()
+        input_genes = read_input_gene_file(filename=args.gene_file)
+        logging.log(level = logging.INFO, msg = f"starting job '{jobname}'" )
+        logging.log(level = logging.INFO, msg = f"processing {len(input_genes)} input genes, storing in {output_path}")
+        
+        # set additional config (if needed) available for geneplexus ML
+        from dotenv import load_dotenv
+        load_dotenv()
 
-    # this is a module-level var that must be set prior to running
-    geneplexus.data_path = args.data_path
-    # run and save the html.  this command has by-product of also saving data files
-    html = geneplexus.run_and_render(input_genes, net_type=args.net_type,
-               features=args.features, GSC=args.GSC, jobname=args.jobname,
-               output_path=args.output_path)
+        # this is a module-level var that must be set prior to running
+        geneplexus.data_path = data_path
+        # run and save the html.  this command has by-product of also saving data files
+        html = geneplexus.run_and_render(input_genes, net_type=args.net_type,
+                features=args.features, GSC=args.GSC, jobname=jobname,
+                output_path=output_path)
                
-
+    # put main output in stdout
     print(html)
