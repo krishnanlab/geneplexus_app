@@ -346,7 +346,9 @@ def run_model():
         print("launching job with job config =")
         print(job_config)
 
-        job_response = launch_job(input_genes, job_config, app.config)
+    
+        job_response = launch_job(input_genes, job_config, app.config, form.use_queue)
+        
         app.logger.info(f"job {job_config['jobid']} launched with response {job_response}")
 
         add_job(jobname)

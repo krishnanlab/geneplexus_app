@@ -83,6 +83,15 @@
                     {{ valid_form.notifyaddress(class_="sidenav-email")  }}
                     <br>
                     
+                    <div class="form-check">
+                    <div class="select">{{ valid_form.use_queue(class_="form-check-input")}}</div>
+                    <label class="form-check-label">
+                        Submit via Queue&nbsp;
+                        </label>
+                    </div>
+                    <br>
+
+
                     {{ valid_form.runbatch(class_="btn btn-sm btn-primary", style="width: 85%") }}
                     <a tabindex="0" role="button" data-bs-toggle="popover" data-bs-trigger="manual" data-bs-placement="right" data-bs-html="true"
                     data-bs-content="Hitting this button will launch a process in the cloud to train the machine learning model.
