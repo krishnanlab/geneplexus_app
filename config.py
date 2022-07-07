@@ -38,6 +38,8 @@ class BaseConfig(object):
     TEST_EMAIL_RECIPIENT = os.getenv('TEST_EMAIL_RECIPIENT')
 
     MAX_PREFIX_LENGTH = 32
+    QUEUE_URL = os.getenv('QUEUE_URL', "")
+
 
     SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite://')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
