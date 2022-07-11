@@ -26,3 +26,5 @@ data/
 # mac stuff
 .DS_Store
 
+# For local development reasons
+data/
