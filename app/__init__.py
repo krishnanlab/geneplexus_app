@@ -1,9 +1,11 @@
 from flask import Flask
+from flask_login import LoginManager
 from config import ProdConfig, DevConfig
 from dotenv import load_dotenv
 import logging
 from pathlib import Path
 from mljob.notifier import Notifier
+from app.db import db_session
 
 # note : if using 'flask run' from command line this is unecessary as flask autoamtiaclly read .flaskenv
 load_dotenv('.flaskenv')
@@ -19,6 +21,12 @@ elif app.env == 'development':
     app.config.from_object(DevConfig)
 
 logfile=app.config.get('LOG_FILE')
+
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    db_session.remove()
+
+login_manager = LoginManager(app)
 
 if not Path(logfile).exists():
     Path(logfile).touch()

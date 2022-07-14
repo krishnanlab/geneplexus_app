@@ -7,6 +7,8 @@ from werkzeug.exceptions import InternalServerError
 from flask import request, render_template, jsonify, session, redirect, url_for, flash, send_file, Markup, abort,send_from_directory
 from app.forms import ValidateForm, JobLookupForm
 from app import app 
+from app.db import db_session
+from app.models import *
 from app.validation_utils import intial_ID_convert, make_validation_df
 from mljob import geneplexus
 geneplexus.data_path = app.config.get("DATA_PATH")
@@ -19,6 +21,7 @@ import pandas as pd
 @app.route("/index", methods=['GET'])
 def index():
     if request.method == 'GET':
+        print(db_session.query(User).all())
         session_args = create_sidenav_kwargs()
         return render_template("index.html", **session_args)
 
