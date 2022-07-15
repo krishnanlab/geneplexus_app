@@ -30,7 +30,6 @@ class User(Base, UserMixin):
     def verify_password(self, pwd):
         return check_password_hash(self.password, pwd)
 
-'''
 class Job(Base):
     __tablename__ = 'jobs'
     id = Column(Integer, primary_key=True)
@@ -38,4 +37,3 @@ class Job(Base):
     userid = Column(Integer, ForeignKey('users.id'), nullable=False)
 
     user = relationship('User')
-'''

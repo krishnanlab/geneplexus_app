@@ -7,7 +7,7 @@ from werkzeug.exceptions import InternalServerError
 from flask import request, render_template, jsonify, session, redirect, url_for, flash, send_file, Markup, abort,send_from_directory
 from app.forms import ValidateForm, JobLookupForm
 from app import app 
-from app.db import db_session
+import app.db as db
 from app.models import *
 from app.validation_utils import intial_ID_convert, make_validation_df
 from mljob import geneplexus
@@ -21,7 +21,7 @@ import pandas as pd
 @app.route("/index", methods=['GET'])
 def index():
     if request.method == 'GET':
-        print(db_session.query(User).all())
+        print(db.db_session.query(User).all())
         session_args = create_sidenav_kwargs()
         return render_template("index.html", **session_args)
 
@@ -425,6 +425,20 @@ def uploadgenes():
     except Exception as e:
         print(e)
         return jsonify(success=False, filename=None)
+
+@app.route('/signup', methods=['POST'])
+def signup():
+    form_email = request.form.get('email')
+    form_pass = request.form.get('password')
+    form_valid = request.form.get('validpassword')
+    print(form_pass)
+    print(form_valid)
+    if form_pass != form_valid:
+        return redirect('index')
+    user = User(form_email, form_pass, '')
+    db.db_session.add(user)
+    db.db_session.commit()
+    return redirect('index')
 
 
 @app.errorhandler(InternalServerError)
