@@ -22,7 +22,6 @@ import pandas as pd
 @app.route("/index", methods=['GET'])
 def index():
     if request.method == 'GET':
-        print(db.db_session.query(User).all())
         session_args = create_sidenav_kwargs()
         return render_template("index.html", **session_args)
 
@@ -446,7 +445,6 @@ def login():
     form_email = request.form.get('email')
     form_pass = request.form.get('password')
     user = db.db_session.query(User).filter_by(email=form_email).first()
-    print(user)
     if user is None:
         # Give user some sort of error
         print('User could not be logged in)')
@@ -457,6 +455,25 @@ def login():
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
     logout_user()
+    return redirect('index')
+
+@app.route('/edit_profile', methods=['GET', 'POST'])
+def edit_profile():
+    session_args = create_sidenav_kwargs()
+    if request.method == 'GET':
+        return render_template("edit_profile.html", **session_args)
+    form_email = request.form.get('email')
+    form_name = request.form.get('name')
+    user = db.db_session.query(User).filter_by(email=form_email).update({'name': form_name}, synchronize_session='fetch')
+    if user is None:
+        # This is a huge problem if this happens. Means that we got to this screen without being logged in
+        return redirect('index')
+    db.db_session.commit()
+    return redirect('edit_profile')
+
+
+@app.route('/update_user', methods=['POST'])
+def update_user():
     return redirect('index')
 
 
