@@ -94,3 +94,20 @@
         </div>
     </div>
 </div>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="userOffcanvas" aria-labelledby="userOffcanvasLabel">
+    <div class="offcanvas-header">
+      <h5 id="userOffcanvasLabel">{{ current_user.email }}</h5>
+      <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+      <ul class="nav flex-column">
+        <li class="nav-item"><a class="nav-link" href="#user-edit">Edit Profile</a></li>
+        <li class="nav-item"><a class="nav-link" href="#my-genesets">My Genesets</a></li>
+        <li class="nav-item"><a class="nav-link" href="#my-results">My Results</a></li>
+        <li class="nav-item"><a class="nav-link" href="#fav-genesets">Favorite Genesets</a></li>
+        <li class="nav-item"><a class="nav-link" href="#fav-results">Favorite Results</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Logout</a></li>
+      </ul>
+    </div>
+  </div>

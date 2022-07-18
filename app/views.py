@@ -5,7 +5,7 @@ from mljob.jobs import path_friendly_jobname, launch_job, retrieve_job_folder,re
 
 from werkzeug.exceptions import InternalServerError
 from flask import request, render_template, jsonify, session, redirect, url_for, flash, send_file, Markup, abort,send_from_directory
-from flask_login import login_user
+from flask_login import login_user, logout_user
 from app.forms import ValidateForm, JobLookupForm
 from app import app 
 import app.db as db
@@ -454,7 +454,10 @@ def login():
     login_user(user)
     return redirect('index')
 
-
+@app.route('/logout', methods=['GET', 'POST'])
+def logout():
+    logout_user()
+    return redirect('index')
 
 
 @app.errorhandler(InternalServerError)
