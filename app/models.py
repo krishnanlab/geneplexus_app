@@ -1,7 +1,7 @@
 
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
-from app.db import Base
+from app.db import Base, db_session
 
 from app import login_manager
 from flask_login import UserMixin
@@ -10,7 +10,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.objects(id=user_id).first()
+    return db_session.query(User).filter_by(id=user_id).first()
 
 class User(Base, UserMixin):
     __tablename__ = 'users'
