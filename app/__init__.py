@@ -1,5 +1,7 @@
 from flask import Flask
+from flask.cli import with_appcontext
 from flask_login import LoginManager
+import click
 from config import ProdConfig, DevConfig
 from dotenv import load_dotenv
 import logging
@@ -46,3 +48,20 @@ from mljob import geneplexus
 geneplexus.set_config(app.config)
 
 from app import views
+
+@click.command('create_db', help = 'Create database from models.py.')
+@click.option('--uri', default='sqlite:///test.db')
+@with_appcontext
+def create_db(uri):
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import scoped_session, sessionmaker
+    from sqlalchemy.ext.declarative import declarative_base
+    import app.models as models
+    print('Creating initial DB tables at {}'.format(uri))
+    engine = create_engine(uri, convert_unicode=True)
+    db_session = scoped_session(sessionmaker(autocommit=False,
+                                            autoflush=False,
+                                            bind=engine))
+    models.Base.metadata.create_all(bind=engine)
+
+app.cli.add_command(create_db)
