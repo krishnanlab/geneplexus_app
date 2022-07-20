@@ -1,4 +1,6 @@
 from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from flask.cli import with_appcontext
 from flask_login import LoginManager
 import click
@@ -7,7 +9,6 @@ from dotenv import load_dotenv
 import logging
 from pathlib import Path
 from mljob.notifier import Notifier
-from app.db import db_session
 
 # note : if using 'flask run' from command line this is unecessary as flask autoamtiaclly read .flaskenv
 load_dotenv('.flaskenv')
@@ -24,9 +25,8 @@ elif app.env == 'development':
 
 logfile=app.config.get('LOG_FILE')
 
-@app.teardown_appcontext
-def shutdown_session(exception=None):
-    db_session.remove()
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 login_manager = LoginManager(app)
 
@@ -49,19 +49,10 @@ geneplexus.set_config(app.config)
 
 from app import views
 
-@click.command('create_db', help = 'Create database from models.py.')
-@click.option('--uri', default='sqlite:///test.db')
+@click.command('create-db')
 @with_appcontext
-def create_db(uri):
-    from sqlalchemy import create_engine
-    from sqlalchemy.orm import scoped_session, sessionmaker
-    from sqlalchemy.ext.declarative import declarative_base
-    import app.models as models
-    print('Creating initial DB tables at {}'.format(uri))
-    engine = create_engine(uri, convert_unicode=True)
-    db_session = scoped_session(sessionmaker(autocommit=False,
-                                            autoflush=False,
-                                            bind=engine))
-    models.Base.metadata.create_all(bind=engine)
+def create_db():
+    from app import db
+    db.create_all()
 
 app.cli.add_command(create_db)

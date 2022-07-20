@@ -28,3 +28,6 @@ data/
 
 # For local development reasons
 data/
+
+# Local testing databases
+*.db

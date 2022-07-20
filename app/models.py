@@ -1,23 +1,17 @@
-
-from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship
-from app.db import Base, db_session
-
-from app import login_manager
+from app import login_manager, db
 from flask_login import UserMixin
-
 from werkzeug.security import generate_password_hash, check_password_hash
 
 @login_manager.user_loader
 def load_user(user_id):
-    return db_session.query(User).filter_by(id=user_id).first()
+    return User.query.filter_by(id=user_id).first()
 
-class User(Base, UserMixin):
+class User(db.Model, UserMixin):
     __tablename__ = 'users'
-    id = Column(Integer, primary_key=True)
-    name = Column(String(64))
-    email = Column(String(64), unique=True, nullable=False)
-    password = Column(String(64))
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64))
+    email = db.Column(db.String(64), unique=True, nullable=False)
+    password = db.Column(db.String(64), nullable=False)
 
     def __init__(self, email, password, name):
         self.name = name
@@ -30,10 +24,10 @@ class User(Base, UserMixin):
     def verify_password(self, pwd):
         return check_password_hash(self.password, pwd)
 
-class Job(Base):
+class Job(db.Model):
     __tablename__ = 'jobs'
-    id = Column(Integer, primary_key=True)
-    jobid = Column(String(64), unique=True, nullable=False)
-    userid = Column(Integer, ForeignKey('users.id'), nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    jobid = db.Column(db.String(64), unique=True, nullable=False)
+    userid = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
-    user = relationship('User')
+    user = db.relationship('User', backref=db.backref('jobs', lazy=True))

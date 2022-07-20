@@ -7,8 +7,8 @@ from werkzeug.exceptions import InternalServerError
 from flask import request, render_template, jsonify, session, redirect, url_for, flash, send_file, Markup, abort,send_from_directory
 from flask_login import login_user, logout_user
 from app.forms import ValidateForm, JobLookupForm
-from app import app 
-import app.db as db
+from app import app, db
+
 from app.models import *
 from app.validation_utils import intial_ID_convert, make_validation_df
 from mljob import geneplexus
@@ -431,23 +431,24 @@ def signup():
     form_email = request.form.get('email')
     form_pass = request.form.get('password')
     form_valid = request.form.get('validpassword')
-    print(form_pass)
-    print(form_valid)
     if form_pass != form_valid:
+        flash('Passwords did not match', 'error')
         return redirect('index')
     user = User(form_email, form_pass, '')
-    db.db_session.add(user)
-    db.db_session.commit()
+
+    db.session.add(user)
+    db.session.commit()
+    login_user(user)
     return redirect('index')
 
 @app.route('/login', methods=['POST'])
 def login():
     form_email = request.form.get('email')
     form_pass = request.form.get('password')
-    user = db.db_session.query(User).filter_by(email=form_email).first()
-    if user is None:
+    user = User.query.filter_by(email=form_email).first()
+    if user is None or not user.verify_password(form_pass):
         # Give user some sort of error
-        print('User could not be logged in)')
+        flash('Username and password combination did not match', 'error')
         return redirect('index')
     login_user(user)
     return redirect('index')
@@ -464,11 +465,11 @@ def edit_profile():
         return render_template("edit_profile.html", **session_args)
     form_email = request.form.get('email')
     form_name = request.form.get('name')
-    user = db.db_session.query(User).filter_by(email=form_email).update({'name': form_name}, synchronize_session='fetch')
+    user = User.query.filter_by(email=form_email).update({'name': form_name}, synchronize_session='fetch')
     if user is None:
         # This is a huge problem if this happens. Means that we got to this screen without being logged in
         return redirect('index')
-    db.db_session.commit()
+    db.session.commit()
     return redirect('edit_profile')
 
 

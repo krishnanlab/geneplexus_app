@@ -39,6 +39,9 @@ class BaseConfig(object):
 
     MAX_PREFIX_LENGTH = 32
 
+    SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite://')
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
 class ProdConfig(BaseConfig):
     FLASK_ENV="production"
     FILE_LOC = "local"
