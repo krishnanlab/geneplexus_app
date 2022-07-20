@@ -5,8 +5,11 @@ from mljob.jobs import path_friendly_jobname, launch_job, retrieve_job_folder,re
 
 from werkzeug.exceptions import InternalServerError
 from flask import request, render_template, jsonify, session, redirect, url_for, flash, send_file, Markup, abort,send_from_directory
+from flask_login import login_user, logout_user
 from app.forms import ValidateForm, JobLookupForm
-from app import app 
+from app import app, db
+
+from app.models import *
 from app.validation_utils import intial_ID_convert, make_validation_df
 from mljob import geneplexus
 geneplexus.data_path = app.config.get("DATA_PATH")
@@ -422,6 +425,57 @@ def uploadgenes():
     except Exception as e:
         print(e)
         return jsonify(success=False, filename=None)
+
+@app.route('/signup', methods=['POST'])
+def signup():
+    form_email = request.form.get('email')
+    form_pass = request.form.get('password')
+    form_valid = request.form.get('validpassword')
+    if form_pass != form_valid:
+        flash('Passwords did not match', 'error')
+        return redirect('index')
+    user = User(form_email, form_pass, '')
+
+    db.session.add(user)
+    db.session.commit()
+    login_user(user)
+    return redirect('index')
+
+@app.route('/login', methods=['POST'])
+def login():
+    form_email = request.form.get('email')
+    form_pass = request.form.get('password')
+    user = User.query.filter_by(email=form_email).first()
+    if user is None or not user.verify_password(form_pass):
+        # Give user some sort of error
+        flash('Username and password combination did not match', 'error')
+        return redirect('index')
+    login_user(user)
+    return redirect('index')
+
+@app.route('/logout', methods=['GET', 'POST'])
+def logout():
+    logout_user()
+    return redirect('index')
+
+@app.route('/edit_profile', methods=['GET', 'POST'])
+def edit_profile():
+    session_args = create_sidenav_kwargs()
+    if request.method == 'GET':
+        return render_template("edit_profile.html", **session_args)
+    form_email = request.form.get('email')
+    form_name = request.form.get('name')
+    user = User.query.filter_by(email=form_email).update({'name': form_name}, synchronize_session='fetch')
+    if user is None:
+        # This is a huge problem if this happens. Means that we got to this screen without being logged in
+        return redirect('index')
+    db.session.commit()
+    return redirect('edit_profile')
+
+
+@app.route('/update_user', methods=['POST'])
+def update_user():
+    return redirect('index')
 
 
 @app.errorhandler(InternalServerError)

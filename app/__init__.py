@@ -1,4 +1,9 @@
 from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from flask.cli import with_appcontext
+from flask_login import LoginManager
+import click
 from config import ProdConfig, DevConfig
 from dotenv import load_dotenv
 import logging
@@ -20,6 +25,11 @@ elif app.env == 'development':
 
 logfile=app.config.get('LOG_FILE')
 
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+
+login_manager = LoginManager(app)
+
 if not Path(logfile).exists():
     Path(logfile).touch()
 
@@ -38,3 +48,11 @@ from mljob import geneplexus
 geneplexus.set_config(app.config)
 
 from app import views
+
+@click.command('create-db')
+@with_appcontext
+def create_db():
+    from app import db
+    db.create_all()
+
+app.cli.add_command(create_db)

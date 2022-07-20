@@ -24,11 +24,12 @@ These instructions are for internal developers to get started working ont his sy
 
 5.  create a .env file
 
-    - must have two entries to run the front-end (with gene validation): 
+    - must have three entries to run the front-end (with gene validation): 
 
 ```
 JOB_PATH=/path/to/job/files
 DATA_PATH=/path/to/backend/datafiles
+SQLALCHEMY_DATABASE_URI='service:///connection_string.db'
 ```
 
     - For the system to send emails, config the email service. See [EMAIL.md](EMAIL.md) documention for details
@@ -41,7 +42,30 @@ TEST_EMAIL_RECIPIENT='you@youraddress.com'             # the email recipient you
 ```
 
 
-6.  flask run    
+6.  **Setup database**
+
+    On the command line run this command to create the local database from the connection URI
+
+    `flask create-db`
+
+7. flask run    
+
+### Creating a migration or applying existing migrations
+
+Migrations are how we keep track of any updates we do to the database schema. This way we can add/remove/edit tables without recreating the database (and thus removing all of the data we previously added)
+
+If no migrations have been created yet you need to first setup your local migration environment. After creating the initial database you must run the command
+
+`flask db init`
+
+This will create a 'migrations' folder in the project base directory. From here you need to commit your first migration. You can do that by the following commands
+
+```
+flask db migrate -m "Initial commit"
+flask db upgrade
+```
+
+The first line just stages the first migration, it does not write it to any files yet. `flask db upgrade` takes the changes you commited and creates a migration file.
     
 ### Input File
 The file "input_genes.txt" has been included in the root folder of the application to use as a sample input

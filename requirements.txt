@@ -19,6 +19,9 @@ numpy
 scipy
 pandas
 scikit-learn
+Flask-SQLAlchemy==2.5.1
+Flask-Migrate==3.1.0
+Flask-Login==0.6.1
 # requires pip installation
 sendgrid==6.9.2
 
