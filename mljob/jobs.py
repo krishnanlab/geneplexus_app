@@ -69,7 +69,7 @@ def create_input_file_name(jobname):
 
 def create_results_file_name(jobname):
     jn = path_friendly_jobname(jobname)
-    return (f"{jn}_results.txt")
+    return ('job_info.json')
 
 def create_json_file_name(jobname):
     jn = path_friendly_jobname(jobname)

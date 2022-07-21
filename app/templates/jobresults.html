@@ -173,7 +173,8 @@
                         </p>
 
                     </div>
-                    {{job_output['df_probs'].reindex(columns=['Rank', 'Entrez', 'Symbol', 'Name', 'Probability', 'Known/Novel', 'Training-Label']).head(500).to_html(index=False, classes='datatables table table-striped table-bordered', table_id = "probstable")   |safe }}
+                    
+                    {{job_output['df_probs'].reindex(columns=['Rank', 'Entrez', 'Symbol', 'Name', 'Probability', 'Known/Novel', 'Class-Label']).rename(columns={'Class-Label': 'Training-Label'}).head(500).to_html(index=False, classes='datatables table table-striped table-bordered', table_id = "probstable")   |safe }}
                 </div>
             </div>
 
