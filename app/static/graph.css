@@ -24,7 +24,7 @@
 }
 
 /* SVG styles */
-svg {
+#graph_svg {
   flex-basis: 100%;
   min-width: 200px;
 }

@@ -34,7 +34,8 @@ $( document ).ready(function() {
   selectedNode = null;
   selectedEdges = [];
 
-  const svg = d3.select('svg');
+  //const svg = d3.select('svg');
+  const svg = d3.select('#graph_svg');
   svg.attr('width', width);
   svg.attr('height', height);
 
@@ -156,58 +157,6 @@ $( document ).ready(function() {
   
   // create a new graph from initial data and parameters 
   regenerateGraph(curNodes, curLinks) 
-
-  // NOTE this is commented out here in favor of identical code in the 'regenerateGraph() function
-  
-  // var linkElements = g.append('g')
-  //         .attr("class", "links")
-  //         .selectAll("line")
-  //         .data(curLinks)
-  //         //.data(dataset.links)
-  //         .enter().append("line")
-  //         .style("stroke", "#ADA9A8")
-  //         .style('stroke-width', '2')
-  //         //.style("stroke-width", function(d) { return (d.weight); });
-
-  // var nodeElements = g.append('g')
-  //   .attr('class', 'nodes')
-  //   .attr('r', graph_node_size)
-  //   .selectAll('circle')
-  //   .data(curNodes)
-  //   .enter()
-  //   .append('g')
-  //   .attr('class', 'nodeHolder');
-
-  // nodeElements
-  //   .append('circle')
-  //   .attr('r', graph_node_size)
-  //   //.attr('r', function(d){return nodescale(d.Probability)})
-  //   .attr('fill', function(d){return myColor(d.Class) })
-  //   .classed('node', true)
-  //   .classed("fixed", d => d.fx !== undefined);
-  
-
-  
-  //     //svg.call(d3.zoom().on('zoom', onZoomAction)).on("dblclick.zoom", null);
-  // zoom_handler = d3.zoom().on('zoom', onZoomAction);
-  // zoom_handler(svg);
-  // //zoom_handler(svg).on("dblclick.zoom", null);
-  // svg.call(zoom_handler.transform, d3.zoomIdentity.scale(0.8));
-  // svg.on("dblclick.zoom", null);
-
-  // nodeElements.append("text")
-  // .attr("text-anchor", "middle")
-  // .classed("nodelabel")
-  // .text(function(d) { return d.Symbol; })
-  // .style('transform', 'translate(0px, -15px)')
-  // .style("font-size", "50%");
-  
-  // nodeElements.call(d3.drag()
-  // .on("start", onDragStarted)
-  // .on("drag", onDrag)
-  // .on("end", onDragEnded))
-  // .on('click', onClick)
-  // .on('dblclick', onDblClick);
 
   function onTick() {
     nodeElements
@@ -417,13 +366,13 @@ $( document ).ready(function() {
     .on('click', function(){
         console.log('In download chart');
         // Get the d3js SVG element and save using saveSvgAsPng.js
-        saveSvgAsPng(document.getElementsByTagName("svg")[0], "plot.png", {scale: 2, backgroundColor: "#FFFFFF"});
+        saveSvgAsPng(document.getElementById("graph_svg"), "plot.png", {scale: 2, backgroundColor: "#FFFFFF"});
     });
 
     d3.select("#download_as_svg")
     .on('click', function(){
         console.log('In download chart');
         // Get the d3js SVG element and save using saveSvgAsPng.js
-        saveSvg(document.getElementsByTagName("svg")[0], "plot.svg", {scale: 2, backgroundColor: "#FFFFFF"});
+        saveSvg(document.getElementById("graph_svg"), "plot.svg", {scale: 2, backgroundColor: "#FFFFFF"});
     });
 });
