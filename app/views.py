@@ -69,8 +69,8 @@ def jobs():
     if current_user.is_authenticated:
         jobnames = Job.query.filter_by(userid=current_user.id).with_entities(Job.jobid).all()
         jobnames = [job[0] for job in jobnames]
-    elif 'jobs' in session:
-        jobnames = session['jobs']
+    if 'jobs' in session:
+        jobnames = jobnames + session['jobs']
     # jobnames = list_all_jobs(app.config.get('JOB_PATH'))
     if len(jobnames) > 0:
         joblist = job_info_list(jobnames, app.config)  
