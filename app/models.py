@@ -31,3 +31,7 @@ class Job(db.Model):
     userid = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
     user = db.relationship('User', backref=db.backref('jobs', lazy=True))
+
+    def __init__(self, jobid, userid):
+        self.jobid = jobid
+        self.userid = userid
