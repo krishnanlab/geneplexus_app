@@ -3,7 +3,7 @@ import json
 import os, sys, pathlib #, re, errno
 from slugify import slugify
 from datetime import datetime
-from mljob.geneplexus import run_and_render
+from mljob.geneplexus_previous import run_and_render
 from mljob.model_output import read_output
 
 from random import choices as random_choices
