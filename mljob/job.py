@@ -1,4 +1,84 @@
-# jobs.py  Class to work with submitted LogicApp jobs
+"""
+Jobs and Results in GPDefinitions 
+——
+job = common api for starting ML processes and check status of those process
+sending parameters to the machine to create results.   
+output of a job is the status of that job, and messages about how it's doing (run time, memory, cost?)
+
+Once a job is done, status = completed and we need nothing more from it. 
+if job is completed, it doesn’t have a purpose.    
+the output of a job is status and link to results
+
+if a job is complete, can  it be used to create results object? 
+
+class properties
+    status_codes
+    update_url
+    job_path
+    notifier
+    notify_address
+
+
+
+state
+    exists (t/f) (class method)
+    status 
+    status_code
+    completed (t/f)  (state == COMPLETED)
+    job_config == params, inputfile
+
+verbs
+    set_config(app_config)
+	start : (id, job_config, app_config)  JOB MANAGER begin running, or submit it to the runner  (Not ‘submit’ as a job does _not_ necessarily require a queue). 
+        save params to job_info file
+        save input data to JobManager.job_path
+        start process (URL)
+
+
+	get_status : checking a job).  JOB MANAGER See what the process is doing. 
+    update : send an update from  JOB MANAGER
+    get_results : return(Results.get(self.id)  results factory to create a results ojbect from this job
+
+	should a job when checking return a ‘results’ object?
+
+    cleanup : remove resources if necessary once completed (e.g. delete container)
+        
+    we want to be able to run a job locally and on a queue (and maybe some other way)
+    results = storage of output from d
+
+
+JobRunner
+    imports JobManager
+    reads config from disk
+
+
+Results = the output fro the machine learning code
+	inputs (params + user data + system data) 
+	code. = ML functions 
+	time
+	infrastructure to run it all on
+	infrastructure to save output
+
+	results
+ 
+new job = to submit and run the job
+    job = Job(job_name, job_config, app_config )  #  job_config ==> params etc
+    if jobname doesn't already exist
+        response_code = job.submit()  # put response and other info into job class, 
+            # create folder, and/or database entry
+            # hit job runner URL and get response
+        # if there is problem submitting job :
+        #   # reset? delete all entries in database?
+        #   # simply set that there was an error submitting with details and leave job in DB?
+        # else no problem
+        #   flash 'all good'
+    else: # job exists already!!! 
+        # the users _may_ not know there is already a job and may not want to load it
+        # especially if the job is not owned by the user, or is meant ot be private
+        # but could instead just load what      
+"""
+
+# job.py  Class to work with submitted LogicApp jobs
 
 import os,json, sys, requests
 from datetime import datetime

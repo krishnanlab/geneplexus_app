@@ -13,8 +13,8 @@ from flask_dance.contrib.github import github
 
 from app.models import *
 from app.validation_utils import intial_ID_convert, make_validation_df
-from mljob import geneplexus
-geneplexus.data_path = app.config.get("DATA_PATH")
+from mljob import geneplexus_previous
+geneplexus_previous.data_path = app.config.get("DATA_PATH")
 
 import os
 import numpy as np
