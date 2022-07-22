@@ -5,7 +5,7 @@ from mljob.jobs import path_friendly_jobname, launch_job, retrieve_job_folder,re
 
 from werkzeug.exceptions import InternalServerError
 from flask import request, render_template, jsonify, session, redirect, url_for, flash, send_file, Markup, abort,send_from_directory
-from flask_login import login_user, logout_user
+from flask_login import login_user, logout_user, current_user
 from app.forms import ValidateForm, JobLookupForm
 from app import app, db
 
@@ -66,11 +66,14 @@ def jobs():
 
     jobnames = []
     joblist = {}
+    if current_user.is_authenticated:
+        jobnames = Job.query.filter_by(userid=current_user.id).with_entities(Job.jobid).all()
+        jobnames = [job[0] for job in jobnames]
     if 'jobs' in session:
-        jobnames = session['jobs']
-        # jobnames = list_all_jobs(app.config.get('JOB_PATH'))
-        if jobnames:
-            joblist = job_info_list(jobnames, app.config)  
+        jobnames = jobnames + session['jobs']
+    # jobnames = list_all_jobs(app.config.get('JOB_PATH'))
+    if len(jobnames) > 0:
+        joblist = job_info_list(jobnames, app.config)  
 
     session_args = create_sidenav_kwargs()
     return render_template("jobs.html", jobs = jobnames, 
@@ -344,13 +347,7 @@ def run_model():
         job_response = launch_job(input_genes, job_config, app.config)
         app.logger.info(f"job {job_config['jobid']} launched with response {job_response}")
 
-        if 'jobs' not in session or session['jobs'] is None:
-            sessionjobs = []
-        else:
-            sessionjobs = session['jobs']
-
-        sessionjobs.append(jobname)
-        session['jobs'] = sessionjobs
+        add_job(jobname)
 
 
 
@@ -431,6 +428,9 @@ def signup():
     form_email = request.form.get('email')
     form_pass = request.form.get('password')
     form_valid = request.form.get('validpassword')
+    if User.query.filter_by(email=form_email).first is not None:
+        flash('An account with this email already exists', 'error')
+        return redirect('index')
     if form_pass != form_valid:
         flash('Passwords did not match', 'error')
         return redirect('index')
@@ -513,3 +513,18 @@ def create_sidenav_kwargs():
         'table_summary': session['table_summary'], 'validate_table': validate_html, 'valid_form': form,
         'prefix_limit': app.config['MAX_PREFIX_LENGTH']}
     return {}
+
+def add_job(jobname):
+    if current_user.is_authenticated:
+        userid = current_user.id
+        to_add = Job(jobname, userid)
+        db.session.add(to_add)
+        db.session.commit()
+    else:
+        if 'jobs' not in session or session['jobs'] is None:
+            sessionjobs = []
+        else:
+            sessionjobs = session['jobs']
+
+        sessionjobs.append(jobname)
+        session['jobs'] = sessionjobs
