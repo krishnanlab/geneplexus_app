@@ -17,7 +17,7 @@ class ResultsFileStore():
     """posix file-based model output reader/writer"""
 
     def __init__(self,job_path = "./jobs"):
-        self.job_path
+        self.job_path = job_path
 
     def results_folder(self, job_name):
         os.path.join(self.job_path, job_name)
@@ -132,21 +132,19 @@ class ResultsFileStore():
     #============== consistent file names and paths
 
     def construct_results_filename(self, job_name, output_name, ext = ''):
-        """ consistently create output file name from path and job name"""
+        """ consistently create output file name from file type/name and job name"""
         if( ext and ext[0] != '.'):
             ext = '.' + ext
 
         output_file = job_name + '_' +  output_name +  ext
         return(output_file)
 
-    def construct_results_filepath(self, job_name, output_name, ext = ''):
+    def construct_results_filepath(self, job_name, output_name):
         """ consistently create output file name from path and job name"""
-        if( ext and ext[0] != '.'):
-            ext = '.' + ext
 
         output_path = self.results_folder(job_name)
 
-        output_file_path = os.path.join(output_path, output_name +  ext)
+        output_file_path = os.path.join(output_path, output_name)
         return(output_file_path)
 
     #============== file save functions by format
@@ -205,8 +203,8 @@ class ResultsFileStore():
         
     def read_job_info(self, job_name):
         """ read in the job information dictionary"""
-        
-        job_info_path = self.construct_results_filepath(job_name, 'job_info', ext = 'json')
+        job_info_filename = self.construct_results_filename(job_name, 'job_info', ext = 'json')
+        job_info_path = self.construct_results_filepath(job_name,  job_info_filename)
         if os.path.exists(job_info_path):
             with open(job_info_path) as f:
                 job_info = json.load(f)
