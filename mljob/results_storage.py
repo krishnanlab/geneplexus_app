@@ -29,6 +29,18 @@ class ResultsFileStore():
         """
         return ( os.path.exists(self.results_folder(job_name))   )
 
+    def results_file_location(self, job_name, file_name):
+        """ """
+        full_file_path = os.path.join(self.results_folder(job_name), file_name)
+        return(full_file_path)
+
+    def results_has_file(self,job_name, file_name):
+        """ check if a specific file is in the store for that job name"""
+
+        return(os.path.exists(
+            self.results_file_location(self, job_name, file_name)
+            ))
+
     def save_output(self,job_name, job_output):
         """ convenience function to use dictionary for args"""
         net_type = job_output.get('net_type')
