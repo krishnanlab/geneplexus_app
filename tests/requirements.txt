@@ -1,0 +1,12 @@
+# just for tests.  install requirements.txt for app also
+beautifulsoup4
+pytest
+pytest-base-url
+pytest-dependency
+pytest-flask
+pytest-html
+pytest-metadata
+pytest-selenium
+pytest-variables
+selenium
+webdriver-manager
