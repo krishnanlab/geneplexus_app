@@ -9,6 +9,8 @@ from flask_login import login_user, logout_user, current_user
 from app.forms import ValidateForm, JobLookupForm
 from app import app, db
 
+from flask_dance.contrib.github import github
+
 from app.models import *
 from app.validation_utils import intial_ID_convert, make_validation_df
 from mljob import geneplexus
@@ -425,16 +427,18 @@ def uploadgenes():
 
 @app.route('/signup', methods=['POST'])
 def signup():
+    form_username = request.form.get('username')
     form_email = request.form.get('email')
     form_pass = request.form.get('password')
     form_valid = request.form.get('validpassword')
-    if User.query.filter_by(email=form_email).first is not None:
-        flash('An account with this email already exists', 'error')
+    form_name = request.form.get('name')
+    if User.query.filter_by(username=form_username).first() is not None:
+        flash('An account with this username already exists', 'error')
         return redirect('index')
     if form_pass != form_valid:
         flash('Passwords did not match', 'error')
         return redirect('index')
-    user = User(form_email, form_pass, '')
+    user = User(form_username, form_pass, form_email, form_name)
 
     db.session.add(user)
     db.session.commit()
@@ -475,6 +479,11 @@ def edit_profile():
 
 @app.route('/update_user', methods=['POST'])
 def update_user():
+    return redirect('index')
+
+@app.route('/github_login', methods=['GET','POST'])
+def github_login():
+    resp = github.get("/user")
     return redirect('index')
 
 
