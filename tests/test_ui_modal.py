@@ -18,7 +18,7 @@ def try_get_element(driver, element_type: By, element_name: str, max_attempts: i
     return None
 
 @pytest.mark.dependency(name='modal_show')
-def test_modal(driver):
+def test_ui_modal(driver):
     driver.get('http://127.0.0.1:5000/')
     geneBtn = try_get_element(driver, By.ID, 'geneBtn')
     assert geneBtn is not None, 'Gene insert/upload button not found'
@@ -34,7 +34,7 @@ exampleGenes = ['CCNO','CENPF','LRRC56','ODAD3','DNAAF1','DNAAF6','DNAAF4','DNAH
     'ZMYND10','HYDIN','DNAAF5','CCDC40','ODAD2','DNAAF2','IFT122','INPP5E','CFAP298','DNAI2','SPAG1','SPEF2','ODAD4',
     'DNAL1','RSPH3','OFD1','CFAP300','CCDC65','DNAH11','RSPH1','DRC1','ODAD1']
 @pytest.mark.dependency(name='sample_insert', depends=['modal_show'])
-def test_sample_button(driver):
+def test_ui_sample_button(driver):
     driver.get('http://127.0.0.1:5000/')
     try_get_element(driver, By.ID, 'geneBtn').click()
     sleep(1)
@@ -47,10 +47,14 @@ def test_sample_button(driver):
     assert inputGeneText == exampleGenes, 'Example gene list button did not product expected results'
 
 @pytest.mark.dependency(name='upload_file', depends=['modal_show'])
-def test_modal_upload(driver):
+def test_ui_modal_upload(driver):
     # driver.get('http://127.0.0.1:5000/')
 
     # inputGeneBtn = try_get_element(driver, By.ID, 'geneBtn').click()
+    clearBtn = try_get_element(driver, By.ID, 'clearButton')
+    assert clearBtn is not None, 'Clear button not found, can"t test upload'
+    clearBtn.click()
+
     sleep(1)
     uploadButton = driver.find_element_by_xpath("//input[@type='file']") #  try_get_element(driver, By.ID, 'insertGeneButton')
     assert uploadButton is not None, 'Could not find the upload button'
@@ -70,7 +74,7 @@ def test_modal_upload(driver):
 
 
 @pytest.mark.dependency(name='enter_genes', depends=['modal_show'])
-def test_modal_entry(driver):
+def test_ui_modal_entry(driver):
     driver.get('http://127.0.0.1:5000/')
     inputGeneBtn = try_get_element(driver, By.ID, 'geneBtn').click()
     sleep(1)
@@ -84,7 +88,7 @@ def test_modal_entry(driver):
 
 
 @pytest.mark.dependency(name='download_file', depends=['modal_show'])
-def test_modal_download(driver):
+def test_ui_modal_download(driver):
     driver.get('http://127.0.0.1:5000/')
     inputGeneBtn = try_get_element(driver, By.ID, 'geneBtn').click()
     sleep(1)
@@ -94,7 +98,7 @@ def test_modal_download(driver):
     assert payload.status_code == 200, 'Sample download link returned a bad request status code: {}'.format(payload.status_code)
 
 @pytest.mark.dependency(name='test_clear', depends=['modal_show', 'sample_insert'])
-def test_clear_input(driver):
+def test_ui_clear_input(driver):
     driver.get('http://127.0.0.1:5000/')
     try_get_element(driver, By.ID, 'geneBtn').click()
     sleep(1)
