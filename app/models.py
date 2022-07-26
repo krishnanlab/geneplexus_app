@@ -29,7 +29,7 @@ class User(db.Model, UserMixin):
         return check_password_hash(self.password, pwd)
     
 class OAuth(OAuthConsumerMixin, db.Model):
-    #__table_args__ = (db.UniqueConstraint("provider", "provider_user_id"),)
+    __table_args__ = (db.UniqueConstraint("provider", "provider_user_id"),)
     provider = db.Column(db.String(256), nullable=False)
     provider_user_id = db.Column(db.String(256), nullable=False)
     provider_user_login = db.Column(db.String(256), nullable=False)
