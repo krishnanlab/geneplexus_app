@@ -39,7 +39,7 @@ def results_store(job_path):
         pytest.fail(f"couldn't instantiate pytest with job_path {job_path}")
     yield rs
 
-def test_result_store_instantiate(results_store):
+def test_results_store_instantiate(results_store):
     """ can results_store object be created and is valid"""
     # we do get a real object of the correct type
     assert results_store is not None
@@ -49,14 +49,14 @@ def test_result_store_instantiate(results_store):
     assert results_store.results_folder_exists('notarealjobname') is False
 
 
-def test_result_store_create(results_store, job_name):
+def test_results_store_create(results_store, job_name):
     rs_created = results_store.create(job_name)
     assert rs_created == True
     assert results_store.results_folder(job_name) is not None
     assert results_store.results_folder_exists(job_name) is True
 
 
-def test_result_store_save(results_store, job_name):
+def test_results_store_save(results_store, job_name):
     rs_created = results_store.create(job_name)
     if rs_created:
         with open('tests/example_gene_file.txt') as f:
@@ -69,7 +69,7 @@ def test_result_store_save(results_store, job_name):
     else:
         pytest.fail("couldn't create results store")
 
-def test_result_store_delete(results_store, job_name):
+def test_results_store_delete(results_store, job_name):
 
     rs_created = results_store.create(job_name)
     if rs_created:
