@@ -48,8 +48,8 @@ if not job_folder.exists():
 app.notifier = Notifier(app.config, template_folder = 'templates')
 
 # replace old code with new import
-from mljob import geneplexus
-geneplexus.set_config(app.config)
+from mljob import geneplexus_previous
+geneplexus_previous.set_config(app.config)
 
 from app import views
 
