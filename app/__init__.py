@@ -1,8 +1,10 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask_dance.contrib.github import make_github_blueprint, github
+from flask_dance.consumer.storage.sqla import SQLAlchemyStorage
 from flask.cli import with_appcontext
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user
 import click
 from config import ProdConfig, DevConfig
 from dotenv import load_dotenv
@@ -17,7 +19,6 @@ load_dotenv('.env')
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'something-no-one-would-guess'
-
 if app.env == 'production':
     app.config.from_object(ProdConfig)
 elif app.env == 'development':
@@ -30,6 +31,8 @@ migrate = Migrate(app, db)
 
 login_manager = LoginManager(app)
 
+from app.oauth.github import github_blueprint
+app.register_blueprint(github_blueprint)
 if not Path(logfile).exists():
     Path(logfile).touch()
 

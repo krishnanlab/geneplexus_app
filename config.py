@@ -42,6 +42,9 @@ class BaseConfig(object):
     SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite://')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    GITHUB_ID = os.getenv('GITHUB_ID', '')
+    GITHUB_SECRET = os.getenv('GITHUB_SECRET', '')
+
 class ProdConfig(BaseConfig):
     FLASK_ENV="production"
     FILE_LOC = "local"

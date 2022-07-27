@@ -11,12 +11,16 @@
 <div class="row">
     <form action="{{ url_for('edit_profile') }}" method="POST">
         <div class="mb-3 row">
-            <label for="email" class="form-label">Email address</label>
-            <input type="email" class="form-control col-6" id="email" name="email" value="{{ current_user.email }}" readonly>
+            <label for="username" class="form-label">Email address</label>
+            <input type="text" class="form-control col-6" id="username" name="username" value="{{ current_user.username }}" readonly>
         </div>
         <div class="mb-3 row">
-            <label for="userName" class="form-label">Name</label>
-            <input type="text" class="form-control col-6" name="name" id="userName" value="{{ current_user.name }}">
+            <label for="email" class="form-label">Email address</label>
+            <input type="email" class="form-control col-6" id="email" name="email" {% if current_user.email %}value="{{ current_user.email }}"{% endif %}>
+        </div>
+        <div class="mb-3 row">
+            <label for="fullname" class="form-label">Name</label>
+            <input type="text" class="form-control col-6" name="fullname" id="fullname" {% if current_user.name %}value="{{ current_user.name }}"{% endif %}>
         </div>
         <div class="row">
             <button type="submit" class="btn btn-primary col-3">Update Profile</button>
