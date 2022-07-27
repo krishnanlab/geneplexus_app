@@ -8,38 +8,107 @@ usage:
 
 """
 
+
 import os, sys
+from  shutil import rmtree
+from slugify import slugify
 import json
-import pandas as pd
+from pandas import read_csv
+import logging
 
 
 class ResultsFileStore():
     """posix file-based model output reader/writer"""
 
-    def __init__(self,job_path = "./jobs"):
-        self.job_path = job_path
+    def __init__(self,job_path = "./jobs", logger_name = None):
+        if job_path and os.path.exists(job_path):
+            self.job_path = job_path
+            self.logger = logging.getLogger(logger_name)
+        else:
+            raise Exception
+    
+    def path_friendly_job_name(self,job_name):
+        if not job_name:
+            return ""
+        else:
+            return slugify(job_name.lower(), lowercase=True)
 
     def results_folder(self, job_name):
-        os.path.join(self.job_path, job_name)
+        
+        self.logger.info("making folder for {job_name}")
+        
+        if job_name:
+            # can't handle spaces etc. so make it work before joining
+            job_name = self.path_friendly_job_name(job_name)
+            return os.path.join(self.job_path, job_name)
+        else: 
+            self.logger.error('no job name given')
+            return ""
 
+    
     def results_folder_exists(self,job_name):
         """is there a job folder already? 
         input : job_name valid name of a job
         output : T/F
         """
-        return ( os.path.exists(self.results_folder(job_name))   )
+
+        rf =  self.results_folder(job_name)
+        if rf:
+            return ( os.path.exists(rf)   )
+        else:
+            return False
 
     def results_file_location(self, job_name, file_name):
         """ """
-        full_file_path = os.path.join(self.results_folder(job_name), file_name)
+        rf = self.results_folder(job_name)
+        full_file_path = os.path.join(rf, file_name)
         return(full_file_path)
 
     def results_has_file(self,job_name, file_name):
         """ check if a specific file is in the store for that job name"""
 
-        return(os.path.exists(
-            self.results_file_location(self, job_name, file_name)
-            ))
+        return(os.path.exists( self.results_file_location(job_name, file_name)))
+
+    def create(self, job_name):
+        """ this will create new folder, but catches exceptions and returns None if there is an issue
+        input : valid job_name
+        output : same object for object chaining, if error return None"""
+        if not job_name:
+            self.logger.error("no job name given, can't create results store")
+            return False
+        
+        if self.results_folder_exists(job_name):
+            self.logger.error("results folder already exist, not overwriting")
+            return True
+
+        new_path = self.results_folder(job_name)
+        
+        try:
+            os.mkdir( new_path )
+            return(True)
+
+        except Exception as e:
+            self.logger.error(e)
+            return False
+
+    def delete(self, job_name, confirmation = False):
+        """ delete a file storage (folder) for this jobname.
+        inputs: 
+        job_name : path friendly job name, str
+        confirmation  : T/F simple additional param to reduce unintended deletions"""
+        if not confirmation:
+            return False
+
+        if self.results_folder_exists(self,job_name):
+            try:
+                rmtree(self.self.results_folder(job_name))
+                return True
+            except Exception as e: 
+                self.logger.error(f"exception when attempting delete {e}")
+                return False
+        else:
+            self.logger.error(f"folder for {job_name} not found, can't delete")
+            return False
 
     def save_output(self,job_name, job_output):
         """ convenience function to use dictionary for args"""
@@ -104,7 +173,7 @@ class ResultsFileStore():
 
         
         job_info_path = self.construct_results_filepath(job_name, 'job_info', ext = 'json')
-        print(f"saving job info to {job_info_path} ",file=sys.stderr)   
+        self.logger.error(f"saving job info to {job_info_path} ")   
         with open(job_info_path, 'w') as jf:
             json.dump(job_info, jf)
 
@@ -195,10 +264,10 @@ class ResultsFileStore():
         
         if os.path.exists(output_filepath):
             # TODO try /catch
-            output_df = pd.read_csv(output_filepath, sep = '\t')
+            output_df = read_csv(output_filepath, sep = '\t')
             return(output_df)
         else:
-            print(f"output file not found: {output_filepath} ",file=sys.stderr)
+            self.logger.error(f"output file not found: {output_filepath} ")
             return(None)
         
     def read_job_info(self, job_name):
@@ -211,9 +280,37 @@ class ResultsFileStore():
 
             return(job_info)
         else:
-            print(f"job info file not found: {job_info_path} ",file=sys.stderr)
+            self.logger.error(f"job info file not found: {job_info_path} ")
             return(None)
 
 
 
+
+def results_store_example_usage():
+    """example for using this module.  move this code to documentation """    
+
+    import pytest, os
+    from mljob.job_manager import generate_job_id
+    from mljob.results_storage import ResultsFileStore
+
+
+    from dotenv  import load_dotenv; load_dotenv()
+    job_path = os.getenv('JOB_PATH')
+    results_store = ResultsFileStore(job_path)
+    type(results_store)
+
+
+    job_name = generate_job_id()
+    rs = results_store.create(job_name)
+    print(results_store.results_folder_exists(job_name))
+    type(rs)
+
+    with open('tests/example_gene_file.txt') as f:
+        genes = f.read()
+
+    fname = results_store.save_txt_results(job_name, 'inputfile.txt', genes)
+    expected_name = results_store.construct_results_filename(job_name, 'inputfile.txt')
+    fname == expected_name
+    results_store.results_has_file(job_name, expected_name) # true
+    results_store.delete(job_name)
 
