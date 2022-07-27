@@ -467,9 +467,10 @@ def edit_profile():
     session_args = create_sidenav_kwargs()
     if request.method == 'GET':
         return render_template("edit_profile.html", **session_args)
+    form_username = request.form.get('username')
     form_email = request.form.get('email')
-    form_name = request.form.get('name')
-    user = User.query.filter_by(email=form_email).update({'name': form_name}, synchronize_session='fetch')
+    form_name = request.form.get('fullname')
+    user = User.query.filter_by(username=form_username).update({'email': form_email, 'name': form_name}, synchronize_session='fetch')
     if user is None:
         # This is a huge problem if this happens. Means that we got to this screen without being logged in
         return redirect('index')
