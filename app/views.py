@@ -100,6 +100,10 @@ def html_output_table(df, id = "", row_limit = 500):
         return("")
     
 
+'''
+From here we need to look up if a job is actually done first. If it is done but not in the Results table we do a read
+on the jobs folder, get the data to put in the DB, then we read everything from there to feed into the results page
+'''
 @app.route("/jobs/<jobname>", methods=['GET'])
 def job(jobname):
     """ show info about job: results if there are some but otherwise basic job information"""
@@ -109,14 +113,8 @@ def job(jobname):
     #TODO check valid job and 404 if not
     if not job_exists(jobname, app.config): 
         abort(404)
-
-    job_info = retrieve_job_info(jobname, app.config)
-
-    if job_info and job_info['has_results']:
-        job_output = retrieve_job_outputs(jobname, app.config)
-
-    else:
-        job_output = {}
+    
+    job_info, job_output = get_or_set_job(jobname)
 
     return render_template("jobresults.html",
             jobexists = job_exists(jobname, app.config), 
@@ -544,3 +542,32 @@ def add_job(jobname):
 
         sessionjobs.append(jobname)
         session['jobs'] = sessionjobs
+
+def get_or_set_job(jobname):
+    results = None
+    # First we need to check the DB if the job already exists
+    result_check = Result.query.filter_by(jobname=jobname).first()
+    if result_check is not None:
+        # If this isn't none then the result already existed within the database, just return that
+        return result_check
+    
+    job_info = retrieve_job_info(jobname, app.config)
+    job_output = {}
+
+    if job_info and job_info['has_results']:
+        job_output = retrieve_job_outputs(jobname, app.config)
+        # If we didn't get it back then we need to check if the job even exists in the jobs table
+        result_check = Job.query.filter_by(jobid=jobname).first()
+        if result_check is not None:
+            # The job exists, we just don't have a result made yet
+            to_add = Result(
+                network = job_info['net_type'],
+                feature = job_info['features'],
+                negative = job_info['GSC'],
+                p1 = job_output['avgps'][0],
+                p2 = job_output['avgps'][1],
+                p3 = job_output['avgps'][2],
+            )
+            db.session.add(to_add)
+            db.session.commit()
+    return job_info, job_output

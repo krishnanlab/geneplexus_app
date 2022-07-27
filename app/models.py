@@ -57,3 +57,21 @@ class Job(db.Model):
     def __init__(self, jobid, userid):
         self.jobid = jobid
         self.userid = userid
+
+class Result(db.Model):
+    __tablename__ = 'results'
+    id = db.Column(db.Integer, primary_key=True)
+    network = db.Column(db.String(256))
+    feature = db.Column(db.String(256))
+    negative = db.Column(db.String(256))
+    p1 = db.Column(db.Float)
+    p2 = db.Column(db.Float)
+    p3 = db.Column(db.Float)
+    public = db.Column(db.Boolean)
+
+    userid = db.Column(db.Integer, db.ForeignKey('users.id'))
+    jobname = db.Column(db.Integer, db.ForeignKey('jobs.jobid'))
+
+    user = db.relationship('User', backref=db.backref('results', lazy=True))
+    job = db.relationship('Job', backref=db.backref('results', lazy=True))
+    
