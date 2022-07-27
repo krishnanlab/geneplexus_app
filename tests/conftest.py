@@ -7,7 +7,11 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
+from dotenv import load_dotenv
+load_dotenv('..')
+
 from app import app as flask_app
+
 
 @pytest.fixture(scope='session')
 def app():
