@@ -20,13 +20,13 @@ import logging
 class ResultsFileStore():
     """posix file-based model output reader/writer"""
 
-    def __init__(self,job_path = "./jobs", logger_name = None):
+    def __init__(self,job_path, logger_name = None):
         """"""
         if job_path and os.path.exists(job_path):
             self.job_path = job_path
             self.logger = logging.getLogger(logger_name)
         else:
-            raise Exception
+            raise Exception(f"error job path doesn't exist {job_path}")
         
         self.status_filename = "jobstatus"
 

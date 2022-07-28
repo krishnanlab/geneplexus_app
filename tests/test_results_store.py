@@ -40,9 +40,14 @@ def results_store(job_path):
         pytest.fail(f"couldn't instantiate pytest with job_path {job_path}")
     yield rs
 
+def test_results_store_requires_valid_jobpath():
+    """ check that an exception is raised if invalid job path sent"""
+    with pytest.raises(Exception) as e_info:
+       rs = ResultsFileStore("not/a/real/path")
+
 def test_results_store_instantiate(results_store):
     """ can results_store object be created and is valid"""
-    # we do get a real object of the correct type
+    # now use the fixture
     assert results_store is not None
     assert str(type(results_store)) == "<class 'mljob.results_storage.ResultsFileStore'>"
     # this function should not fail, but without a valid job returns None
