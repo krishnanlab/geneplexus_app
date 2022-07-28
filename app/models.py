@@ -69,7 +69,7 @@ class Result(db.Model):
     p3 = db.Column(db.Float)
     public = db.Column(db.Boolean)
 
-    userid = db.Column(db.Integer, db.ForeignKey('users.id'))
+    userid = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     jobname = db.Column(db.Integer, db.ForeignKey('jobs.jobid'))
 
     user = db.relationship('User', backref=db.backref('results', lazy=True))
