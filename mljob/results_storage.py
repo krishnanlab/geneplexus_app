@@ -9,7 +9,7 @@ usage:
 """
 
 
-import os, sys
+import os, sys, shlex
 from  shutil import rmtree
 from slugify import slugify
 import json
@@ -45,6 +45,9 @@ class ResultsFileStore():
             self.logger.error('no job name given')
             return ""
 
+    def exists(self,job_name):
+        """ convenience shortcut for results_folder_exists"""
+        return(self.results_folder_exists(self,job_name))
     
     def results_folder_exists(self,job_name):
         """is there a job folder already? 
@@ -216,8 +219,8 @@ class ResultsFileStore():
         output_file_path = os.path.join(output_path, output_name)
         return(output_file_path)
 
-    #============== file save functions by format
-
+    #============== WRITE
+    
     def save_txt_results(self, job_name, output_name, output_content):
         """ save any data from job, output name must have the extension"""
         output_filename = self.construct_results_filename(job_name, output_name)
@@ -245,6 +248,59 @@ class ResultsFileStore():
             json.dump(graph, gf)
 
         return(graph_file)
+
+    def standard_input_file_name(self,job_name, input_file_name = "geneset"):
+        """ standardized input file name for this storage system"""
+        return self.construct_results_filename(job_name, input_file_name, 'txt' )
+        
+        
+    def save_input_file(self, job_name, data, input_file_name = "geneset"):
+        """ save input file in standardized way.  
+        parameters: 
+            job_name
+            data : data to write
+            input_file_name : core part of file, no extension. optional can override the default () but shouldn't for consistency)
+        outputs:
+            if file written correctly, the name of the input file created
+            if there is an error during writing, an empty string
+        """ 
+        
+        full_input_file_name = self.standard_input_file_name(job_name, input_file_name)
+        input_file_path = self.construct_results_filepath(job_name, full_input_file_name)
+        try:
+            with open(input_file_path, 'w') as f:
+                f.write('\n'.join(data))
+
+            return(full_input_file_name)
+        except Exception as e:
+            self.logger.error(f"can't save file {input_file_path} : {e}")
+            return("")     
+
+    ############ READ
+
+    def read_input_file(self, job_name, input_file_name = "geneset"):    
+        """ read the geneset file with standardized filename, path, and file extension
+        parameters:
+            job_name : name of the job that this was stored in
+            input_file_name : optional base name of the file (with no extension)
+        outputs:
+            contents of the input file as a list of data, or an empty list if there is a problem reading the file
+        """
+        
+        full_input_file_name = self.standard_input_file_name(job_name, input_file_name)
+        input_file_path = self.construct_results_filepath(job_name, full_input_file_name)
+        try:
+            with open(input_file_path, 'r') as f:
+                # using shlex here allows for more flexible storage formats,
+                # e.g. storing quoted ('abc'\n'def'\n) or not quoted
+                data =  shlex.split(f.read())
+        except Exception as e:
+            self.logger.error(f"could not read input file {input_file_path} : {e}")
+            data = []
+
+        return(data)
+
+
 
     def read_graph_results(self, job_name):
         """ read in a graph as saved by output methoda above"""
@@ -284,33 +340,33 @@ class ResultsFileStore():
             return(None)
 
 
+"""
+
+Example Usage:    
+
+import pytest, os
+from mljob.job_manager import generate_job_id
+from mljob.results_storage import ResultsFileStore
 
 
-def results_store_example_usage():
-    """example for using this module.  move this code to documentation """    
-
-    import pytest, os
-    from mljob.job_manager import generate_job_id
-    from mljob.results_storage import ResultsFileStore
+from dotenv  import load_dotenv; load_dotenv()
+job_path = os.getenv('JOB_PATH')
+results_store = ResultsFileStore(job_path)
+type(results_store)
 
 
-    from dotenv  import load_dotenv; load_dotenv()
-    job_path = os.getenv('JOB_PATH')
-    results_store = ResultsFileStore(job_path)
-    type(results_store)
+job_name = generate_job_id()
+rs = results_store.create(job_name)
+print(results_store.results_folder_exists(job_name))
+type(rs)
 
+with open('tests/example_gene_file.txt') as f:
+    genes = f.read()
 
-    job_name = generate_job_id()
-    rs = results_store.create(job_name)
-    print(results_store.results_folder_exists(job_name))
-    type(rs)
+fname = results_store.save_txt_results(job_name, 'inputfile.txt', genes)
+expected_name = results_store.construct_results_filename(job_name, 'inputfile.txt')
+fname == expected_name
+results_store.results_has_file(job_name, expected_name) # true
+results_store.delete(job_name)
 
-    with open('tests/example_gene_file.txt') as f:
-        genes = f.read()
-
-    fname = results_store.save_txt_results(job_name, 'inputfile.txt', genes)
-    expected_name = results_store.construct_results_filename(job_name, 'inputfile.txt')
-    fname == expected_name
-    results_store.results_has_file(job_name, expected_name) # true
-    results_store.delete(job_name)
-
+"""

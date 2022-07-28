@@ -1,5 +1,6 @@
 # unit tests for ResultStorage class
 
+from multiprocessing import dummy
 import pytest, os
 from mljob.job_manager import generate_job_id
 from mljob.results_storage import ResultsFileStore
@@ -57,6 +58,7 @@ def test_results_store_create(results_store, job_name):
 
 
 def test_results_store_save(results_store, job_name):
+    """ test if can save something and then the file is there"""
     rs_created = results_store.create(job_name)
     if rs_created:
         with open('tests/example_gene_file.txt') as f:
@@ -70,11 +72,30 @@ def test_results_store_save(results_store, job_name):
         pytest.fail("couldn't create results store")
 
 def test_results_store_delete(results_store, job_name):
-
+    """ test if can delete a job folder in the store"""
     rs_created = results_store.create(job_name)
     if rs_created:
-        results_store.create(job_name)
         results_store.delete(job_name)
     else:
         pytest.fail("couldn't create results store")
 
+def test_results_store_genesets(results_store, job_name):
+    """test if can read/write input file consistently"""
+    rs_created = results_store.create(job_name)
+
+    dummy_data = ['a', 'b', 'c']
+
+    input_file_name = results_store.standard_input_file_name(job_name)
+    assert type(input_file_name ) == type("string")
+    assert job_name in input_file_name
+    # not making any assertions about the actual template of the name
+
+    if rs_created:
+        results_store.save_input_file(job_name, dummy_data)
+        assert results_store.results_has_file(job_name, input_file_name), "standard input file not found"
+
+        check_data = results_store.read_input_file(job_name)
+        assert dummy_data == check_data
+
+    else:
+        pytest.fail("couldn't create results store for input file test")
