@@ -99,3 +99,19 @@ def test_results_store_genesets(results_store, job_name):
 
     else:
         pytest.fail("couldn't create results store for input file test")
+
+
+def test_results_status(results_store, job_name):
+
+    test_status_msg = "test job"
+    rs_created = results_store.create(job_name)
+    if rs_created:
+        status_file_name = results_store.save_status(job_name, test_status_msg)
+        assert results_store.results_has_file(job_name, status_file_name), "status file not found"
+
+        status_as_read = results_store.read_status(job_name)
+        assert test_status_msg == status_as_read
+
+    
+    
+    

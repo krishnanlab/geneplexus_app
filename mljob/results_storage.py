@@ -21,21 +21,25 @@ class ResultsFileStore():
     """posix file-based model output reader/writer"""
 
     def __init__(self,job_path = "./jobs", logger_name = None):
+        """"""
         if job_path and os.path.exists(job_path):
             self.job_path = job_path
             self.logger = logging.getLogger(logger_name)
         else:
             raise Exception
+        
+        self.status_filename = "jobstatus"
+
     
     def path_friendly_job_name(self,job_name):
+        """modify job name to be used as folder names for file storage, if necessary"""
         if not job_name:
             return ""
         else:
             return slugify(job_name.lower(), lowercase=True)
 
     def results_folder(self, job_name):
-        
-        self.logger.info("making folder for {job_name}")
+        """ return standardized path name used to store jobs"""
         
         if job_name:
             # can't handle spaces etc. so make it work before joining
@@ -62,14 +66,13 @@ class ResultsFileStore():
             return False
 
     def results_file_location(self, job_name, file_name):
-        """ """
+        """ return full path for location files by name (e.g add the path to it)"""
         rf = self.results_folder(job_name)
         full_file_path = os.path.join(rf, file_name)
         return(full_file_path)
 
     def results_has_file(self,job_name, file_name):
         """ check if a specific file is in the store for that job name"""
-
         return(os.path.exists( self.results_file_location(job_name, file_name)))
 
     def create(self, job_name):
@@ -175,11 +178,8 @@ class ResultsFileStore():
             }
 
         
-        job_info_path = self.construct_results_filepath(job_name, 'job_info', ext = 'json')
-        self.logger.error(f"saving job info to {job_info_path} ")   
-        with open(job_info_path, 'w') as jf:
-            json.dump(job_info, jf)
-
+        self.save_json_results(job_name, 'job_info', job_info)
+        
         return(job_info)
 
     def read(self,job_name):
@@ -219,6 +219,10 @@ class ResultsFileStore():
         output_file_path = os.path.join(output_path, output_name)
         return(output_file_path)
 
+    def standard_input_file_name(self,job_name, input_file_name = "geneset"):
+        """ standardized input file name for this storage system"""
+        return self.construct_results_filename(job_name, input_file_name, 'txt' )
+
     #============== WRITE
     
     def save_txt_results(self, job_name, output_name, output_content):
@@ -231,6 +235,16 @@ class ResultsFileStore():
             return(output_filename)
         except Exception as e:
             return("")     
+
+
+    def save_json_results(self, job_name, output_name, data):
+        json_file_path = self.construct_results_filepath(job_name, output_name, ext = 'json')
+        self.logger.info(f"saving job info to {json_file_path} ")   
+        with open(json_file_path, 'w') as jf:
+            json.dump(data, jf)
+
+        return(json_file_path)
+
 
     def save_df_results(self, job_name, output_name, output_df):
         """ save data frames from model runs in a consistent way"""
@@ -248,11 +262,7 @@ class ResultsFileStore():
             json.dump(graph, gf)
 
         return(graph_file)
-
-    def standard_input_file_name(self,job_name, input_file_name = "geneset"):
-        """ standardized input file name for this storage system"""
-        return self.construct_results_filename(job_name, input_file_name, 'txt' )
-        
+    
         
     def save_input_file(self, job_name, data, input_file_name = "geneset"):
         """ save input file in standardized way.  
@@ -276,7 +286,17 @@ class ResultsFileStore():
             self.logger.error(f"can't save file {input_file_path} : {e}")
             return("")     
 
+    def save_status(self, job_name, msg):
+        """standardized api for saving/reading status from file store"""
+        status_file_name = self.save_txt_results(job_name, self.status_filename, msg)
+        return(status_file_name)
+
     ############ READ
+
+    def read_status(self, job_name):
+        status = self.read_txt_results(job_name, self.status_filename)
+        return(status)
+
 
     def read_input_file(self, job_name, input_file_name = "geneset"):    
         """ read the geneset file with standardized filename, path, and file extension
@@ -300,6 +320,18 @@ class ResultsFileStore():
 
         return(data)
 
+    def read_txt_results(self, job_name, output_name ):
+        """ read generic text file, output name must have the extension"""
+
+        output_filename = self.construct_results_filename(job_name, output_name)
+        output_filepath = self.construct_results_filepath(job_name, output_filename)
+        try:
+            with open(output_filepath, 'r') as outfile:
+                output_content = outfile.read()
+            return(output_content)
+        except Exception as e:
+            logging.error(f"can't read from {output_filename} : {e}")
+            return("")     
 
 
     def read_graph_results(self, job_name):
