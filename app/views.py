@@ -56,7 +56,9 @@ def contact():
 @app.route("/jobs/", methods=['GET', 'POST'])
 def jobs():
     """ list jobs in session, show form, or show message from submit"""
-
+    print('Results list')
+    for res in Result.query.all():
+        print(res.id)
     form = JobLookupForm(request.form)
     jobname = form.jobname.data
 
@@ -344,10 +346,10 @@ def run_model():
         print("launching job with job config =")
         print(job_config)
 
+        add_job(jobname)
+
         job_response = launch_job(input_genes, job_config, app.config)
         app.logger.info(f"job {job_config['jobid']} launched with response {job_response}")
-
-        add_job(jobname)
 
 
 
@@ -530,8 +532,8 @@ def create_sidenav_kwargs():
 
 def add_job(jobname):
     if current_user.is_authenticated:
-        userid = current_user.id
-        to_add = Job(jobname, userid)
+        user_id = current_user.id
+        to_add = Job(jobid=jobname, userid=user_id)
         db.session.add(to_add)
         db.session.commit()
     else:
@@ -548,6 +550,7 @@ def get_or_set_job(jobname):
     # First we need to check the DB if the job already exists
     result_check = Result.query.filter_by(jobname=jobname).first()
     if result_check is not None:
+        print()
         # If this isn't none then the result already existed within the database, just return that
         return result_check
     
@@ -567,7 +570,37 @@ def get_or_set_job(jobname):
                 p1 = job_output['avgps'][0],
                 p2 = job_output['avgps'][1],
                 p3 = job_output['avgps'][2],
+                user = result_check.user,
             )
             db.session.add(to_add)
             db.session.commit()
     return job_info, job_output
+
+@app.route('/update_result', methods=['POST'])
+def update_result():
+    data = request.get_json()
+    result_check = Result.query.filter_by(jobname=data['jobname']).first()
+    if result_check is not None:
+        return jsonify(f'Result with JobID {data["jobname"]} already has results'), 400
+    result_check = Job.query.filter_by(jobid=data['jobname']).first()
+    if result_check is None:
+        return jsonify(f'Job with JobID {data["jobname"]} does not exists'), 400
+    try:
+        new_result = Result(
+            job = result_check,
+            user = result_check.user,
+            network = data['network'],
+            feature = data['feature'],
+            negative = data['negative'],
+            p1 = data['avgps'][0],
+            p2 = data['avgps'][1],
+            p3 = data['avgps'][2],
+            public = False,
+        )
+        print('New result')
+        print(new_result)
+        db.session.add(new_result)
+        db.session.commit()
+        return jsonify(f'Job with JobID {data["jobname"]} has results created'), 200
+    except Exception as e:
+        return jsonify(str(e)), 400

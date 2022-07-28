@@ -96,6 +96,19 @@ def run_and_render(input_genes,
     if ( output_path and os.path.exists(output_path) ):
         job_info = save_output(output_path, jobname, net_type, features, GSC, avgps, input_count, positive_genes, 
     df_probs, df_GO, df_dis, df_convert_out, graph, df_edgelist)
+    data = {
+        'jobname': jobname,
+        'network': net_type,
+        'feature': features,
+        'negative': GSC,
+        'avgps': avgps,
+    }
+    jsonHeaders = {'Content-type': 'application/json'}
+    import requests
+    status_code = requests.post('http://127.0.0.1:5000/update_result',
+                            json=data)
+    print(status_code.json())
+
 
 #######################################################################################################################
 
