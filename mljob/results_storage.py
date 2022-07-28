@@ -1,12 +1,23 @@
 """ this class is to save and read from output from  GenePlexus package for use in an application
 This is a step towards different storage methods beyond posix file storage (e.g. cloud storage)
 usage:
-    usage
-        results_store = ResultsFiler(job_path = config['JOB_PATH'])
-        job_output = geneplexus_runner(params)
+    # save
+    job_config = {jobname:'whatever', etc}
+    results_store = ResultsFileStore(job_path = config['JOB_PATH'])
+    
+    if results_store.create(job_name):
+        path_to_input_file = results_store.save_input_file(job_name, geneset)
+        job_output = geneplexus_runner(job_config, path_to_input_file)  # how to emit status?
         results_store.save_output(job_name, job_output)
+    else:
+        # exception
 
+    ### wait for job to complete
+    if results_store.results_folder_exists(job_name) and results_store.read_status(job_name) == "Completed":
+        results = results_store.read(job_name)
+        
 """
+
 
 
 import os, sys, shlex
