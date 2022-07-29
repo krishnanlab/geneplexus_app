@@ -1,0 +1,52 @@
+{% extends "base-sidenav.html" %}
+
+{% block title %}Result: {{ resultid }}{% endblock %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block app_content %}
+
+<div class="row">
+    <h2>Results: {{ resultid }}</h2>
+</div>
+<form>
+    <div class="row">
+        <label for="authorname" class="col col-form-label">Email</label>
+        <div class="col-10">
+            <input type="text" readonly class="form-control-plaintext" id="authorname" value="{{ author }}">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div class="row">
+                <label for="description">Description</label>
+                <textarea id="description"></textarea>
+            </div> 
+            <div class="row">
+                <label for="network" class="col">Network</label>
+                <input type="text" class="col form-control-plaintext" id="network" value="{{ network }}">
+            </div>
+            <div class="row">
+                <label for="features" class="col">Network</label>
+                <input type="text" class="col form-control-plaintext" id="features" value="{{ feature }}">
+            </div>
+            <div class="row">
+                <label for="negative" class="col">Network</label>
+                <input type="text" class="col form-control-plaintext" id="negative" value="{{ negative }}">
+            </div>
+            <div class="row">
+                <a id="full_results" class="btn btn-primary" href="{{ url_for('job',jobname=resultid) }}">See full results</a>
+            </div>
+        </div>
+        <div class="col">
+
+        </div>
+    </div>
+</form>
+
+{% block scripts %}
+{% endblock %}
+
+{% endblock %}
