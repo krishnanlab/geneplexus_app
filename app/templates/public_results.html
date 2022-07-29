@@ -1,0 +1,48 @@
+{% extends "base-sidenav.html" %}
+
+{% block title %}Public Results{% endblock %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block app_content %}
+
+<div class="row">
+    {% if results %}
+    <table id="resultstable" class="table">
+        <thead>
+            <tr>
+                <th>Result ID</th>
+                <th>Network</th>
+                <th>Features</th>
+                <th>Negative Class</th>
+                <th>Performance</th>
+                <th>Like</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in results %}
+            <tr>
+                <td><a href="{{ url_for('result',resultid=result.jobname) }}">{{ result.jobname }}</a></td>
+                <td>{{ result.network }}</td>
+                <td>{{ result.feature }}</td>
+                <td>{{ result.negative }}</td>
+                <td>{{ '%0.2f'|format(result.p1|float) }}, {{ '%0.2f'|format(result.p2|float) }}, {{ '%0.2f'|format(result.p3|float) }}</td>
+                <td>
+                    <!-- Put the star icon here -->
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    There are no public results available
+    {% endif %}
+</div>
+
+{% block scripts %}
+<script src="{{url_for('static', filename='public_results.js')}}"></script>
+{% endblock %}
+
+{% endblock %}

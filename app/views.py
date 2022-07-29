@@ -52,13 +52,30 @@ def contact():
     session_args = create_sidenav_kwargs()
     return render_template("contact.html", **session_args)
 
+@app.route('/public_results', methods=['GET'])
+def public_results():
+    session_args = create_sidenav_kwargs()
+    pub_results = Result.query.filter_by(public=True).all()
+    return render_template('public_results.html',
+                           results=pub_results,
+                           **session_args)
+
+@app.route('/result/<resultid>', methods=['GET'])
+def result(resultid):
+    session_args = create_sidenav_kwargs()
+    cur_results = Result.query.filter_by(jobname=resultid).first()
+    return render_template('result.html',
+                           resultid=resultid,
+                           author=cur_results.user.username,
+                           network=cur_results.network,
+                           feature=cur_results.feature,
+                           negative=cur_results.negative,
+                           **session_args)
+
 
 @app.route("/jobs/", methods=['GET', 'POST'])
 def jobs():
     """ list jobs in session, show form, or show message from submit"""
-    print('Results list')
-    for res in Result.query.all():
-        print(res.id)
     form = JobLookupForm(request.form)
     jobname = form.jobname.data
 
@@ -116,7 +133,11 @@ def job(jobname):
     if not job_exists(jobname, app.config): 
         abort(404)
     
-    job_info, job_output = get_or_set_job(jobname)
+    job_info = retrieve_job_info(jobname, app.config)
+    job_output = {}
+
+    if job_info and job_info['has_results']:
+        job_output = retrieve_job_outputs(jobname, app.config)
 
     return render_template("jobresults.html",
             jobexists = job_exists(jobname, app.config), 
@@ -578,6 +599,8 @@ def get_or_set_job(jobname):
 
 @app.route('/update_result', methods=['POST'])
 def update_result():
+    if not current_user.is_authenticated:
+        return jsonify('User is not authenticated'), 400
     data = request.get_json()
     result_check = Result.query.filter_by(jobname=data['jobname']).first()
     if result_check is not None:
@@ -595,7 +618,7 @@ def update_result():
             p1 = data['avgps'][0],
             p2 = data['avgps'][1],
             p3 = data['avgps'][2],
-            public = False,
+            public = True,
         )
         print('New result')
         print(new_result)
