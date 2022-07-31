@@ -24,4 +24,5 @@ Flask-Migrate==3.1.0
 Flask-Login==0.6.1
 # requires pip installation
 sendgrid==6.9.2
-
+Flask-Dance
+blinker
