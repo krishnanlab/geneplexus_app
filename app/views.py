@@ -515,13 +515,19 @@ def create_sidenav_kwargs():
         'df_convert_out' in session and \
         'table_summary' in session:
         form = ValidateForm()
+
         form.jobid.data = session['jobid']
+
+        if current_user.is_authenticated and current_user.email:
+            form.notifyaddress.data = current_user.email
+  
         validate_df = pd.DataFrame(session['df_convert_out'])[['Original ID', 'Entrez ID', 'In BioGRID?', 'In STRING?', 'In STRING-EXP?', 'In GIANT-TN?']]
         validate_html = validate_df.to_html(index=False,
                             classes='table table-striped table-bordered" id = "validatetable')
         return {'existing_genes': session['genes'], 'pos': session['pos'], 
         'table_summary': session['table_summary'], 'validate_table': validate_html, 'valid_form': form,
         'prefix_limit': app.config['MAX_PREFIX_LENGTH']}
+
     return {}
 
 def add_job(jobname):

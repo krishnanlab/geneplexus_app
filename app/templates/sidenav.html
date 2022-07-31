@@ -79,8 +79,8 @@
                     <label>
                     5. (Optional) Notification Email Address 
                     </label><a tabindex="0" role="button" data-bs-toggle="popover" data-bs-trigger="manual" data-bs-placement="right" data-bs-html="true"
-                    data-bs-content="Optionally enter an email address for job notifications.  We will never share your email address outside of this application, add you to a mailing list, or send unsolicited communication. Click <a href='{{ url_for('help') }}'>here</a> for additional help."><i class="fas fa-question-circle"></i></a>
-                    <div class="select"><input id="notifyaddress" type="text" class="sidenav-email" {% if current_user.is_authenticated and current_user.email %}value="{{ current_user.email }}"{% endif %}></div>
+                    data-bs-content="Optionally enter an email address for job notifications.  If you are logged in and your profile includes an email address, that automatically entered.  We will never share your email address outside of this application, add you to a mailing list, or send unsolicited communication. Click <a href='{{ url_for('help') }}'>here</a> for additional help."><i class="fas fa-question-circle"></i></a>
+                    {{ valid_form.notifyaddress(class_="sidenav-email")  }}
                     <br>
                     
                     {{ valid_form.runbatch(class_="btn btn-sm btn-primary", style="width: 85%") }}
