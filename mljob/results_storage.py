@@ -62,7 +62,7 @@ class ResultsFileStore():
 
     def exists(self,job_name):
         """ convenience shortcut for results_folder_exists"""
-        return(self.results_folder_exists(self,job_name))
+        return(self.results_folder_exists(job_name))
     
     def results_folder_exists(self,job_name):
         """is there a job folder already? 
