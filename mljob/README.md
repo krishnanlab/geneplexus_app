@@ -22,8 +22,10 @@ Organization
 
  - results = TBD
 
+
 Jobs and Results in GPDefinitions 
 ——
+
 job = common api for starting ML processes and check status of those process
 sending parameters to the machine to create results.   
 output of a job is the status of that job, and messages about how it's doing (run time, memory, cost?)
