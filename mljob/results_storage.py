@@ -166,10 +166,10 @@ class ResultsFileStore():
 
         # placeholder : this was the HTML representation of the results visualization, no longer used but required in older code
         results_file_content = f"<html><body><p>{job_name}</p></html>"
-        results_file = self.save_txt_results(output_path, job_name, 'results.txt', results_file_content )
-        
+        results_file = self.save_txt_results(job_name, 'results.txt', results_file_content )
+
         # the 'graph' is a dict of dicts (node, edges), so save in different format
-        graph_file = self.save_graph_results(output_path, job_name, graph)
+        graph_file = self.save_graph_results(job_name, graph)
 
         # copy the results file names into this dictionary (without path) 
         job_info = {
@@ -249,7 +249,8 @@ class ResultsFileStore():
 
 
     def save_json_results(self, job_name, output_name, data):
-        json_file_path = self.construct_results_filepath(job_name, output_name, ext = 'json')
+        json_results_filename = self.construct_results_filename(job_name, output_name,ext = 'json')
+        json_file_path = self.construct_results_filepath(job_name, json_results_filename)
         self.logger.info(f"saving job info to {json_file_path} ")   
         with open(json_file_path, 'w') as jf:
             json.dump(data, jf)

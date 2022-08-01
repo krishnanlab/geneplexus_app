@@ -1,7 +1,7 @@
 """
 run_geneplexus : method to run the geneplexus pipeline from the command line givnen 
 
-usage : TBD
+usage : 
 """
 import logging
 import os, sys, json
@@ -12,7 +12,6 @@ from geneplexus import geneplexus
 import pandas as pd
 from pprint import pprint
 
-#
 def run(job_name, results_store, data_path, logging, 
     net_type='BioGRID',
     features='Embedding',
@@ -49,7 +48,6 @@ def run(job_name, results_store, data_path, logging,
         logging.error(err_msg)
         raise
 
-    # 
     try:
         input_count = df_convert_out.shape[0]
     except Exception as e:
@@ -69,8 +67,6 @@ def run(job_name, results_store, data_path, logging,
 
     return True
 
-
-
 def run_model(data_path, convert_IDs, net_type='String',features='Embedding', GSC='GO'):
     gp = geneplexus.GenePlexus(data_path, net_type, features, GSC)
     gp.load_genes(convert_IDs)
@@ -83,8 +79,8 @@ def run_model(data_path, convert_IDs, net_type='String',features='Embedding', GS
 def make_graph(df_edge, df_probs, max_num_genes = 50):
     df_edge.fillna(0)
     df_edge.columns = ['source', 'target', 'weight']
-    nodes = df_probs[0:max_num_genes]
-    nodes.rename(columns={'Entrez': 'id', 'Class-Label': 'Class'}, inplace=True)
+    nodes = df_probs[0:max_num_genes].copy()
+    nodes = nodes.rename(columns={'Entrez': 'id', 'Class-Label': 'Class'})
     nodes = nodes.astype({'id': int})
 
     graph = {}

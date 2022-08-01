@@ -1,16 +1,31 @@
-import pytest, os
-import mljob.run_geneplexus
+""" test run_geneplexus module, using file-based results store, 
+requires .env and data to be available on DATA_PATH config var 
+"""
+import pytest, os, shlex
+
+from mljob.run_geneplexus import run
+
 from mljob.results_storage import ResultsFileStore
 from mljob.job_manager import generate_job_id
+import logging
+
+from dotenv import load_dotenv
+load_dotenv()
 
 @pytest.fixture(scope="module")
 def job_path():
-    yield os.getenv('JOB_PATH')
+    jp = os.getenv('JOB_PATH')
+    if not os.path.exists(jp):
+        pytest.fail(f"can't find JOB_PATH {jp}, test stopped")
+    yield jp
 
 @pytest.fixture(scope="module")
 def data_path():
-    yield os.getenv('DATA_PATH')
-
+    dp = os.getenv('DATA_PATH')
+    if not os.path.exists(dp):
+        pytest.fail(f"can't find DATA_PATH {dp}, test stopped")
+    else:
+        yield dp
 
 # just make one of these
 @pytest.fixture(scope="module")
@@ -23,16 +38,122 @@ def results_store(job_path):
 
 @pytest.fixture()
 def job_name(job_path):
-    j = generate_job_id()
+    j = "testing_" + str(generate_job_id())
+    
     print(f"using job id {j} for testing")
     yield j
     # sometimes a new folder is created... delete if so
-    rs = ResultsFileStore(job_path)
-    if rs and rs.results_folder_exists(j):
-        print(f"deleting job store folder for {j}")
-        rs.delete(j)
-
+    # rs = ResultsFileStore(job_path)
+    # if rs and rs.results_folder_exists(j):
+    #     print(f"deleting job store folder for {j}")
+    #     rs.delete(j)
 
 def test_true(job_name):
     assert job_name is not None
+
+def test_run_geneplexus(job_name, results_store, data_path):
+    """ minimum test run of GP.  takes time to complete"""
+
+    rs_created = results_store.create(job_name)
+    if not rs_created:
+    # rs_created = results_store.create(job_name)
+    # if not rs_created or results_store.exists(job_name):
+        pytest.fail("couldn't create results store")
+        
+    with open('tests/example_gene_file.txt') as f:
+        genes = shlex.split(f.read())
+
+    input_file_name = results_store.save_input_file(job_name, genes)
     
+    print(f"running job {job_name}")
+    
+    # test run typical options ( and not too long of a test)
+    net_type='BioGRID'
+    features='Embedding'
+    GSC='GO' 
+
+    try:
+        job_ran = run(job_name, results_store, data_path, logging = logging, 
+            net_type=net_type, features=features, GSC=GSC )
+    except Exception as e:
+        pass
+
+    assert job_ran == True, "job runner returned false"
+
+    assert results_store.results_has_file(job_name, file_name = input_file_name) == True
+
+    
+    # check if files expected are present
+    graph_file_name = results_store.construct_results_filename(job_name, "graph", 'json')
+    assert results_store.results_has_file(job_name, file_name = graph_file_name ) == True
+    
+    expected_filenames = [
+        results_store.construct_results_filename(job_name, "graph", 'json'),
+        results_store.construct_results_filename(job_name, "df_GO", ext="tsv"),
+        results_store.construct_results_filename(job_name, "df_edgelist", ext="tsv"),
+        results_store.construct_results_filename(job_name, "df_convert_out_subset", ext="tsv"),
+        results_store.construct_results_filename(job_name, "df_probs", ext="tsv"),
+        results_store.construct_results_filename(job_name, "job_info", ext="json"),
+        results_store.construct_results_filename(job_name, "df_dis", ext="tsv"),
+        results_store.construct_results_filename(job_name, "geneset", ext="txt"),
+        results_store.construct_results_filename(job_name, "results", ext="txt")
+        ]
+
+    for file_name in expected_filenames:
+        assert results_store.results_has_file(job_name, file_name = file_name )
+
+
+
+def test_run_geneplexus(job_name, results_store, data_path):
+    """ minimum test run of GP.  takes time to complete"""
+
+    rs_created = results_store.create(job_name)
+    if not rs_created:
+    # rs_created = results_store.create(job_name)
+    # if not rs_created or results_store.exists(job_name):
+        pytest.fail("couldn't create results store")
+        
+    with open('tests/example_gene_file.txt') as f:
+        genes = shlex.split(f.read())
+
+    input_file_name = results_store.save_input_file(job_name, genes)
+    
+    print(f"running job {job_name}")
+    
+    # test run typical options ( and not too long of a test)
+    net_type='BioGRID'
+    features='Embedding'
+    GSC='GO' 
+
+    try:
+        job_ran = run(job_name, results_store, data_path, logging = logging, 
+            net_type=net_type, features=features, GSC=GSC )
+    except Exception as e:
+        pass
+
+    assert job_ran == True, "job runner returned false"
+
+    assert results_store.results_has_file(job_name, file_name = input_file_name) == True
+
+    
+    # check if files expected are present
+    graph_file_name = results_store.construct_results_filename(job_name, "graph", 'json')
+    assert results_store.results_has_file(job_name, file_name = graph_file_name ) == True
+    
+    expected_filenames = [
+        results_store.construct_results_filename(job_name, "graph", 'json'),
+        results_store.construct_results_filename(job_name, "df_GO", ext="tsv"),
+        results_store.construct_results_filename(job_name, "df_edgelist", ext="tsv"),
+        results_store.construct_results_filename(job_name, "df_convert_out_subset", ext="tsv"),
+        results_store.construct_results_filename(job_name, "df_probs", ext="tsv"),
+        results_store.construct_results_filename(job_name, "job_info", ext="json"),
+        results_store.construct_results_filename(job_name, "df_dis", ext="tsv"),
+        results_store.construct_results_filename(job_name, "geneset", ext="txt"),
+        results_store.construct_results_filename(job_name, "results", ext="txt")
+        ]
+
+    for file_name in expected_filenames:
+        assert results_store.results_has_file(job_name, file_name = file_name )
+
+
+
