@@ -6,7 +6,7 @@ from mljob.job_manager import generate_job_id
 from mljob.results_storage import ResultsFileStore
 
 """
-code to test the tests
+# some code to test the tests in the python cli
 from dotenv  import load_dotenv; load_dotenv()
 job_path = os.getenv('JOB_PATH')
 job_name = generate_job_id()
