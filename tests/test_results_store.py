@@ -17,33 +17,12 @@ print(results_store.results_folder_exists(job_name))
 type(rs)
 
 """
-@pytest.fixture(scope='session')
-def job_path():
-    yield os.getenv('JOB_PATH')
-
-@pytest.fixture()
-def job_name(job_path):
-    j = generate_job_id()
-    print(f"using job id {j} for testing")
-    yield j
-    # sometimes a new folder is created... delete if so
-    rs = ResultsFileStore(job_path)
-    if rs and rs.results_folder_exists(j):
-        print(f"deleting job store folder for {j}")
-        rs.delete(j)
-
-# just make one of these
-@pytest.fixture()
-def results_store(job_path):
-    rs = ResultsFileStore(job_path)
-    if not rs:
-        pytest.fail(f"couldn't instantiate pytest with job_path {job_path}")
-    yield rs
-
+        
 def test_results_store_requires_valid_jobpath():
     """ check that an exception is raised if invalid job path sent"""
     with pytest.raises(Exception) as e_info:
        rs = ResultsFileStore("not/a/real/path")
+
 
 def test_results_store_instantiate(results_store):
     """ can results_store object be created and is valid"""
@@ -116,6 +95,7 @@ def test_results_status(results_store, job_name):
 
         status_as_read = results_store.read_status(job_name)
         assert test_status_msg == status_as_read
+        
 
     
     

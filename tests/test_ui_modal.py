@@ -1,10 +1,38 @@
 from time import sleep
 
 import pytest
+from os import path
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 import requests
+
+exampleGenes = ['CCNO','CENPF','LRRC56','ODAD3','DNAAF1','DNAAF6','DNAAF4','DNAH5','DNAH9','CFAP221','RSPH9',
+    'FOXJ1','LRRC6','GAS2L2','DNAH1','GAS8','DNAI1','STK36','MCIDAS','RSPH4A','DNAAF3','DNAJB13','CCDC103','NME8',
+    'ZMYND10','HYDIN','DNAAF5','CCDC40','ODAD2','DNAAF2','IFT122','INPP5E','CFAP298','DNAI2','SPAG1','SPEF2','ODAD4',
+    'DNAL1','RSPH3','OFD1','CFAP300','CCDC65','DNAH11','RSPH1','DRC1','ODAD1']
+
+@pytest.fixture(scope='module')
+def example_gene_file():
+    ### NOTE: there must be a file in the tests folder called "example_genes_file.txt" which MUST have the 
+    ### last item end with a newline and no extra new lines.  otherwise test will fail
+
+    import shlex
+
+    example_genefile_name = 'example_gene_file.txt' 
+    example_genefile_path = path.join( path.dirname(path.realpath(__file__)), example_genefile_name )
+
+    #just check that the example gene file is here and has stuff in it
+    if not path.exists(example_genefile_path):
+        pytest.fail(f"can't find example gene file {example_genefile_path}")
+
+    with open(example_genefile_path) as f:
+        genes = shlex.split(f.read())
+    if len(genes) == 0:
+        pytest.fail(" no genes in example genefile")
+    
+    yield example_genefile_path
+    
 
 # Browsers can sometimes load elements into the page slowly because of Javascript so this is a way to be tolerant of that
 def try_get_element(driver, element_type: By, element_name: str, max_attempts: int = 3, wait_interval: float = 1.0):
@@ -29,10 +57,6 @@ def test_ui_modal(driver):
     modalClasses = geneModal.get_attribute('class').split(' ')
     assert 'show' in modalClasses, 'Modal not showing'
 
-exampleGenes = ['CCNO','CENPF','LRRC56','ODAD3','DNAAF1','DNAAF6','DNAAF4','DNAH5','DNAH9','CFAP221','RSPH9',
-    'FOXJ1','LRRC6','GAS2L2','DNAH1','GAS8','DNAI1','STK36','MCIDAS','RSPH4A','DNAAF3','DNAJB13','CCDC103','NME8',
-    'ZMYND10','HYDIN','DNAAF5','CCDC40','ODAD2','DNAAF2','IFT122','INPP5E','CFAP298','DNAI2','SPAG1','SPEF2','ODAD4',
-    'DNAL1','RSPH3','OFD1','CFAP300','CCDC65','DNAH11','RSPH1','DRC1','ODAD1']
 @pytest.mark.dependency(name='sample_insert', depends=['modal_show'])
 def test_ui_sample_button(driver):
     driver.get('http://127.0.0.1:5000/')
@@ -47,31 +71,30 @@ def test_ui_sample_button(driver):
     assert inputGeneText == exampleGenes, 'Example gene list button did not product expected results'
 
 @pytest.mark.dependency(name='upload_file', depends=['modal_show'])
-def test_ui_modal_upload(driver):
+def test_ui_modal_upload(driver, example_gene_file):
+    """ test opening model, clicking load buttons, pasting text and uploading from a file"""
+
     # driver.get('http://127.0.0.1:5000/')
 
-    # inputGeneBtn = try_get_element(driver, By.ID, 'geneBtn').click()
+    # manually clear any existing input
     clearBtn = try_get_element(driver, By.ID, 'clearButton')
-    assert clearBtn is not None, 'Clear button not found, can"t test upload'
+    assert clearBtn is not None, "Clear button not found, can't test upload"
     clearBtn.click()
-
     sleep(1)
-    uploadButton = driver.find_element_by_xpath("//input[@type='file']") #  try_get_element(driver, By.ID, 'insertGeneButton')
-    assert uploadButton is not None, 'Could not find the upload button'
-    from os import path
-    import shlex
-    example_genefile_name = 'example_gene_file.txt' 
-    example_genefile_path = path.join( path.dirname(path.realpath(__file__)), example_genefile_name )
-    assert path.exists(example_genefile_path), 'example genefile not found in tests dir, tests will fail'
-    with open(example_genefile_path) as f:
-        example_genes = shlex.split(f.read())
-    uploadButton.send_keys(example_genefile_path)
+    
+    uploadInput = try_get_element(driver, By.ID, "insertGenesInput")
+    assert uploadInput is not None, 'Could not find the upload button'
+
+    #uploadInput is not a button and not click-able, just send the file path
+    uploadInput.send_keys(example_gene_file)
+    sleep(1) # give time to read the file
     inputGeneArea = try_get_element(driver, By.ID, 'enterGenes')
+    
+    print(inputGeneArea)
+
     inputGeneText = inputGeneArea.get_attribute('value').split('\n')
-    assert inputGeneText == example_genes
 
-
-
+    assert inputGeneText == exampleGenes
 
 @pytest.mark.dependency(name='enter_genes', depends=['modal_show'])
 def test_ui_modal_entry(driver):
@@ -109,4 +132,4 @@ def test_ui_clear_input(driver):
     clearBtn.click()
     inputGeneArea = try_get_element(driver, By.ID, 'enterGenes')
     inputGeneText = inputGeneArea.get_attribute('value')
-    assert inputGeneText == '', 'Clear button did not clear out all text'
+    assert inputGeneText == '', 'Clear button did not clear out all text' 

@@ -7,50 +7,37 @@ from datetime import datetime
 from random import choices as random_choices
 from string import ascii_lowercase, digits
 from mljob import results_storage
+from mljob.run_geneplexus import run as run_local
 
 from mljob.results_storage import ResultsFileStore
 
 job_status_codes = {200:"Completed", 201:"Created", 202:"Accepted", 404:"Not Found", 500:"Internal Server Error", 504:"Timeout"}
 
-# launchers have single api : launcher.launch(job_config)
-# function app has to create it's own results store = different process
-# local runner _may_ be run independently ()
-def local_launcher(job_config, results_store, data_path, logging):
-
-    # TODO check that it's a valid job, and folder is reachable
-
-    jobid = job_config['jobid']
-
-    input_genes_file_path = results_store. rejob_config['input_genes_file']
-    net_type= job_config['']
-    features=job_config['features']
-    GSC=job_config['GSC']
-
-    try:
-        results = run_geneplexus(data_path, input_genes_file_path, logging, net_type, features, GSC)
-        job_info = results_store.save_output(results)
-        response = 200
-    except Exception as e:
-        logging(f"error running geneplexus: {e}")
-        response = 500
-
     
 class LocalLauncher():
-    def __init__(self):
-        self.run = self.runner
-        #from mljob.geneplexus_runner import run
-
-    def runner(*args):
-        # place holder until gp is finished
-        return 202
+    def __init__(self, data_path, results_store):
+        self.data_path = data_path
+        self.results_store = results_store
 
     def launch(self,job_config):
-        """ send the jobid to the URL and return the response. """
+        """ launch job.  Inputs = job_config dictionary with parameters.   """
         job_name = job_config.get('jobname')
         if job_name:
             logging.info(f"launching {job_name}")
-            response = self.run(job_config)
-        return(response)    
+            
+            try:
+                gp_ran = run_local(job_name, self.results_store, self.data_path, logging = logging, 
+                    net_type=job_config.get('net_type'), features=job_config.get('features'), GSC=job_config.get('GSC') )
+            except Exception as e:
+                return('500')
+            
+            if gp_ran:
+                return('200')
+            else:
+                return('500')
+        else:
+            return('404')
+
 
 
 class UrlLauncher():
@@ -74,7 +61,7 @@ class UrlLauncher():
             response = requests.post(url = self.launch_url, data = job_config)
         except Exception as e:
             logging.error("error contacting {self.launch_url} : {e}")
-            response = 500
+            response = '500'
         
         return(response)    
 
@@ -87,7 +74,7 @@ def generate_job_id():
 class JobManager():
     """creates jobs, runs them and checks status"""
 
-    def __init__(self,results_store = 'x', launcher = LocalLauncher()):
+    def __init__(self,results_store, launcher):
         self.results_store = results_store
         self.launcher = launcher
         self.required_job_config_keys = ['net_type', 'features', 'GSC','jobname', 'job_url']
@@ -159,21 +146,23 @@ class JobManager():
             return False
 
         # passed validation, create storage 
-        job_path = self.results_store.create(job_name)
+        j = self.results_store.create(job_name)
         
-        if not job_path:
+        if not j:
             raise Exception("couldn't create job storage, did not launch job")
 
         # put the results file there
         job_config['input_file_name']  = self.results_store.save_input_file(job_name, genes)
+        logging.info(f"input file = {job_config['input_file_name']}")
 
         # TODO verify saving notifier address in job info, and can read it
         # change how we we are recovering notifier address (no longer in individual file but part of job_info)
         # remove notifier_file_name = results_store.s_notifyaddress(job_config, app_config)
 
         job_config_file = self.results_store.save_json_results(job_name, 'job_config', job_config)
-
-        response = self.launcher(job_config)
+        logging.info(f"job_config_file = {job_config_file}")
+        # TODO resolve that the 'local' launcher hsa to be given a results-store but URL launcher must self-configure
+        response = self.launcher.launch(job_config)
 
         return response
 
