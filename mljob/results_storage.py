@@ -7,7 +7,7 @@ usage:
     
     if results_store.create(job_name):
         path_to_input_file = results_store.save_input_file(job_name, geneset)
-        job_output = run_geneplexus.run(job_config, path_to_input_file)  # how to emit status?
+        job_output = run_geneplexus.run_and_save(job_config, path_to_input_file)  # how to emit status?
         results_store.save_output(job_name, job_output)
     else:
         # exception
@@ -47,7 +47,7 @@ class ResultsFileStore():
         if not job_name:
             return ""
         else:
-            return slugify(job_name.lower(), lowercase=True)
+            return slugify(job_name.lower())
 
     def results_folder(self, job_name):
         """ return standardized path name used to store jobs"""
@@ -75,6 +75,12 @@ class ResultsFileStore():
             return ( os.path.exists(rf)   )
         else:
             return False
+
+    def has_input_file(self,job_name, input_file_name = "geneset"):
+        """check that an input file with standard name exists in store"""
+        full_input_file_name = self.standard_input_file_name(job_name, input_file_name)
+        input_file_path = self.construct_results_filepath(job_name, full_input_file_name)
+        return(os.path.exists(input_file_path))
 
     def results_file_location(self, job_name, file_name):
         """ return full path for location files by name (e.g add the path to it)"""
@@ -331,6 +337,21 @@ class ResultsFileStore():
             data = []
 
         return(data)
+
+    def read_config(self, job_name):
+        """ read the standard configuration file stored when the job is created 
+        return empty dict if not found"""
+        output_name = "job_config.json"
+        job_config_json = self.read_txt_results(self, job_name, output_name )
+
+        if job_config_json:
+            job_config = json.loads(job_config_json)
+        else:
+            job_config = {}
+
+        return(job_config)
+
+
 
     def read_txt_results(self, job_name, output_name ):
         """ read generic text file, output name must have the extension"""
