@@ -67,3 +67,13 @@ To remove all the resources you've created run.  use the same tfvars file you us
 This Terraform script currently does not deploy the python code to the function app, it only creates the resources. 
 See the README in `mljob` folder for directions on how to "deploy" the code to the Azure resources that this Terraform creates.  
 
+*** settings ***
+
+AZRG=$(terraform output -raw AZRG)
+AZSA=$(terraform output -raw AZSA)
+AZFN=$(terraform output -raw AZFN) 
+
+TFDIR=../Terraform/  # or just "."
+AZRG=$(terraform output -state $TFDIR/terraform.tfstate -raw AZRG)
+AZSA=$(terraform output -state $TFDIR/terraform.tfstate -raw AZSA)
+AZFN=$(terraform output  -state $TFDIR/terraform.tfstate -raw AZFN) 

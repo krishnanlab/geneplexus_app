@@ -23,8 +23,121 @@ Organization
  - results = TBD
 
 
-Jobs and Results in GPDefinitions 
+Running the Functions Locally
+---
+
+
+Can run the functions locally.  there is a function endpoint `testfn` that does not require queue triggers and runs the ML code directly.   This 
+is for testing only and not meant for the web application, as it will most likely time out.  
+
+To test the queue-based azure functions,  need use a cloud queue (unless there is an easy way to run a fake queue locally).  So this will still require creating some  Azure resources first.  See the Terraform directory for detailed instructions. 
+
+Need to put the connection string to the queue storage you just created to put into local.settings.json   
+
+
+
+1. Create folders on your computer that have a place for jobs ( `/tmp/geneplexus/jobs` perhaps) to go and a copy of all the backend data needed 
+ ( `/tmp/geneplexus/data` maybe)
+1. get the backend data.   see the script `download_data_for_geneplexus.py`
+1. set configuration in a file `local.settings.json` (see the example file provided for syntax):
+   ```
+    {
+      "IsEncrypted": false,
+      "Values": {
+        "FUNCTIONS_WORKER_RUNTIME": "python",
+        "AzureWebJobsStorage": "",
+        "DATA_PATH" : "/path/on/your/computer/to/geneplexus_data",
+        "JOBS_PATH" : "/path/on/your/computer/to/jobs"
+        "QUEUECONNECTIONSTRING": "put queue connection string here"
+       }
+    }
+    ```
+
+1. create resources using Terraform (in `./Terraform` directory)
+1. get a connection string and put it into local settings file
+
+```
+cd mljob  # if you aren't alredy
+TFDIR=../Terraform/  # or just "."
+AZRG=$(terraform output -state $TFDIR/terraform.tfstate -raw AZRG)
+AZSA=$(terraform output -state $TFDIR/terraform.tfstate -raw AZSA)
+AZFN=$(terraform output  -state $TFDIR/terraform.tfstate -raw AZFN) 
+AZSA_CONNSTR=$(az storage account show-connection-string --name $AZSA -g $AZRG --query 'connectionString')
+SAKEY=$(az storage account keys list --resource-group $AZRG --account-name $AZSA --query '[1].value')
+
+echo $AZSA_CONNSTR
+
+```
+
+copy and paste that connection string into the "QUEUECONNECTIONSTRING" of `local.settings.json` in order to use the Azure Queue for the 
+
+
+To start the functions, in the `mljob` folder, start the function server using 
+
+`func start` 
+
+Note there are many tutorials that say you must use VSCode to test and to push functions but you can dmo everything from the CLI. 
+
+
+creating a local test job folder
+---
+
+You need a folder with a job in it to try these functions.   good instructions TBD , but see the python function `local_launcher` in `job_manager.py` 
+
+Testing with Curl
+---
+
+curl command to test local processing, (after running `func start`, do this in a new command line window)
+
+
+
+curl command to test queue processing:
+```bash
+
+LOCALTESTURL='http://localhost:7071/api/testfn'
+curl --request POST --location $LOCALTESTURL \
+ --header 'Content-Type: application/json' \
+ --data-raw '{"jobname": "8e3jt5kz"}'
+
+
+```
+
+```bash
+
+LOCALURL='http://localhost:7071/api/enqueue'
+# OR
+AZURL="https://$AZFN.azurewebsites.net/api/enqueue"
+
+curl --request POST --location $LOCALURL \
+ --header 'Content-Type: application/json' \
+ --data-raw '{"jobnames": ["8e3jt5kz"]}'
+
+curl -X POST $LOCALURL -H "Content-Type: application/json"    -d '{"jobnames": ["8e3jt5kz"]}'
+
+# need to create a job folder in the Azure storage prior to testing on Azure. 
+
+curl -X POST $AZURL -H "Content-Type: application/json"    -d '{"jobnames": ["8e3jt5kz"]}'
+
+curl -X POST $AZURL -H "Content-Type: application/json" -H "x-functions-key: $AZFNKEY"   -d '{"jobid":"somejobid"}'
+
+```
+
+
+Publishing the code into the function app
+---
+
+func azure functionapp publish $AZFN
+
+input to the queue processor is a list of items (document files in the blog post example, but that can be adapted to be jobs)
+
+
+
+
+
+Background information: Jobs and Results in GPDefinitions 
 ——
+
+*NOTE: This section is for devs to communicate the application structure and not currently readable, but saved while the app is in development*
 
 job = common api for starting ML processes and check status of those process
 sending parameters to the machine to create results.   
