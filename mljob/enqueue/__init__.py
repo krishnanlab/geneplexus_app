@@ -1,12 +1,4 @@
 """ queuejob function :  add data to queue to trigger runjob function
-valid data keys sent are
-            'net_type', 
-            'features', 
-            'GSC',
-            'jobname',
-            'jobid',
-            'job_url'
-            
 """
 
 #triggerprocessing: take input from http and enqueue items in a list, triggering the processing of those items
@@ -23,35 +15,36 @@ def main(req: func.HttpRequest, msg: func.Out[func.QueueMessage]) -> func.HttpRe
     
     logging.info('job enqueue triggered.')
 
-    # jobids param is either a single element or an array msg.set(["Element1", "Element2", ...])
+    # jobnames param is a either a single element or an array msg.set(["Element1", "Element2", ...])
     try:
         req_body = req.get_json()
-        jobids = req_body.get('jobids')
+        jobnames = req_body.get('jobnames')
     except ValueError:
-        logging.info('job request incomplete (missing jobids')
+        logging.info('job request incomplete (missing jobnames')
 
         return func.HttpResponse(
              "Please pass a list of jobids as a parameter in the request body",
              status_code=400
         )
     
-    if jobids:
+    if jobnames:
 
-        logging.info(f"enqueuing {jobids}.")
+        logging.info(f"enqueuing {jobnames}.")
         
         # TODO return 202 not 200 and see if that works. 
 
         try:
             # this adds jobis to the az storage queue.  If 'jobids' is an array, automatically parses
-            msg.set(jobids)
-            logging.info(f"msg queued {jobids}.")
+            msg.set(jobnames)
+            logging.info(f"msg queued {jobnames}.")
+             
             return func.HttpResponse(
-                "processing job(s) " + str(jobids),
+                "processing job(s) " + str(jobnames),
                 status_code=200
             )
 
         except Exception as e:
-            logging.info(f"error when enqueuing jobids {jobids}.")
+            logging.info(f"error when enqueuing jobids {jobnames}.")
             return func.HttpResponse(
                 f"Error: {e}",
                 status_code=500
