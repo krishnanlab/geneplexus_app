@@ -7,15 +7,11 @@ import logging
 import os, sys, json
 
 from geneplexus import geneplexus
-# from geneplexus.util import read_gene_list
-# from mljob.results_storage import ResultsFileStore
-import pandas as pd
-from pprint import pprint
 
 def run_and_save(job_name, results_store, data_path, logging, 
-    net_type='BioGRID',
-    features='Embedding',
-    GSC='GO'
+    net_type=None,
+    features=None,
+    GSC=None
     ):
     
     """ gather parameters and check that everything is in place to run the model.  Log errors and status"""
@@ -34,6 +30,12 @@ def run_and_save(job_name, results_store, data_path, logging,
         err_msg = "reading input file error: " + str(e)
         logging.error(err_msg)
         raise
+
+
+    # set default parameters
+    net_type = net_type or 'BioGRID'
+    features = features or 'Embedding'
+    GSC = GSC or 'GO'
 
     try:   
         logging.info('starting gp model run')
