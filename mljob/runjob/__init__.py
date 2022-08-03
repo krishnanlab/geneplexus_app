@@ -59,30 +59,36 @@ def main(msg: func.QueueMessage) -> None:
         logging.error('400 job request incomplete (missing jobname')
         return
 
-    # connect and confirm storage of job inputs and outputs
-    results_store = ResultsFileStore(jobs_path)
+    try:
+        # connect and confirm storage of job inputs and outputs
+        results_store = ResultsFileStore(jobs_path)
 
-    if not results_store.exists(job_name = job_name):
-        logging.error(f"error : 404 : job not found {job_name}")
+        if not results_store.exists(job_name = job_name):
+            logging.error(f"error : 404 : job not found {job_name}")
+            return
+
+
+        ### read and check input file and params    
+        if not results_store.has_input_file(job_name):
+            err_msg = f"input file not found for job {job_name}"
+            logging.error(err_msg)
+            return
+            
+        job_config = results_store.read_config(job_name)
+        if not job_config:
+            err_msg = f"no configuration file found for job {job_name}"
+            logging.error(err_msg)
+            return
+
+        net_type = job_config.get('net_type')
+        features = job_config.get('features')
+        GSC = job_config.get('GSC')
+
+    except Exception as e:
+        errmsg = f"Error with results store for job {job_name}, can't continue : {e}"
+        logging.error(errmsg)
         return
 
-
-    ### read and check input file and params    
-    if not results_store.has_input_file(job_name):
-        err_msg = f"input file not found for job {job_name}"
-        logging.error(err_msg)
-        return
-        
-    job_config = results_store.read_config(job_name)
-    if not job_config:
-        err_msg = f"no configuration file found for job {job_name}"
-        logging.error(err_msg)
-        return
-
-    net_type = job_config.get('net_type')
-    features = job_config.get('features')
-    GSC = job_config.get('GSC')
-    
     
     ### running.  
     try: 

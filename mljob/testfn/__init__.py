@@ -1,12 +1,8 @@
 """ test function :  run a geneplexus job directly from http trigger
-valid data keys sent are
-            'net_type', 
-            'features', 
-            'GSC',
-            'jobname',
-            'jobid',
-            'job_url'
-            
+parameter is simply a job name. 
+config is job path and data path 
+job is run input read from, and output saved to store
+returns http message and status code
 """
  
 from run_geneplexus import run_and_save
@@ -16,16 +12,6 @@ import logging
 from slugify import slugify
 from os import getenv, path
 import azure.functions as func
-
-
-data_keys = {'net_type', 
-            'features', 
-            'GSC',
-            'jobname',
-            'jobid',
-            'job_url' }
-
-
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     """http job processing version, runs geneplexus from a URL. See queuejob and associate runjob for app versions"""
@@ -73,22 +59,39 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             "jobname parameter required",
             status_code=400)
 
-    results_store = ResultsFileStore(jobs_path)
+    try:
+        # connect and confirm storage of job inputs and outputs
+        results_store = ResultsFileStore(jobs_path)
 
-    if not results_store.exists(job_name = job_name):
-        logging.error(f"error : 404 : job not found {job_name}")
-        return func.HttpResponse(
-            "no job by that name found",
-            status_code=404
+        if not results_store.exists(job_name = job_name):
+            logging.error(f"error : 404 : job not found {job_name}")
+            return func.HttpResponse(
+               "no job by that name found",
+                status_code=404
         )
-        
-    if not results_store.has_input_file(job_name):
-        err_msg = 'no input gene file in job folder'
-        return func.HttpResponse(f"input file not found for job {job_name}", status_code=400)
 
-    net_type = get_param('net_type')
-    features = get_param('features')
-    GSC = get_param('GSC')
+
+        ### read and check input file and params    
+        if not results_store.has_input_file(job_name):
+            err_msg = f"input file not found for job {job_name}"
+            logging.error(err_msg)
+            return func.HttpResponse(err_msg, status_code=400)
+
+            
+        job_config = results_store.read_config(job_name)
+        if not job_config:
+            err_msg = f"no configuration file found for job {job_name}"
+            logging.error(err_msg)
+            return func.HttpResponse(err_msg, status_code=400)
+
+        net_type = job_config.get('net_type')
+        features = job_config.get('features')
+        GSC = job_config.get('GSC')
+
+    except Exception as e:
+        errmsg = f"Error with results store for job {job_name}, can't continue : {e}"
+        logging.error(errmsg)
+        return func.HttpResponse(err_msg, status_code=400)
 
     ### running.  
     try: 
