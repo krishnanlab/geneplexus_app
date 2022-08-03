@@ -342,7 +342,7 @@ class ResultsFileStore():
         """ read the standard configuration file stored when the job is created 
         return empty dict if not found"""
         output_name = "job_config.json"
-        job_config_json = self.read_txt_results(self, job_name, output_name )
+        job_config_json = self.read_txt_results(job_name, output_name )
 
         if job_config_json:
             job_config = json.loads(job_config_json)
