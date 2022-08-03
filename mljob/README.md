@@ -23,17 +23,41 @@ Organization
  - results = TBD
 
 
+
 Running the Functions Locally
 ---
 
+Azure has a method for testing these functions on your local compputer.  
 
-Can run the functions locally.  there is a function endpoint `testfn` that does not require queue triggers and runs the ML code directly.   This 
-is for testing only and not meant for the web application, as it will most likely time out.  
+**Install**
 
-To test the queue-based azure functions,  need use a cloud queue (unless there is an easy way to run a fake queue locally).  So this will still require creating some  Azure resources first.  See the Terraform directory for detailed instructions. 
+to run and test locally you'll need to install yet another virtual environment.  I had issue with conda, and as of 2022 the Azure functions does not work with Macs that have Apple Silicon (M1, M2, etc).   For any of this, run in i386 (e.g. Rosetta2) mode.   
 
-Need to put the connection string to the queue storage you just created to put into local.settings.json   
+When in intel/i386/rosetta mode, install the azure function core tools per microsoft instructions.  These instructions are for command line use, but most MS documentation pushes you to use VSCode.  You don't need to   
 
+Then install a new virtual env, and the convention is to put it into the same folder as the functions but don't check it into git.  There is a requirements file in the mljob folder just for azure functions
+
+```bash
+cd mljob
+virtualenv .venv -p 3.8
+source .venv/bin/activate
+# while still in the mljob folder
+pip install -r requirements.txt  
+```
+
+This virtual env is just for testing the azure functions. 
+
+**Test Run**
+
+When testing the functions, start a new terminal /workspace and activate this environment `cd mljob; source .venv/bin/activate`
+ 
+There is a function endpoint `testfn` that does not require queue triggers and runs the ML code directly.   This 
+is for testing only and not meant for the web application, as it will most likely time out if run int he cloud by the app. 
+
+However to truly test the queue-based functions, you need to use a cloud resource group (unless there is an easy way to run a fake queue locally).  So this will still require creating some  Azure resources first.  The Terraform code creates these resources, and by chaning the `env` suffix you can create 
+a set of test resources.   See the Terraform directory for detailed instructions. 
+
+Once resources are created, you need need to put the connection string to the queue storage you just created to put into local.settings.json   
 
 
 1. Create folders on your computer that have a place for jobs ( `/tmp/geneplexus/jobs` perhaps) to go and a copy of all the backend data needed 
@@ -57,8 +81,8 @@ Need to put the connection string to the queue storage you just created to put i
 1. get a connection string and put it into local settings file
 
 ```
-cd mljob  # if you aren't alredy
-TFDIR=../Terraform/  # or just "."
+cd mljob
+TFDIR=../Terraform/
 AZRG=$(terraform output -state $TFDIR/terraform.tfstate -raw AZRG)
 AZSA=$(terraform output -state $TFDIR/terraform.tfstate -raw AZSA)
 AZFN=$(terraform output  -state $TFDIR/terraform.tfstate -raw AZFN) 
@@ -94,19 +118,29 @@ curl command to test local processing, (after running `func start`, do this in a
 curl command to test queue processing:
 ```bash
 
-LOCALTESTURL='http://localhost:7071/api/testfn'
-curl --request POST --location $LOCALTESTURL \
+LOCALURL='http://localhost:7071/api'
+
+# local test
+
+curl --request GET --location $LOCALURL/testfn \
  --header 'Content-Type: application/json' \
  --data-raw '{"jobname": "8e3jt5kz"}'
 
+curl -X POST ${LOCALURL}/enqueue -H "Content-Type: application/json"    -d '{"jobname": "8e3jt5kz"}'
 
 ```
 
 ```bash
 
-LOCALURL='http://localhost:7071/api/enqueue'
+LOCALURL='http://localhost:7071/api'
 # OR
-AZURL="https://$AZFN.azurewebsites.net/api/enqueue"
+AZURL="https://$AZFN.azurewebsites.net/api"
+
+as a local test, to enqueue to Azure storage, and have your locally running function pick it up and run it
+
+```
+curl -X POST ${LOCALTESTURL}/enqueue -H "Content-Type: application/json"    -d '{"jobnames": ["8e3jt5kz"]}
+```
 
 curl --request POST --location $LOCALURL \
  --header 'Content-Type: application/json' \
