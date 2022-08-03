@@ -1,34 +1,14 @@
 """ runjob azure function :  run a geneplexus job from queue
-    valid data keys sent are
-                'net_type', 
-                'features', 
-                'GSC',
-                'jobname',
-                'jobid',
-                'job_url'
+    valid data keys sent are 'net_type', 'features', 'GSC','jobname','job_url'
         """
 # runjob.__init__.py 
 # read job_name from queue and run. 
 
-
-
-from app.views import job
 from run_geneplexus import run_and_save
 from results_storage import ResultsFileStore
-
 import logging
-from slugify import slugify
 from os import getenv, path
 import azure.functions as func
-
-# unfinished system to write to azure table storage for job status
-# using the results_store for status in a file instead
-# def update_status(job_name, msg):
-#     STORAGE_CONNECTION_STRING = os.getenv("QUEUECONNECTIONSTRING")
-#     STORAGE_CONTAINER_NAME = os.getenv("STORAGE_CONTAINER_NAME")
-#     TABLE_NAME = os.getenv("STORAGE_TABLE_NAME")
-#     # storage_helpers.update_status(TABLE_NAME, job_name, '404', STORAGE_CONNECTION_STRING)
-
 
 def main(msg: func.QueueMessage) -> None:
     
