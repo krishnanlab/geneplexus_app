@@ -9,6 +9,7 @@
     "FUNCTIONS_WORKER_RUNTIME": "python",
     "AzureWebJobsStorage": "",
     "DATA_PATH" : "/path/on/your/computer/to/geneplexus_data",
-    "JOBS_PATH" : "/path/on/your/computer/to/jobs"
+    "JOBS_PATH" : "/path/on/your/computer/to/jobs",
+    "QUEUECONNECTIONSTRING": "put queue connection string here"
    }
 }
