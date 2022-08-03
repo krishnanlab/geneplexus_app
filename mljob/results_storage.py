@@ -7,7 +7,7 @@ usage:
     
     if results_store.create(job_name):
         path_to_input_file = results_store.save_input_file(job_name, geneset)
-        job_output = geneplexus_runner(job_config, path_to_input_file)  # how to emit status?
+        job_output = run_geneplexus.run(job_config, path_to_input_file)  # how to emit status?
         results_store.save_output(job_name, job_output)
     else:
         # exception

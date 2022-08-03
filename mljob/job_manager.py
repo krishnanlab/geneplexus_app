@@ -7,7 +7,7 @@ from datetime import datetime
 from random import choices as random_choices
 from string import ascii_lowercase, digits
 from mljob import results_storage
-from mljob.run_geneplexus import run as run_local
+from mljob.run_geneplexus import run_and_save as run_local
 
 from mljob.results_storage import ResultsFileStore
 

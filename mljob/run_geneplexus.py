@@ -12,7 +12,7 @@ from geneplexus import geneplexus
 import pandas as pd
 from pprint import pprint
 
-def run(job_name, results_store, data_path, logging, 
+def run_and_save(job_name, results_store, data_path, logging, 
     net_type='BioGRID',
     features='Embedding',
     GSC='GO'

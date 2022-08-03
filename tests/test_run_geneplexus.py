@@ -3,7 +3,7 @@ requires .env and data to be available on DATA_PATH config var
 """
 import pytest, os, shlex
 
-from mljob.run_geneplexus import run
+from mljob.run_geneplexus import run_and_save
 
 from mljob.results_storage import ResultsFileStore
 from mljob.job_manager import generate_job_id
@@ -35,7 +35,7 @@ def test_run_geneplexus(job_name, results_store, data_path):
     GSC='GO' 
 
     try:
-        job_ran = run(job_name, results_store, data_path, logging = logging, 
+        job_ran = run_and_save(job_name, results_store, data_path, logging = logging, 
             net_type=net_type, features=features, GSC=GSC )
     except Exception as e:
         pass
