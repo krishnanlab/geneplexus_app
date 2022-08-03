@@ -1,0 +1,14 @@
+// this is an example file, copy to local.settings.json in this folder
+// edit the DATA_PATH setting with the path on your computer where the 'backend' data is 
+// edit thje JOBS_PATH setting to where you can create new job folders to read from 
+//   note the funcation app does not create the job folders, it expect something like ..../jobs/myjob123 to exist
+// and you have to delete all of these comment lines
+{
+  "IsEncrypted": false,
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "AzureWebJobsStorage": "",
+    "DATA_PATH" : "/path/on/your/computer/to/geneplexus_data",
+    "JOBS_PATH" : "/path/on/your/computer/to/jobs"
+   }
+}

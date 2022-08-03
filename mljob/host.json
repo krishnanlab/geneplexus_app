@@ -1,0 +1,24 @@
+{
+  "functions": [ "check","testfn" ],
+  "version": "2.0",
+  "functionTimeout": "00:10:00",
+  "logging": {
+    "fileLoggingMode": "always",
+      "logLevel": {
+        "default": "Information",
+        "Host.Results": "Information",
+        "Function": "Information",
+        "Host.Aggregator": "Trace"
+      },
+    "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": true,
+        "excludedTypes": "Request"
+      }
+    }
+  },
+  "extensionBundle": {
+    "id": "Microsoft.Azure.Functions.ExtensionBundle",
+    "version": "[2.*, 3.0.0)"
+  }
+}
