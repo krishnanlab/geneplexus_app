@@ -14,14 +14,6 @@ def main(msg: func.QueueMessage) -> None:
     
     logging.info(f"job runner triggered by Queue message")
 
-    try:
-        job_name = msg.get_body().decode('utf-8')
-        logging.info(f"retrieved job from queue:  {job_name}")
-    except Exception as e:
-        logging.error(f"error retrieving job_name from queue msg: {e}")
-        return
-
-
     #####  Configuration Validation
     jobs_path = getenv("JOBS_PATH")
     if not jobs_path:
@@ -34,11 +26,13 @@ def main(msg: func.QueueMessage) -> None:
         logging.error(err_msg)
 
     ### param gathering and validation
-    job_name = get_param('jobname')
-    if not job_name:
-        logging.error('400 job request incomplete (missing jobname')
+    try:
+        job_name = msg.get_body().decode('utf-8')
+        logging.info(f"retrieved job from queue:  {job_name}")
+    except Exception as e:
+        logging.error(f"error retrieving job_name from queue msg: {e}")
         return
-
+        
     try:
         # connect and confirm storage of job inputs and outputs
         results_store = ResultsFileStore(jobs_path)
