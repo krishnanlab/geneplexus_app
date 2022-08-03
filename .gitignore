@@ -31,3 +31,12 @@ data/
 
 # Local testing databases
 *.db
+
+# Terraformn
+
+*.plan
+*.tfvars
+*.tfstate
+*.tfstate.backup
+.terraform*
+*.out
