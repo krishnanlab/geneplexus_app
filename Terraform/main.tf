@@ -221,10 +221,8 @@ resource "azurerm_linux_function_app" "ml_runner" {
 
   service_plan_id      = azurerm_service_plan.ml_runner.id
 
-
   site_config {
-    # always_on = true
-    # application_stack { python_version = "3.8" }
+    linux_fx_version = "python|3.8"
   }
 
   # list of all app settings : https://docs.microsoft.com/en-us/azure/azure-functions/functions-app-settings
