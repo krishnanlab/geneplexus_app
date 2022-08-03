@@ -23,7 +23,7 @@ def main(req: func.HttpRequest, msg: func.Out[func.QueueMessage]) -> func.HttpRe
         logging.info('job request incomplete (missing jobnames')
 
         return func.HttpResponse(
-             "Please pass a list of jobids as a parameter in the request body",
+             'Please pass a list of jobnames as a parameter in the request body ["xyz"]',
              status_code=400
         )
     
