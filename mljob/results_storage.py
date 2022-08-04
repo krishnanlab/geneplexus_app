@@ -473,7 +473,7 @@ class ResultsFileStore():
             # no info => job incomplete, so use job_config as a base and add to it
             self.logger.info(f'no job info file, constructing for {job_name}')
             job_info = self.read_config(job_name)
-            job_info['submit_time'] =  self.job_submit_time(job_name),
+            job_info['submit_time'] =  self.job_submit_time(job_name)
             job_info['has_results']  = False
             job_info['status'] = self.read_status(job_name)
         
