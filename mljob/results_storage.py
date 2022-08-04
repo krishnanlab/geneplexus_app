@@ -33,18 +33,23 @@ class ResultsFileStore():
 
     def __init__(self,job_path, logger_name = None, create_if_missing = False):
         """job_path is the root of all job storage.  If """
+        self.logger = logging.getLogger(logger_name)
+
         if job_path and os.path.exists(job_path):
             self.job_path = job_path
-            self.logger = logging.getLogger(logger_name)
+            self.logger.info(f"ResultsFileStore using path {job_path}")
         else:
             if create_if_missing:
                 try:
                     os.mkdir(job_path)
                     self.job_path = job_path
-                    
+                    self.logger.info(f"created new file store in {job_path}")
+
                 except Exception as e:
+                    self.logger.error(f"can't create new path for ResultsFileStore {job_path}")
                     raise Exception(f"could not create new job path {job_path}")    
-            else:                    
+            else: 
+                self.logger.error(f"can't find path to create ResultsFileStore {job_path}")                   
                 raise Exception(f"error job path doesn't exist {job_path}")
         
         self.status_filename = "jobstatus"
