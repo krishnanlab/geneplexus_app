@@ -1,4 +1,5 @@
 
+from operator import truediv
 import pytest, os, shlex
 from mljob.job_manager import generate_job_id, JobManager, LocalLauncher
 
@@ -38,10 +39,30 @@ def genelist():
     yield data
 
 @pytest.fixture()
-def existing_job_name(job_name, results_store, genelist):
+def test_job_config(job_name, job_url):
+    """ create configuration for a single job (params, etc)"""
+
+    
+    job_config = {
+        'net_type'      : 'BioGRID',
+        'features'      : "Embedding",
+        'GSC'           : "DisGeNet",
+        'jobname'       : job_name, 
+        'jobid'         : '',  # this is no longer used
+        'job_url'       : job_url,
+        'notifyaddress' :  'none@none.com'
+    }
+
+    yield job_config 
+
+
+@pytest.fixture()
+def existing_job_name(job_name, results_store, genelist, test_job_config):
     """do all needed to prep a folder for running a job against"""
+    # this is mimicking job_manager too much -> refactor job prep into new function
     results_store.create(job_name)
     results_store.save_input_file(job_name, genelist)
+    job_config_file = results_store.save_json_results(job_name, 'job_config', test_job_config)
 
     yield(job_name)
 
@@ -67,45 +88,28 @@ def existing_job_config(existing_job_name, job_url):
     yield job_config 
 
 
-@pytest.fixture()
-def test_job_config(job_name, job_url):
-    """ create configuration for a single job (params, etc)"""
-
-    
-    job_config = {
-        'net_type'      : 'BioGRID',
-        'features'      : "Embedding",
-        'GSC'           : "DisGeNet",
-        'jobname'       : job_name, 
-        'jobid'         : '',  # this is no longer used
-        'job_url'       : job_url,
-        'notifyaddress' :  'none@none.com'
-    }
-
-    yield job_config 
-
-
 class NullLauncher():
     def __init__(self,*args):
         pass
-    def launch(self,job_config):
+    def launch(self,job_name):
         return('200')
 
-def test_job_manager_instantiate(results_store):
+def test_job_manager_instantiate(results_store,genelist, test_job_config):
     # create a job manager composed of a storage and a launcher
     job_manager = JobManager(results_store, NullLauncher() )
     assert job_manager is not None
     assert str(type(job_manager )) == "<class 'mljob.job_manager.JobManager'>"
+    resp = job_manager.launch(genes = genelist, job_config = test_job_config)
+    assert resp == '200'
 
 
-def test_job_local_launcher(data_path, results_store, existing_job_config):
+def test_job_local_launcher(data_path, results_store, existing_job_name):
     # create launcher object
     launcher = LocalLauncher( data_path, results_store)
 
     assert launcher is not None
-    assert str(type(launcher)) == "<class 'mljob.job_manager.LocalLauncher'>"
-
-    response = launcher.launch(existing_job_config)
+    assert str(type(launcher)) == "<class 'mljob.job_manager.LocalLauncher'>"   
+    response = launcher.launch(existing_job_name)
     assert response == '200'
 
 def test_job_manager_null_launcher(results_store, test_job_config, genelist):
@@ -137,4 +141,13 @@ def test_job_manager_local_launcher(data_path, results_store, test_job_config, g
     test_graph = results_store.read_graph_results(job_name)
     assert test_graph is not None
     assert len(test_graph ) > 0
+
+    # test results listing
+    jobnames = [job_name]
+    joblist = results_store.job_info_list(jobnames)
+    assert type(joblist) == type({})
+    assert len(joblist) == 1
+    job_info = joblist[job_name]
+    assert job_info.get('has_results') == True
+
     
