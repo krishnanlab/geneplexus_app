@@ -101,10 +101,7 @@ class ResultsFileStore():
         """ convenience function. does the job have results saved?  Checks if the job_info file is present. 
         Returns : T/F """
         job_info = self.read_job_info(job_name)
-        if job_info:
-            return True
-        else:
-            return False
+        return job_info.get('has_results')
 
     def job_submit_time(self, job_name):
         """ the time the job was submitted.  As a proxy, use the time that the job was first created, 
@@ -413,13 +410,7 @@ class ResultsFileStore():
                     job_info = self.read_job_info(job_name)
                     if job_info:
                         jlist[job_name] = job_info
-                    else:
-                        # no info => job incomplete, add to existing job_config                        
-                        job_info = self.read_config(job_name)
-                        job_info['submit_time'] =  self.job_submit_time(job_name),
-                        job_info['has_results']  = False
-                        job_info['status'] = self.read_status(job_name)
-                        jlist[job_name] = job_info            
+
         except Exception as e:
             self.logger.error("did not send a list to job_config_list()")
 
@@ -464,7 +455,10 @@ class ResultsFileStore():
             return(None)
         
     def read_job_info(self, job_name):
-        """ read in the job information dictionary"""
+        """ read job information dictionary from disk, and if it does not exist yet
+        craft one from submitted job config
+        output : dictionary of job info
+        """
         if not self.exists(job_name):
             self.logger.error(f"job info not found, job doesn't exists  {job_name} ")
             return None
@@ -474,11 +468,16 @@ class ResultsFileStore():
         if os.path.exists(job_info_path):
             with open(job_info_path) as f:
                 job_info = json.load(f)
-
-            return(job_info)
+            self.logger.info(f'found job info for {job_name}')
         else:
-            self.logger.error(f"job info file not found: {job_info_path} ")
-            return(None)
+            # no info => job incomplete, so use job_config as a base and add to it
+            self.logger.info(f'no job info file, constructing one {job_name}')
+            job_info = self.read_config(job_name)
+            job_info['submit_time'] =  self.job_submit_time(job_name),
+            job_info['has_results']  = False
+            job_info['status'] = self.read_status(job_name)
+        
+        return(job_info)
 
 
 """
