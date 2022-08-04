@@ -406,7 +406,7 @@ class ResultsFileStore():
         jlist = {}
         try:
             for job_name in jobnames:
-                if self.job_exists(job_name):
+                if self.exists(job_name):
                     job_info = self.read_job_info(job_name)
                     if job_info:
                         jlist[job_name] = job_info
