@@ -48,7 +48,7 @@
                     <td>
                         {{job['net_type']}}; {{job['features']}}; {{job['GSC']}}
                     </td>
-                    <td>{{job['status']}}</td>
+                    <td>{% if job['has_results'] %}completed{% else %}{{job['status']}}{% endif %}</td>
                     </tr>
                 {% endfor %}
             </tbody>
