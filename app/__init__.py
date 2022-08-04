@@ -1,3 +1,4 @@
+from urllib.error import URLError
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -10,6 +11,10 @@ from config import ProdConfig, DevConfig
 from dotenv import load_dotenv
 import logging
 from pathlib import Path
+
+# system is based on file storage, but allows for writing a blob storage
+from mljob.results_storage import ResultsFileStore as ResultsStore
+from mljob.job_manager import JobManager, LocalLauncher, UrlLauncher
 from mljob.notifier import Notifier
 
 # note : if using 'flask run' from command line this is unecessary as flask autoamtiaclly read .flaskenv
@@ -37,13 +42,27 @@ if not Path(logfile).exists():
     Path(logfile).touch()
 
 logging.basicConfig(filename=app.config.get('LOG_FILE'),level=logging.INFO)
-# TODO actually create a logger
+# TODO maybe name the logger
 # logger = logging.getLogger('app')
 
+
 # job_folder configuration
-job_folder = Path(app.config.get('JOB_PATH'))
-if not job_folder.exists():
-    job_folder.mkdir()
+# job_folder = Path(app.config.get('JOB_PATH'))
+# if not job_folder.exists():
+#     job_folder.mkdir()
+
+
+# object to read/write all job-related info and results
+results_store = ResultsStore(app.config.get('JOB_PATH'), create_if_missing=True)
+
+# object to kick off jobs
+if app.config.get('RUN_LOCAL'):
+    launcher = LocalLauncher(app.config['DATA_PATH'], results_store)
+else:
+    launcher = UrlLauncher(app.config['QUEUE_URL'])
+
+# 
+job_manager = JobManager(results_store, launcher)
 
 app.notifier = Notifier(app.config, template_folder = 'templates')
 
@@ -51,6 +70,7 @@ app.notifier = Notifier(app.config, template_folder = 'templates')
 from mljob import geneplexus_previous
 geneplexus_previous.set_config(app.config)
 
+# TODO this may be no longer necessary for local job launching
 from app import views
 
 @click.command('create-db')
