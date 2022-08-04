@@ -148,23 +148,62 @@ curl --request POST --location $LOCALURL \
 
 curl -X POST $LOCALURL -H "Content-Type: application/json"    -d '{"jobnames": ["8e3jt5kz"]}'
 
-# need to create a job folder in the Azure storage prior to testing on Azure. 
+# if there is an existing job folder with both input file and config file, then try this command
 
-curl -X POST $AZURL -H "Content-Type: application/json"    -d '{"jobnames": ["8e3jt5kz"]}'
+```bash
+existing_job_name=8e3jt5kz
 
+curl -X POST $AZURL/enqueue -H "Content-Type: application/json"  \
+      -d '{"jobnames": ["'${existing_job_name}'"]}'
+```
+
+```bash
+
+curl -X POST $AZURL/enqueue -H "Content-Type: application/json"  \
+      -d '{"jobnames": ["8e3jt5kz"]}'
+
+```
+
+### Using Function Keys
+
+For better security, you should enable a function key for at least the http-trigger function.   If you do enable
+function keys, you need to send that key when testing the function.   
+
+To get the key ... cut and past from the portal for now until can come up with commands
+
+```bash
+export AZFNKEY="something"
 curl -X POST $AZURL -H "Content-Type: application/json" -H "x-functions-key: $AZFNKEY"   -d '{"jobid":"somejobid"}'
 
 ```
 
+### Setting keys
 
-Publishing the code into the function app
+There are automatic keys and you can fetch those using the az cli.  However on person notes that they change over time.  To avoid that, set the keys manually, perhaps when creating the function in Terraform, and set that in the Terraform output. 
+
+### Sharing keys
+
+the key needs to sent to the configuration file of the geneplexus app.  
+
+1) if creating the application using terraform, use the function key data as a configuration value for the gp web app
+2) put the key as an output of Terraform to fetch with terraform output.  However this is then only stored on the 
+   dev's laptop unless using a storage account backend. 
+3) create an az cli shell script to 1 read the key from function app 2 set the app configuration.   
+4) put the key into a keyvault for the app, and from the app, use the keyvault to fetch.   
+    - if pulling dynamically, requires the app know how to use the keyvault (e.g. azure sdk), not great
+    -  to use the azure sdk requires managed identity, which we don't have
+    - better to use a configuration script that can read from the key vaule (using az cli) and set the app configuration
+    - keyvault is automaticaly shared with anyone managing the app via Azure, so better than locking in Terraform state
+    - using keyvault to store function keys requires additional work on the function side (key is normalliy stored in storage)
+
+
+
+*Publishing the code into the function app*
 ---
 
-func azure functionapp publish $AZFN
+Set the name of the Azure function using terraform output commands above. Then 
 
-input to the queue processor is a list of items (document files in the blog post example, but that can be adapted to be jobs)
-
-
+`func azure functionapp publish $AZFN`
 
 
 
