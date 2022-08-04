@@ -74,7 +74,9 @@ def jobs():
         jobnames = jobnames + session['jobs']
     
     if len(jobnames) > 0:
-        joblist = results_store.job_info_list(jobnames)  
+        joblist = results_store.job_info_list(jobnames)
+        # this now returns a dictionary.  Make it a list for now
+        
 
     session_args = create_sidenav_kwargs()
     return render_template("jobs.html", jobs = jobnames, 

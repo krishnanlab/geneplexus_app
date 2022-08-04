@@ -118,7 +118,5 @@ def test_results_status(results_store, job_name):
         status_as_read = results_store.read_status(job_name)
         assert test_status_msg == status_as_read
         
-
-    
     
 #TODO write test that takes some existing output from a job, and saves it.   redundant with job running tests
