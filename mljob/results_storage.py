@@ -31,17 +31,25 @@ import logging
 class ResultsFileStore():
     """posix file-based model output reader/writer"""
 
-    def __init__(self,job_path, logger_name = None):
-        """"""
+    def __init__(self,job_path, logger_name = None, create_if_missing = False):
+        """job_path is the root of all job storage.  If """
         if job_path and os.path.exists(job_path):
             self.job_path = job_path
             self.logger = logging.getLogger(logger_name)
         else:
-            raise Exception(f"error job path doesn't exist {job_path}")
+            if create_if_missing:
+                try:
+                    os.mkdir(job_path)
+                    self.job_path = job_path
+                    
+                except Exception as e:
+                    raise Exception(f"could not create new job path {job_path}")    
+            else:                    
+                raise Exception(f"error job path doesn't exist {job_path}")
         
         self.status_filename = "jobstatus"
+        return
 
-    
     def path_friendly_job_name(self,job_name):
         """modify job name to be used as folder names for file storage, if necessary"""
         if not job_name:

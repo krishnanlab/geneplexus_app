@@ -4,6 +4,9 @@ from multiprocessing import dummy
 import pytest, os
 from mljob.job_manager import generate_job_id
 from mljob.results_storage import ResultsFileStore
+from random import choices as random_choices
+from string import ascii_lowercase
+
 
 """
 # some code to test the tests in the python cli
@@ -33,6 +36,19 @@ def test_results_store_instantiate(results_store):
     assert 'notarealjobname' in results_store.results_folder('notarealjobname') 
     assert results_store.results_folder_exists('notarealjobname') is False
 
+def test_results_store_creates_new_jobpath(job_path):
+    """ test option to create job path if it does not exist based on param"""
+    test_new_job_path = os.path.join(job_path, 'testpath-' + ''.join(random_choices(population = ascii_lowercase, k=6)))
+    
+    results_store = ResultsFileStore(test_new_job_path, create_if_missing = True)
+    assert str(type(results_store)) == "<class 'mljob.results_storage.ResultsFileStore'>"
+    assert test_new_job_path == results_store.job_path
+    assert os.path.exists(results_store.job_path)
+    del(results_store)
+    os.rmdir(test_new_job_path)
+    # check I didn't accidentally do anythign to the real job path
+    assert os.path.exists(test_new_job_path) == False
+    assert os.path.exists(job_path) == True
 
 def test_results_store_create(results_store, job_name):
     rs_created = results_store.create(job_name)
