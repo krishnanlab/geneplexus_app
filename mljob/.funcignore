@@ -1,0 +1,7 @@
+.venv
+venv
+.vscode/
+tests/
+static/
+templates/
+local.settings.json
