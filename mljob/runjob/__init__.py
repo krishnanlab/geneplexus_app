@@ -66,17 +66,13 @@ def main(msg: func.QueueMessage) -> None:
     
     ### running.  
     try: 
-        results_store.save_status(job_name, 'running')
-
         gp_ran = run_and_save(job_name, results_store, data_path, logging = logging, 
                     net_type=net_type, features=features, GSC=GSC)
         if  gp_ran:
             logging.info(f"job completed {job_name}")
-            results_store.save_status(job_name, "complete") 
             return 
         else:
             logging.error(f"{job_name} failed to complete")
-            results_store.save_status(job_name, "failed")
             return
                 
 

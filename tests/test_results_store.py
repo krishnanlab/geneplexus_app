@@ -51,11 +51,17 @@ def test_results_store_creates_new_jobpath(job_path):
     assert os.path.exists(job_path) == True
 
 def test_results_store_create(results_store, job_name):
+    from datetime import datetime
     rs_created = results_store.create(job_name)
     assert rs_created == True
     assert results_store.results_folder(job_name) is not None
     assert results_store.results_folder_exists(job_name) is True
-
+    # check timestamp functions
+    ts = results_store.job_submit_time(job_name)
+    assert ts is not None
+    # can it be converted to a time?
+    ts_datetime = datetime.strptime(ts, "%Y-%m-%d %H:%M:%S")
+    assert type(ts_datetime) == type(datetime.now())
 
 def test_results_store_save(results_store, job_name):
     """ test if can save something and then the file is there"""

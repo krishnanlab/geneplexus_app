@@ -21,7 +21,9 @@ usage:
 
 
 import os, sys, shlex
+from datetime import datetime
 from  shutil import rmtree
+from typing import Iterable
 from slugify import slugify
 import json
 from pandas import read_csv
@@ -94,6 +96,33 @@ class ResultsFileStore():
         full_input_file_name = self.standard_input_file_name(job_name, input_file_name)
         input_file_path = self.construct_results_filepath(job_name, full_input_file_name)
         return(os.path.exists(input_file_path))
+
+    def has_results(self,job_name):
+        """ convenience function. does the job have results saved?  Checks if the job_info file is present. 
+        Returns : T/F """
+        job_info = self.read_job_info(job_name)
+        if job_info:
+            return True
+        else:
+            return False
+
+    def job_submit_time(self, job_name):
+        """ the time the job was submitted.  As a proxy, use the time that the job was first created, 
+        which is typically immediately before submitting
+        input : jobname
+        output : datetime object 
+        """
+        folder_create_time = None
+
+        if self.exists(job_name):
+            try:
+                folder_create_time = datetime.fromtimestamp(os.path.getmtime(self.results_folder(job_name))).strftime("%Y-%m-%d %H:%M:%S")
+            except Exception as e:
+                self.logger.error(f"can't get {job_name} create timestamp")
+                
+
+        return(folder_create_time)
+
 
     def results_file_location(self, job_name, file_name):
         """ return full path for location files by name (e.g add the path to it)"""
@@ -169,6 +198,8 @@ class ResultsFileStore():
             df_convert_out, 
             graph, 
             df_edgelist)
+        
+        return job_info
 
     def save(self, job_name, net_type, features, GSC, avgps, input_count, positive_genes, 
         df_probs, df_GO, df_dis, df_convert_out_subset, graph, df_edgelist):
@@ -204,7 +235,12 @@ class ResultsFileStore():
             'df_dis_file': df_dis_file, 
             'df_convert_out_subset_file': df_convert_out_subset_file, 
             'graph_file':  graph_file,
-            'df_edgelist_file' : df_edgelist_file
+            'df_edgelist_file' : df_edgelist_file,
+            'submit_time' : self.job_submit_time(job_name),
+            'has_results' : True, 
+            'status' : self.read_status(job_name)
+
+
             }
 
         
@@ -215,7 +251,6 @@ class ResultsFileStore():
     def read(self,job_name):
         """opposite of writing output, read all output from a job and load into memory """
 
-        #TODO this may be redundant with methods in jobs.py so reconcile these two modules
         job_info = self.read_job_info(job_name)
 
         if job_info:
@@ -353,7 +388,10 @@ class ResultsFileStore():
 
     def read_config(self, job_name):
         """ read the standard configuration file stored when the job is created 
-        return empty dict if not found"""
+        return empty dict if not found. 
+        this is currently the fofllowing keys: 
+        "net_type", "features", "GSC", "jobname", "jobid", "job_url", "notifyaddress", "input_file_name": "8e3jt5kz_geneset.txt"}
+        """
         output_name = "job_config.json"
         job_config_json = self.read_txt_results(job_name, output_name )
 
@@ -364,8 +402,29 @@ class ResultsFileStore():
 
         return(job_config)
 
+    def job_info_list(self,jobnames):
+        """given a list jobnames, accumulate all the job config.  this is written for compatibility with 
+        previous code.  """
 
+        jlist = {}
+        try:
+            for job_name in jobnames:
+                if self.job_exists(job_name):
+                    job_info = self.read_job_info(job_name)
+                    if job_info:
+                        jlist[job_name] = job_info
+                    else:
+                        # no info => job incomplete, add to existing job_config                        
+                        job_info = self.read_config(job_name)
+                        job_info['submit_time'] =  self.job_submit_time(job_name),
+                        job_info['has_results']  = False
+                        job_info['status'] = self.read_status(job_name)
+                        jlist[job_name] = job_info            
+        except Exception as e:
+            self.logger.error("did not send a list to job_config_list()")
 
+        return(jlist)
+    
     def read_txt_results(self, job_name, output_name ):
         """ read generic text file, output name must have the extension"""
 
@@ -406,6 +465,10 @@ class ResultsFileStore():
         
     def read_job_info(self, job_name):
         """ read in the job information dictionary"""
+        if not self.exists(job_name):
+            self.logger.error(f"job info not found, job doesn't exists  {job_name} ")
+            return None
+            
         job_info_filename = self.construct_results_filename(job_name, 'job_info', ext = 'json')
         job_info_path = self.construct_results_filepath(job_name,  job_info_filename)
         if os.path.exists(job_info_path):

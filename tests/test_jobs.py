@@ -108,7 +108,6 @@ def test_job_local_launcher(data_path, results_store, existing_job_config):
     response = launcher.launch(existing_job_config)
     assert response == '200'
 
-
 def test_job_manager_null_launcher(results_store, test_job_config, genelist):
     
     job_manager = JobManager(results_store = results_store,launcher = NullLauncher())
@@ -116,8 +115,26 @@ def test_job_manager_null_launcher(results_store, test_job_config, genelist):
     assert resp == '200'     
 
 def test_job_manager_local_launcher(data_path, results_store, test_job_config, genelist):
-    
+    job_name = test_job_config['jobname']
+
     launcher = LocalLauncher( data_path, results_store)
+    
     job_manager = JobManager(results_store = results_store,launcher = launcher )
     resp = job_manager.launch( genes = genelist, job_config = test_job_config)
     assert resp == '200'
+
+    assert results_store.has_results(job_name) == True
+    # basic tests that the job info is legit
+    job_info = results_store.read_job_info(job_name)
+    assert job_info is not None
+    assert type(job_info) == type({})
+    assert 'df_convert_out_subset_file' in list(job_info.keys())
+    example_results_file_name = job_info.get("df_convert_out_subset_file")
+    assert example_results_file_name is not None
+
+    assert results_store.results_has_file(job_name, example_results_file_name) == True
+    
+    test_graph = results_store.read_graph_results(job_name)
+    assert test_graph is not None
+    assert len(test_graph ) > 0
+    

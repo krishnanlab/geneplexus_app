@@ -39,8 +39,8 @@ def run_and_save(job_name, results_store, data_path, logging,
 
     try:   
         logging.info('starting gp model run')
+        results_store.save_status(job_name, "started")
         df_probs, df_GO, df_dis, avgps, df_edgelist, df_convert_out, positive_genes = run_model(data_path, gene_list, net_type, features, GSC)
-
         graph = make_graph(df_edgelist, df_probs)
 
         logging.info('gp model complete')
@@ -48,6 +48,7 @@ def run_and_save(job_name, results_store, data_path, logging,
     except Exception as e:
         err_msg = "run_model error: " + str(e)
         logging.error(err_msg)
+        results_store.save_status(job_name, "failed")
         raise
 
     try:
@@ -55,10 +56,11 @@ def run_and_save(job_name, results_store, data_path, logging,
     except Exception as e:
         err_msg = "df_convert_out error: " + str(e)
         logging.error(err_msg)
+        results_store.save_status(job_name, "failed")
         raise
 
     try:
-        print("saving output")
+        results_store.save_status(job_name, "saving")
         job_info = results_store.save(job_name, net_type, features, GSC, avgps, input_count, positive_genes, df_probs, df_GO, df_dis, df_convert_out, graph, df_edgelist)
         logging.info("job completed and output saved")
 
@@ -67,6 +69,7 @@ def run_and_save(job_name, results_store, data_path, logging,
         logging.error(err_msg)
         raise
 
+    results_store.save_status(job_name, "complete")
     return True
 
 def run_model(data_path, convert_IDs, net_type='String',features='Embedding', GSC='GO'):

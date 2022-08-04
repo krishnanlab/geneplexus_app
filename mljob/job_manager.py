@@ -164,6 +164,10 @@ class JobManager():
         # TODO resolve that the 'local' launcher hsa to be given a results-store but URL launcher must self-configure
         response = self.launcher.launch(job_config)
 
+        # TODO need to handle non-OK responses in the job status. e.g. submission failed, need to save that
+        self.results_store.save_status(job_name, 'submitted')
+
+        
         return response
 
 
