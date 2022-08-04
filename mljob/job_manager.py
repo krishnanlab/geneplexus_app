@@ -19,12 +19,13 @@ class LocalLauncher():
         self.data_path = data_path
         self.results_store = results_store
 
-    def launch(self,job_config):
+    def launch(self,job_name):
         """ launch job.  Inputs = job_config dictionary with parameters.   """
-        job_name = job_config.get('jobname')
-        if job_name:
+        job_config = self.results_store.read_config(job_name)
+        
+        if job_config:
             logging.info(f"launching {job_name}")
-            
+        
             try:
                 gp_ran = run_and_save(job_name, self.results_store, self.data_path, logging = logging, 
                     net_type=job_config.get('net_type'), features=job_config.get('features'), GSC=job_config.get('GSC') )
@@ -51,14 +52,14 @@ class UrlLauncher():
     def __init__(self,launch_url):
         self.launch_url = launch_url
 
-    def launch(self,job_config):
-        """ send the jobid to the URL and return the response. """
-        job_name = job_config.get('jobname')
-        if job_name:
-            logging.info(f"launching {job_name}")
+    def launch(self,jobname):
+        """ send the jobname to the URL and return the response.  The queueing functions expect
+        and array of jobnames, but just send one"""
 
+        jobname_array_of_one = json.dumps({"jobnames" : [jobname]})
         try:
-            response = requests.post(url = self.launch_url, data = job_config)
+            logging.info(f"launching {jobname}")
+            response = requests.post(url = self.launch_url, data = jobname_array_of_one)
         except Exception as e:
             logging.error("error contacting {self.launch_url} : {e}")
             response = '500'
@@ -159,10 +160,11 @@ class JobManager():
         # change how we we are recovering notifier address (no longer in individual file but part of job_info)
         # remove notifier_file_name = results_store.s_notifyaddress(job_config, app_config)
 
+        # we are misusibng this "save results" method to save an input config file
         job_config_file = self.results_store.save_json_results(job_name, 'job_config', job_config)
         logging.info(f"job_config_file = {job_config_file}")
         # TODO resolve that the 'local' launcher hsa to be given a results-store but URL launcher must self-configure
-        response = self.launcher.launch(job_config)
+        response = self.launcher.launch(job_name)
 
         # TODO need to handle non-OK responses in the job status. e.g. submission failed, need to save that
         self.results_store.save_status(job_name, 'submitted')
