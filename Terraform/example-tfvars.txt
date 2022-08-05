@@ -15,7 +15,7 @@ existing_storage_account_name = ""
 function_app_sku_name = "Y1" # EP1 for premium
 
 
-postgresql-version =  13
+postgresql-version =  11
 postgresql-sku-name = "B_Gen5_1" 
 postgresql-storage-mb =  5120 
 postgresql-admin-login =   enter a new admin name here
