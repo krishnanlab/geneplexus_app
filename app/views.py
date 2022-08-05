@@ -5,7 +5,7 @@ from mljob.jobs import path_friendly_jobname, launch_job, retrieve_job_folder,re
 
 from werkzeug.exceptions import InternalServerError
 from flask import request, render_template, jsonify, session, redirect, url_for, flash, send_file, Markup, abort,send_from_directory
-from flask_login import login_user, logout_user, current_user
+from flask_login import login_user, logout_user, current_user, login_required
 from app.forms import ValidateForm, JobLookupForm
 from app import app, db
 
@@ -60,6 +60,18 @@ def public_results():
                            results=pub_results,
                            **session_args)
 
+@login_required
+@app.route('/my_results', methods=['GET'])
+def my_results():
+    session_args = create_sidenav_kwargs()
+    print(current_user.id)
+    all_results = Result.query.all()
+    print(all_results)
+    my_results = Result.query.filter_by(userid=current_user.id).all()
+    return render_template('my_results.html',
+                           results=my_results,
+                           **session_args)
+
 @app.route('/result/<resultid>', methods=['GET'])
 def result(resultid):
     session_args = create_sidenav_kwargs()
@@ -71,8 +83,25 @@ def result(resultid):
                            feature=cur_results.feature,
                            negative=cur_results.negative,
                            performance='{:.2f}, {:.2f}, {:.2f}'.format(cur_results.p1, cur_results.p2, cur_results.p3),
+                           public=cur_results.public,
                            **session_args)
 
+@login_required
+@app.route('/update_result_visibility', methods=['POST'])
+def update_result_visibility():
+    print('WE IN THERE')
+    data = request.get_json()
+    print(data)
+    if 'resultid' not in data:
+        flash('Result ID was not found in request', 'error')
+        return redirect('index')
+    cur_result = Result.query.filter_by(resultid=data['resultid']).first()
+    if cur_result is None:
+        flash('There are no results with ID {}'.format(data['resultid']))
+        return redirect(url_for('result', resultid=data['resultid']))
+    cur_result.public = not cur_result.public
+    db.session.commit()
+    return redirect(url_for('result', resultid=data['resultid']))
 
 @app.route("/jobs/", methods=['GET', 'POST'])
 def jobs():
@@ -598,10 +627,9 @@ def get_or_set_job(jobname):
             db.session.commit()
     return job_info, job_output
 
+@login_required
 @app.route('/update_result', methods=['POST'])
 def update_result():
-    if not current_user.is_authenticated:
-        return jsonify('User is not authenticated'), 400
     data = request.get_json()
     result_check = Result.query.filter_by(jobname=data['jobname']).first()
     if result_check is not None:
