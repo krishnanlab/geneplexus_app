@@ -13,35 +13,46 @@
 </div>
 <form>
     <div class="row">
-        <label for="authorname" class="col col-form-label">Email</label>
+        <label for="authorname" class="col col-form-label">Username</label>
         <div class="col-10">
             <input type="text" readonly class="form-control-plaintext" id="authorname" value="{{ author }}">
         </div>
     </div>
     <div class="row">
-        <div class="col">
+        <div class="col me-1">
             <div class="row">
                 <label for="description">Description</label>
                 <textarea id="description"></textarea>
             </div> 
             <div class="row">
-                <label for="network" class="col">Network</label>
+                <label for="network" class="col">Molecular Network</label>
                 <input type="text" class="col form-control-plaintext" id="network" value="{{ network }}">
             </div>
             <div class="row">
-                <label for="features" class="col">Network</label>
+                <label for="features" class="col">Feature Type</label>
                 <input type="text" class="col form-control-plaintext" id="features" value="{{ feature }}">
             </div>
             <div class="row">
-                <label for="negative" class="col">Network</label>
+                <label for="negative" class="col">Negative Gene Class</label>
                 <input type="text" class="col form-control-plaintext" id="negative" value="{{ negative }}">
             </div>
             <div class="row">
-                <a id="full_results" class="btn btn-primary" href="{{ url_for('job',jobname=resultid) }}">See full results</a>
+                <label for="performance" class="col">Performance</label>
+                <input type="text" class="col form-control-plaintext" id="performance" value="{{ performance }}">
+            </div>
+            <div class="row">
+                <a id="full_results" class="col-4 btn btn-primary" href="{{ url_for('job',jobname=resultid) }}">See full results</a>
             </div>
         </div>
-        <div class="col">
-
+        <div class="col mx-1">
+            <div class="row mb-1">
+                <label for="pos_genes">Positive Genes</label>
+                <textarea id="pos_genes" style="width: 15em; height: 11em"></textarea>
+            </div>
+            <div class="row">
+                <button class="col-3 me-1 btn btn-primary">Go to Geneset</button>
+                <button class="col-3 ms-1 btn btn-primary">Make public</button>
+            </div>
         </div>
     </div>
 </form>
