@@ -70,6 +70,7 @@ def result(resultid):
                            network=cur_results.network,
                            feature=cur_results.feature,
                            negative=cur_results.negative,
+                           performance='{:.2f}, {:.2f}, {:.2f}'.format(cur_results.p1, cur_results.p2, cur_results.p3),
                            **session_args)
 
 
