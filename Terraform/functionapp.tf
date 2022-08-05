@@ -27,7 +27,7 @@ resource "azurerm_storage_table" "jobstatus" {
 # function plan and app
 
 resource "azurerm_service_plan" "ml_runner" {
-  name                = "${var.project}-${var.env}-plan"
+  name                = "${var.project}-${var.env}-fnplan"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
   os_type             = "Linux"
@@ -76,14 +76,26 @@ resource "azurerm_linux_function_app" "ml_runner" {
 }
 
 
+# this uses 'heredoc' format for multiline strings.  see terraform doc
 output "fn_storage_command" {
-  value = <<EOT
+
+  value = <<CMD
+  export AZSTORAGE_CUSTOM_ID=$(az webapp identity show --resource-group ${azurerm_resource_group.main.name} \
+    --name ${azurerm_linux_function_app.ml_runner.name} --query principalId --output tsv) 
+
+  export AZSTORAGE_KEY=$(az storage account keys list --resource-group ${azurerm_resource_group.main.name} \
+    --account-name ${azurerm_storage_account.mldata.name} \
+    --query "[0].value" --output tsv)
+  
   az webapp config storage-account add -g ${azurerm_resource_group.main.name} \
     -n $ --custom-id anything  \
     --storage-type AzureFiles  \
     --account-name ${azurerm_storage_account.mldata.name} \
     --share-name ${azurerm_storage_share.mldata.name}  \
-    --access-key ${azurerm_storage_account.mldata.primary_access_key} \
+    --access-key $AZSTORAGE_KEY \
     --mount-path ${var.mount_path}
-  EOT
+  CMD
+
+  description="the shell script AZ cli commands to connect GP file storage to function app "
+
 }

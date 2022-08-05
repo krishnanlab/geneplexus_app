@@ -22,6 +22,7 @@ resource "azurerm_storage_account" "mldata" {
   account_tier             = "Premium"
   account_replication_type = "LRS"
   shared_access_key_enabled  = true
+  account_kind             = "FileStorage"
   tags                     = local.common_tags
 }
 
@@ -30,13 +31,14 @@ resource "azurerm_storage_account" "mldata" {
 resource "azurerm_storage_share" "mldata" {
   name                 = "${var.project}${var.env}files"
   storage_account_name = azurerm_storage_account.mldata.name
+  depends_on           = [azurerm_storage_account.mldata]
   quota                = 50
-  enabled_protocol     = "SMB"
+
 }
 
 
 resource "azurerm_service_plan" "gpapp" {
-  name                = "${var.project}-${var.env}-plan"
+  name                = "${var.project}-${var.env}-appplan"
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
   os_type             = "Linux"
@@ -47,6 +49,11 @@ resource "azurerm_service_plan" "gpapp" {
 
 # reference https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_web_app
 resource "azurerm_linux_web_app" "gpapp" {
+
+  depends_on = [
+    azurerm_storage_account.mldata
+  ]
+
   name                = "${var.project}-${var.env}"
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
@@ -54,11 +61,10 @@ resource "azurerm_linux_web_app" "gpapp" {
   tags                = local.common_tags
 
   site_config {
-    app_command_line = "" #  (Optional) The App command line to launch.
     application_stack {
         python_version = "3.8" 
         } 
-    ftps_state = "Disabled" # - (Optional) The State of FTP / FTPS service. Possible values include: AllAllowed, FtpsOnly, Disabled.
+    # ftps_state = "Disabled" # - (Optional) The State of FTP / FTPS service. Possible values include: AllAllowed, FtpsOnly, Disabled.
     }
 
   logs {
@@ -66,16 +72,16 @@ resource "azurerm_linux_web_app" "gpapp" {
      file_system_level = "Information" 
     }
   }
-
-  storage_account {
-       # this connects the storage account with the web application
-        access_key = azurerm_storage_account.mldata.primary_access_key
-        account_name =  azurerm_storage_account.mldata.name  # (Required) The Name of the Storage Account.
-        name = azurerm_storage_share.mldata.name # - ??? (Required) The name which should be used for this Storage Account, no spaces
-        share_name = azurerm_storage_share.mldata.name   # - (Required) The Name of the File Share or Container Name for Blob storage.
-        type = "AzureFiles" # - (Required) The Azure Storage Type. Possible values include AzureFiles and AzureBlob
-        mount_path = var.mount_path 
-    }
+  
+  # storage_account {
+  #      # this connects the storage account with the web application
+  #       access_key = azurerm_storage_account.mldata.primary_access_key
+  #       account_name =  azurerm_storage_account.mldata.name  # (Required) The Name of the Storage Account.
+  #       name = azurerm_storage_share.mldata.name # - ??? (Required) The name which should be used for this Storage Account, no spaces
+  #       share_name = azurerm_storage_share.mldata.name   # - (Required) The Name of the File Share or Container Name for Blob storage.
+  #       type = "AzureFiles" # - (Required) The Azure Storage Type. Possible values include AzureFiles and AzureBlob
+  #       mount_path = var.mount_path 
+  #   }
 
   identity {
         type = "SystemAssigned"
