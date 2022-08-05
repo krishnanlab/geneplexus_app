@@ -51,7 +51,12 @@
             </div>
             <div class="row">
                 <button class="col-3 me-1 btn btn-primary">Go to Geneset</button>
-                <button class="col-3 ms-1 btn btn-primary">Make public</button>
+                {% if author == current_user.username %}
+                <form action="{{ url_for('update_result_visibility') }}" method="POST">
+                    <input type="hidden" id="resultid" name="resultid" value="{{ resultid }}">
+                    <button type="submit" class="col-3 ms-1 btn btn-primary">{% if public %}Make private{% else %}Make public{% endif %}</button>
+                </form>
+                {% endif %}
             </div>
         </div>
     </div>
