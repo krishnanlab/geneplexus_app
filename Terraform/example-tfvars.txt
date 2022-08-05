@@ -13,3 +13,12 @@ python_enable_debug_logging = 1
 existing_storage_account_rg = ""
 existing_storage_account_name = ""
 function_app_sku_name = "Y1" # EP1 for premium
+
+
+postgresql-version =  13
+postgresql-sku-name = "B_Gen5_1" 
+postgresql-storage-mb =  5120 
+postgresql-admin-login =   enter a new admin name here
+postgresql-admin-password = enter a new password here
+database-instance-name =  "geneplexus_app"
+ipaddress-db-access =  add your computers IP address here
