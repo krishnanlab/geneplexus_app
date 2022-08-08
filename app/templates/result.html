@@ -20,10 +20,21 @@
     </div>
     <div class="row">
         <div class="col me-1">
+            {% if author == current_user.username %}
+            <form action="{{ url_for('update_result_description') }}" method="POST">
+                <div class="row">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description">{{ description }}</textarea>
+                </div> 
+                <input type="hidden" id="resultid" name="resultid" value="{{ resultid }}">
+                <button type="submit" class="btn btn-primary">Update Description</button>
+            </form>
+            {% else %}
             <div class="row">
                 <label for="description">Description</label>
-                <textarea id="description"></textarea>
+                <textarea id="description" name="description">{{ description }}</textarea>
             </div> 
+            {% endif %}
             <div class="row">
                 <label for="network" class="col">Molecular Network</label>
                 <input type="text" class="col form-control-plaintext" id="network" value="{{ network }}">

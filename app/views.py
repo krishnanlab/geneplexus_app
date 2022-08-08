@@ -77,6 +77,7 @@ def result(resultid):
     session_args = create_sidenav_kwargs()
     cur_results = Result.query.filter_by(jobname=resultid).first()
     return render_template('result.html',
+                           description=cur_results.description,
                            resultid=resultid,
                            author=cur_results.user.username,
                            network=cur_results.network,
@@ -89,19 +90,36 @@ def result(resultid):
 @login_required
 @app.route('/update_result_visibility', methods=['POST'])
 def update_result_visibility():
-    print('WE IN THERE')
-    data = request.get_json()
-    print(data)
+    data = request.form
     if 'resultid' not in data:
         flash('Result ID was not found in request', 'error')
         return redirect('index')
-    cur_result = Result.query.filter_by(resultid=data['resultid']).first()
+    cur_result = Result.query.filter_by(jobname=data['resultid']).first()
     if cur_result is None:
         flash('There are no results with ID {}'.format(data['resultid']))
         return redirect(url_for('result', resultid=data['resultid']))
     cur_result.public = not cur_result.public
     db.session.commit()
     return redirect(url_for('result', resultid=data['resultid']))
+
+@login_required
+@app.route('/update_result_description', methods=['POST'])
+def update_result_description():
+    if 'description' not in request.form:
+        flash('Could not find a description', 'error')
+        return redirect(url_for('result', resultid=data['resultid']))
+    data = request.form['description']
+    cur_result = Result.query.filter_by(jobname=data['resultid']).first()
+    if cur_result is None:
+        flash('Something went wrong when looking up this result', 'error')
+        return redirect(url_for('result', resultid=data['resultid']))
+    cur_result.description = request.form['description']
+    print('Current description')
+    print(data['description'])
+    db.session.commit()
+    flash('Description updated successfully', 'success')
+    return redirect(url_for('result', resultid=data['resultid']))
+
 
 @app.route("/jobs/", methods=['GET', 'POST'])
 def jobs():
