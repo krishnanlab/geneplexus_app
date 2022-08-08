@@ -117,19 +117,33 @@ def jobs():
 
     jobnames = []
     joblist = {}
-    if current_user.is_authenticated:
-        jobnames = Job.query.filter_by(userid=current_user.id).with_entities(Job.jobid).all()
-        jobnames = [job[0] for job in jobnames]
-    if 'jobs' in session:
-        jobnames = jobnames + session['jobs']
-    # jobnames = list_all_jobs(app.config.get('JOB_PATH'))
-    if len(jobnames) > 0:
-        joblist = job_info_list(jobnames, app.config)  
 
+    user_jobnames = []
+    user_joblist = {}
+
+    session_jobnames = []
+    session_joblist = {}
+
+    if current_user.is_authenticated:
+        user_jobnames = Job.query.filter_by(userid=current_user.id).with_entities(Job.jobid).all()
+        user_jobnames = [job[0] for job in user_jobnames]
+        if len(user_jobnames) > 0:
+            user_joblist = job_info_list(user_jobnames, app.config)
+    if 'jobs' in session:
+        session_jobnames = session['jobs']
+        if len(session_jobnames) > 0:
+            session_joblist = job_info_list(session_jobnames, app.config)
+    
     session_args = create_sidenav_kwargs()
-    return render_template("jobs.html", jobs = jobnames, 
-                            joblist = joblist, 
-                            form=form, **session_args)
+    return render_template(
+        'jobs.html',
+        user_jobnames = user_jobnames,
+        user_joblist = user_joblist,
+        session_jobnames = session_jobnames,
+        session_joblist = session_joblist,
+        form = form,
+        **session_args
+    )
 
 
 def html_output_table(df, id = "", row_limit = 500):
