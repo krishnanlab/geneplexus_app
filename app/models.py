@@ -68,6 +68,7 @@ class Result(db.Model):
     p2 = db.Column(db.Float)
     p3 = db.Column(db.Float)
     public = db.Column(db.Boolean)
+    description = db.Column(db.String(512), default='')
 
     userid = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     jobname = db.Column(db.Integer, db.ForeignKey('jobs.jobid'))
