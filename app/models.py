@@ -76,7 +76,7 @@ class Result(db.Model):
     user = db.relationship('User', backref=db.backref('results', lazy=True))
     job = db.relationship('Job', backref=db.backref('results', lazy=True))
 
-class FavoriateResult(db.Model):
+class FavoriteResult(db.Model):
     __tablename__ = 'favoriteresults'
     id = db.Column(db.Integer, primary_key=True)
 

@@ -56,9 +56,30 @@ def contact():
 def public_results():
     session_args = create_sidenav_kwargs()
     pub_results = Result.query.filter_by(public=True).all()
+    favorites = None
+    if current_user.is_authenticated:
+        joined_favorites = FavoriteResult.query\
+                           .join(Result, FavoriteResult.resultid == Result.id)\
+                           .filter_by(userid=current_user.id).all()
+        
     return render_template('public_results.html',
                            results=pub_results,
+                           favorites = favorites,
                            **session_args)
+
+@login_required
+@app.route('/like_result', methods=['POST'])
+def like_result():
+    data = request.get_json()
+    fav_check = FavoriteResult.query.filter_by(resultid=data['resultid'], userid=current_user.id).first()
+    if fav_check is None:
+        new_fav = FavoriteResult(userid=current_user.id, resultid=data['resultid'])
+        db.session.add(new_fav)
+        db.session.commit()
+    else:
+        db.session.delete(fav_check)
+        db.session.commit()
+    return jsonify(f'Sure'), 200
 
 @login_required
 @app.route('/my_results', methods=['GET'])
