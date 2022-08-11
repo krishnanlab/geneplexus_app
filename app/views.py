@@ -91,6 +91,23 @@ def like_result():
         db.session.commit()
     return jsonify({'like_status': like_status}), 200
 
+@app.route('/favorite_results', methods=['GET'])
+def favorite_results():
+    session_args = create_sidenav_kwargs()
+    pub_results = Result.query.filter_by(public=True).all()
+    favorites = None
+    if not current_user.is_authenticated:
+        flash('You cannot access favorites unless you are logged in', 'error')
+        return redirect('index')
+    favorites = FavoriteResult.query\
+                        .join(Result, FavoriteResult.resultid == Result.id)\
+                        .add_columns(Result.jobname, Result.network, Result.feature, Result.negative, Result.p1, Result.p2, Result.p3)\
+                        .filter_by(userid=current_user.id).all()
+    return render_template('favorite_results.html',
+                           results=pub_results,
+                           favorites = favorites,
+                           **session_args)
+
 @login_required
 @app.route('/my_results', methods=['GET'])
 def my_results():
