@@ -60,8 +60,10 @@ def public_results():
     if current_user.is_authenticated:
         joined_favorites = FavoriteResult.query\
                            .join(Result, FavoriteResult.resultid == Result.id)\
+                           .add_columns(Result.id, FavoriteResult.id, Result.jobname)\
                            .filter_by(userid=current_user.id).all()
         
+        favorites = [f.jobname for f in joined_favorites]
     return render_template('public_results.html',
                            results=pub_results,
                            favorites = favorites,
@@ -71,23 +73,28 @@ def public_results():
 @app.route('/like_result', methods=['POST'])
 def like_result():
     data = request.get_json()
-    fav_check = FavoriteResult.query.filter_by(resultid=data['resultid'], userid=current_user.id).first()
+    like_status = None
+    cur_result = Result.query.filter_by(jobname=data['resultid']).first()
+    if cur_result is None:
+        return jsonify(f'Result with job name {data["resultid"]} does not exist'), 404
+    fav_check = FavoriteResult.query.filter_by(resultid=cur_result.id, userid=current_user.id).first()
     if fav_check is None:
-        new_fav = FavoriteResult(userid=current_user.id, resultid=data['resultid'])
+        like_status = True
+        print('Adding new favorite for {}'.format(data['resultid']))
+        new_fav = FavoriteResult(userid=current_user.id, resultid=cur_result.id)
         db.session.add(new_fav)
         db.session.commit()
     else:
+        like_status = False
+        print('Deleting new favorite for {}'.format(data['resultid']))
         db.session.delete(fav_check)
         db.session.commit()
-    return jsonify(f'Sure'), 200
+    return jsonify({'like_status': like_status}), 200
 
 @login_required
 @app.route('/my_results', methods=['GET'])
 def my_results():
     session_args = create_sidenav_kwargs()
-    print(current_user.id)
-    all_results = Result.query.all()
-    print(all_results)
     my_results = Result.query.filter_by(userid=current_user.id).all()
     return render_template('my_results.html',
                            results=my_results,
