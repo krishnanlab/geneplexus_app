@@ -3,6 +3,7 @@ import os
 # Base, Development and Production classes.
 
 class BaseConfig(object):
+    BASE_URL = os.getenv('BASE_URL', '')
     SECRET_KEY = os.getenv("SECRET_KEY", "topsecret")
     #FLASK_APP = os.getenv("FLASK_APP", "geneplexus_app")
     MAX_NUM_GENES = 50
@@ -29,7 +30,6 @@ class BaseConfig(object):
     JOB_CONTAINER_FILE_MOUNT = os.getenv('JOB_CONTAINER_FILE_MOUNT', '' )
     
     JOB_URL = os.getenv('JOB_URL', '')  # the URL for the logic app trigger
-    JOB_CALLBACK_URL = os.getenv('JOB_CALLBACK_URL', '')
 
     # email config
     SENDGRID_API_KEY= os.getenv('SENDGRID_API_KEY', '')
