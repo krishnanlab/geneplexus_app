@@ -159,18 +159,16 @@ def update_result_visibility():
 def update_result_description():
     if 'description' not in request.form:
         flash('Could not find a description', 'error')
-        return redirect(url_for('result', resultid=data['resultid']))
+        return redirect(url_for('result', resultid=request.form['resultid']))
     data = request.form['description']
-    cur_result = Result.query.filter_by(jobname=data['resultid']).first()
+    cur_result = Result.query.filter_by(jobname=request.form['resultid']).first()
     if cur_result is None:
         flash('Something went wrong when looking up this result', 'error')
-        return redirect(url_for('result', resultid=data['resultid']))
+        return redirect(url_for('result', resultid=request.form['resultid']))
     cur_result.description = request.form['description']
-    print('Current description')
-    print(data['description'])
     db.session.commit()
     flash('Description updated successfully', 'success')
-    return redirect(url_for('result', resultid=data['resultid']))
+    return redirect(url_for('result', resultid=request.form['resultid']))
 
 
 @app.route("/jobs/", methods=['GET', 'POST'])

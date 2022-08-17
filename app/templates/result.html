@@ -11,7 +11,6 @@
 <div class="row">
     <h2>Results: {{ resultid }}</h2>
 </div>
-<form>
     <div class="row">
         <label for="authorname" class="col col-form-label">Username</label>
         <div class="col-10">
@@ -22,7 +21,7 @@
         <div class="col me-1">
             {% if author == current_user.username %}
             <form action="{{ url_for('update_result_description') }}" method="POST">
-                <div class="row">
+                <div class="row mb-2">
                     <label for="description">Description</label>
                     <textarea id="description" name="description">{{ description }}</textarea>
                 </div> 
@@ -52,26 +51,29 @@
                 <input type="text" class="col form-control-plaintext" id="performance" value="{{ performance }}">
             </div>
             <div class="row">
-                <a id="full_results" class="col-4 btn btn-primary" href="{{ url_for('job',jobname=resultid) }}">See full results</a>
+                <a id="full_results" class="col-5 btn btn-primary" href="{{ url_for('job',jobname=resultid) }}">See full results</a>
             </div>
         </div>
         <div class="col mx-1">
             <div class="row mb-1">
                 <label for="pos_genes">Positive Genes</label>
-                <textarea id="pos_genes" style="width: 15em; height: 11em"></textarea>
+                <textarea id="pos_genes" rows="10"></textarea>
             </div>
-            <div class="row">
-                <button class="col-3 me-1 btn btn-primary">Go to Geneset</button>
+            <div class="row justify-content-center">
+                <div class="col-sm-5">
+                    <button class="btn btn-primary">Go to Geneset</button>
+                </div>
                 {% if author == current_user.username %}
-                <form action="{{ url_for('update_result_visibility') }}" method="POST">
-                    <input type="hidden" id="resultid" name="resultid" value="{{ resultid }}">
-                    <button type="submit" class="col-3 ms-1 btn btn-primary">{% if public %}Make private{% else %}Make public{% endif %}</button>
-                </form>
+                <div class="col-sm-5">
+                    <form action="{{ url_for('update_result_visibility') }}" method="POST">
+                        <input type="hidden" id="resultid" name="resultid" value="{{ resultid }}">
+                        <button type="submit" class="btn btn-primary">{% if public %}Make private{% else %}Make public{% endif %}</button>
+                    </form>
+                </div> 
                 {% endif %}
             </div>
         </div>
     </div>
-</form>
 
 {% block scripts %}
 {% endblock %}
