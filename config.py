@@ -29,6 +29,7 @@ class BaseConfig(object):
     JOB_CONTAINER_FILE_MOUNT = os.getenv('JOB_CONTAINER_FILE_MOUNT', '' )
     
     JOB_URL = os.getenv('JOB_URL', '')  # the URL for the logic app trigger
+    JOB_CALLBACK_URL = os.getenv('JOB_CALLBACK_URL', '')
 
     # email config
     SENDGRID_API_KEY= os.getenv('SENDGRID_API_KEY', '')
