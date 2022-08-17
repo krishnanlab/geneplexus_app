@@ -8,14 +8,16 @@
 
 {% block app_content %}
 
+<h2>Edit Profile</h2>
+
 <div class="row">
     <form action="{{ url_for('edit_profile') }}" method="POST">
         <div class="mb-3 row">
-            <label for="username" class="form-label">Email address</label>
+            <label for="username" class="form-label">Username</label>
             <input type="text" class="form-control col-6" id="username" name="username" value="{{ current_user.username }}" readonly>
         </div>
         <div class="mb-3 row">
-            <label for="email" class="form-label">Email address</label>
+            <label for="email" class="form-label">Email address{% if not current_user.email %}<small style="color: red;"> *In order to automatically fill in email notification fields you need to enter an email</small>{% endif %}</label>
             <input type="email" class="form-control col-6" id="email" name="email" {% if current_user.email %}value="{{ current_user.email }}"{% endif %}>
         </div>
         <div class="mb-3 row">
