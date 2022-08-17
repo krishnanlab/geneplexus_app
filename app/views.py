@@ -55,7 +55,14 @@ def contact():
 @app.route('/public_results', methods=['GET'])
 def public_results():
     session_args = create_sidenav_kwargs()
-    pub_results = Result.query.filter_by(public=True).all()
+    pub_results = Result.query.filter_by(public=True).join(User, Result.userid == User.id)\
+                         .add_columns(
+                            Result.jobname,
+                            User.username,
+                            Result.network,
+                            Result.feature,
+                            Result.negative,
+                            Result.p1, Result.p2, Result.p3).all()
     favorites = None
     if current_user.is_authenticated:
         joined_favorites = FavoriteResult.query\
@@ -571,13 +578,13 @@ def signup():
     db.session.add(user)
     db.session.commit()
     login_user(user)
-    return redirect('index')
+    return redirect('edit_profile')
 
 @app.route('/login', methods=['POST'])
 def login():
-    form_email = request.form.get('email')
+    form_username = request.form.get('username')
     form_pass = request.form.get('password')
-    user = User.query.filter_by(email=form_email).first()
+    user = User.query.filter_by(username=form_username).first()
     if user is None or not user.verify_password(form_pass):
         # Give user some sort of error
         flash('Username and password combination did not match', 'error')
