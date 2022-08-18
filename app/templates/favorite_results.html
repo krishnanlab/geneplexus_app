@@ -16,6 +16,7 @@
         <thead>
             <tr>
                 <th>Result ID</th>
+                <th>Author</th>
                 <th>Network</th>
                 <th>Features</th>
                 <th>Negative Class</th>
@@ -26,6 +27,7 @@
             {% for favorite in favorites %}
             <tr>
                 <td class="resultID"><a href="{{ url_for('result',resultid=favorite.jobname) }}">{{ favorite.jobname }}</a></td>
+                <td class="resultAuthor">{{ favorite.username }}</td>
                 <td class="resultNetwork">{{ favorite.network }}</td>
                 <td class="resultFeature">{{ favorite.feature }}</td>
                 <td class="resultNegative">{{ favorite.negative }}</td>

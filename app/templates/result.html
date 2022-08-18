@@ -13,25 +13,27 @@
 </div>
     <div class="row">
         <label for="authorname" class="col col-form-label">Username</label>
-        <div class="col-10">
-            <input type="text" readonly class="form-control-plaintext" id="authorname" value="{{ author }}">
+        <div class="col-9 me-2">
+            <input type="text" readonly class="form-control-plaintext align-content-end" id="authorname" value="{{ author }}">
         </div>
     </div>
     <div class="row">
-        <div class="col me-1">
+        <div class="col-6 me-1">
             {% if author == current_user.username %}
             <form action="{{ url_for('update_result_description') }}" method="POST">
                 <div class="row mb-2">
-                    <label for="description">Description</label>
-                    <textarea id="description" name="description">{{ description }}</textarea>
-                </div> 
-                <input type="hidden" id="resultid" name="resultid" value="{{ resultid }}">
-                <button type="submit" class="btn btn-primary">Update Description</button>
+                    <label for="description" class="col align-self-start">Description</label>
+                    <textarea id="description" class="col-8 align-self-end" name="description">{{ description }}</textarea>
+                </div>
+                <div class="row justify-content-end">
+                    <input type="hidden" class="col" id="resultid" name="resultid" value="{{ resultid }}">
+                    <button type="submit" class="align-self-end col-4 btn btn-primary">Update Description</button>
+                </div>
             </form>
             {% else %}
-            <div class="row">
-                <label for="description">Description</label>
-                <textarea id="description" name="description">{{ description }}</textarea>
+            <div class="row mb-2">
+                <label for="description" class="col align-self-start">Description</label>
+                <textarea id="description" class="col align-self-end" readonly>{{ description }}</textarea>
             </div> 
             {% endif %}
             <div class="row">
@@ -51,9 +53,18 @@
                 <input type="text" class="col form-control-plaintext" id="performance" value="{{ performance }}">
             </div>
             <div class="row">
-                <a id="full_results" class="col-5 btn btn-primary" href="{{ url_for('job',jobname=resultid) }}">See full results</a>
+                <a id="full_results" class="col-3 btn btn-primary" href="{{ url_for('job',jobname=resultid) }}">See full results</a>
+                {% if author == current_user.username %}
+                <div class="col-5">
+                    <form action="{{ url_for('update_result_visibility') }}" method="POST">
+                        <input type="hidden" id="resultid" name="resultid" value="{{ resultid }}">
+                        <button type="submit" class="btn btn-primary">{% if public %}Make private{% else %}Make public{% endif %}</button>
+                    </form>
+                </div> 
+                {% endif %}
             </div>
         </div>
+        <!--
         <div class="col mx-1">
             <div class="row mb-1">
                 <label for="pos_genes">Positive Genes</label>
@@ -73,6 +84,7 @@
                 {% endif %}
             </div>
         </div>
+        -->
     </div>
 
 {% block scripts %}

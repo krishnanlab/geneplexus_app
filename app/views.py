@@ -108,8 +108,9 @@ def favorite_results():
         return redirect('index')
     favorites = FavoriteResult.query\
                         .join(Result, FavoriteResult.resultid == Result.id)\
-                        .add_columns(Result.jobname, Result.network, Result.feature, Result.negative, Result.p1, Result.p2, Result.p3)\
-                        .filter_by(userid=current_user.id).all()
+                        .join(User, Result.userid == User.id)\
+                        .add_columns(Result.jobname, Result.network, Result.feature, Result.negative, Result.p1, Result.p2, Result.p3, User.username)\
+                        .filter_by(id=current_user.id).all()
     return render_template('favorite_results.html',
                            results=pub_results,
                            favorites = favorites,

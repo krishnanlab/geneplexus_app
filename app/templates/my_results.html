@@ -1,6 +1,6 @@
 {% extends "base-sidenav.html" %}
 
-{% block title %}Public Results{% endblock %}
+{% block title %}My Results{% endblock %}
 
 {% block head %}
 
@@ -8,7 +8,7 @@
 
 {% block app_content %}
 <div class="row">
-    <h2>My Faorite Results</h2>
+    <h2>My Results</h2>
 </div>
 <div class="row">
     {% if results %}
@@ -20,7 +20,6 @@
                 <th>Features</th>
                 <th>Negative Class</th>
                 <th>Performance</th>
-                <th>Like</th>
             </tr>
         </thead>
         <tbody>
@@ -31,9 +30,6 @@
                 <td>{{ result.feature }}</td>
                 <td>{{ result.negative }}</td>
                 <td>{{ '%0.2f'|format(result.p1|float) }}, {{ '%0.2f'|format(result.p2|float) }}, {{ '%0.2f'|format(result.p3|float) }}</td>
-                <td>
-                    <!-- Put the star icon here -->
-                </td>
             </tr>
             {% endfor %}
         </tbody>
