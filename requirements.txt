@@ -27,4 +27,4 @@ sendgrid==6.9.2
 Flask-Dance
 blinker
 # postgresql
-pyscopg2
+psycopg2
