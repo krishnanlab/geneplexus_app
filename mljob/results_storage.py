@@ -412,7 +412,7 @@ class ResultsFileStore():
                         jlist[job_name] = job_info
 
         except Exception as e:
-            self.logger.error("did not send a list to job_config_list()")
+            self.logger.error(f"error in job_info_list() {e}")
 
         return(jlist)
     
