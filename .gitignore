@@ -32,7 +32,7 @@ data/
 # Local testing databases
 *.db
 
-# Terraformn
+# Terraform
 
 *.plan
 *.tfvars
@@ -40,3 +40,7 @@ data/
 *.tfstate.backup
 .terraform*
 *.out
+
+# Azure functions local settings
+#  (e.g. the .env for az functions )
+local.settings.json
