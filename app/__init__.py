@@ -66,10 +66,6 @@ job_manager = JobManager(results_store, launcher)
 
 app.notifier = Notifier(app.config, template_folder = 'templates')
 
-# replace old code with new import
-from mljob import geneplexus_previous
-geneplexus_previous.set_config(app.config)
-
 # TODO this may be no longer necessary for local job launching
 from app import views
 

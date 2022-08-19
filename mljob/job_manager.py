@@ -7,7 +7,6 @@ from datetime import datetime
 from random import choices as random_choices
 from string import ascii_lowercase, digits
 from mljob import results_storage
-from mljob.run_geneplexus import run_and_save
 
 from mljob.results_storage import ResultsFileStore
 
@@ -15,7 +14,9 @@ job_status_codes = {200:"Completed", 201:"Created", 202:"Accepted", 404:"Not Fou
 
     
 class LocalLauncher():
+    
     def __init__(self, data_path, results_store):
+        from mljob.run_geneplexus import run_and_save
         self.data_path = data_path
         self.results_store = results_store
 
@@ -27,7 +28,7 @@ class LocalLauncher():
             logging.info(f"launching {job_name}")
         
             try:
-                gp_ran = run_and_save(job_name, self.results_store, self.data_path, logging = logging, 
+                gp_ran = self.run_and_save(job_name, self.results_store, self.data_path, logging = logging, 
                     net_type=job_config.get('net_type'), features=job_config.get('features'), GSC=job_config.get('GSC') )
             except Exception as e:
                 return('500')
