@@ -129,6 +129,12 @@ def my_results():
 def result(resultid):
     session_args = create_sidenav_kwargs()
     cur_results = Result.query.filter_by(jobname=resultid).first()
+    if cur_results is None:
+        flash('Result {} does not exist'.format(resultid), 'error')
+        return redirect(url_for('index'))
+    if not current_user.is_authenticated or (not cur_results.public and current_user.id != cur_results.userid):
+        flash('You do not have access to this result', 'error')
+        return redirect(url_for('index'))
     return render_template('result.html',
                            description=cur_results.description,
                            resultid=resultid,
