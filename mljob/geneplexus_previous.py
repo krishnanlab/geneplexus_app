@@ -69,7 +69,7 @@ def run_model(convert_IDs, net_type, GSC, features, logger = logging.getLogger(_
                             
 def run_and_render(input_genes,  
                     net_type='BioGRID', features='Embedding', GSC='GO', 
-                    jobname="jobrunner", output_path = None, logger = logging.getLogger(__name__)
+                    jobname="jobrunner", output_path = None, job_callback = None, logger = logging.getLogger(__name__)
                     ):
     
     """generate the output html from input genes to completion, eg combine.  
@@ -96,6 +96,20 @@ def run_and_render(input_genes,
     if ( output_path and os.path.exists(output_path) ):
         job_info = save_output(output_path, jobname, net_type, features, GSC, avgps, input_count, positive_genes, 
     df_probs, df_GO, df_dis, df_convert_out, graph, df_edgelist)
+    data = {
+        'jobname': jobname,
+        'network': net_type,
+        'feature': features,
+        'negative': GSC,
+        'avgps': avgps,
+    }
+    jsonHeaders = {'Content-type': 'application/json'}
+    if job_callback is not None:
+        import requests
+        status_code = requests.post(job_callback,
+                                json=data)
+        print(status_code.json())
+
 
 #######################################################################################################################
 

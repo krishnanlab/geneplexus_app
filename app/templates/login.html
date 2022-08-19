@@ -10,8 +10,8 @@
                     </div>
                     <form action="{{ url_for('login') }}" method="POST">
                         <div class="mb-3 row">
-                            <label for="exampleFormControlInput1" class="form-label">Email address</label>
-                            <input type="email" name="email" class="form-control" id="exampleFormControlInput1" placeholder="name@example.com">
+                            <label for="exampleFormControlInput1" class="form-label">Username</label>
+                            <input type="text" name="username" class="form-control" id="exampleFormControlInput1">
                         </div>
                         <div class="mb-3 row">
                             <label for="inputPassword" class="form-label">Password</label>
@@ -116,10 +116,10 @@
     <div class="offcanvas-body">
       <ul class="nav flex-column">
         <li class="nav-item"><a class="nav-link" href="{{ url_for('edit_profile') }}">Edit Profile</a></li>
-        <li class="nav-item"><a class="nav-link disabled" href="#my-genesets">My Genesets</a></li>
-        <li class="nav-item"><a class="nav-link disabled" href="#my-results">My Results</a></li>
-        <li class="nav-item"><a class="nav-link disabled" href="#fav-genesets">Favorite Genesets</a></li>
-        <li class="nav-item"><a class="nav-link disabled" href="#fav-results">Favorite Results</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('my_results') }}">My Results</a></li>
+        <!--<li class="nav-item"><a class="nav-link disabled" href="#my-genesets">My Genesets</a></li>-->
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('favorite_results') }}">Favorite Results</a></li>
+        <!--<li class="nav-item"><a class="nav-link disabled" href="#fav-genesets">Favorite Genesets</a></li>-->
         <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Logout</a></li>
       </ul>
     </div>

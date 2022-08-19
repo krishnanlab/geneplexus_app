@@ -57,3 +57,32 @@ class Job(db.Model):
     def __init__(self, jobid, userid):
         self.jobid = jobid
         self.userid = userid
+
+class Result(db.Model):
+    __tablename__ = 'results'
+    id = db.Column(db.Integer, primary_key=True)
+    network = db.Column(db.String(256))
+    feature = db.Column(db.String(256))
+    negative = db.Column(db.String(256))
+    p1 = db.Column(db.Float)
+    p2 = db.Column(db.Float)
+    p3 = db.Column(db.Float)
+    public = db.Column(db.Boolean)
+    description = db.Column(db.String(512), default='')
+
+    userid = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    jobname = db.Column(db.Integer, db.ForeignKey('jobs.jobid'))
+
+    user = db.relationship('User', backref=db.backref('results', lazy=True))
+    job = db.relationship('Job', backref=db.backref('results', lazy=True))
+
+class FavoriteResult(db.Model):
+    __tablename__ = 'favoriteresults'
+    id = db.Column(db.Integer, primary_key=True)
+
+    userid = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    resultid = db.Column(db.Integer, db.ForeignKey('results.id'), nullable=False)
+
+    user = db.relationship('User', backref=db.backref('favoriteresults', lazy=True))
+    result = db.relationship('Result', backref=db.backref('favoriteresults', lazy=True))
+    

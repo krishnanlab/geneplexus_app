@@ -234,7 +234,7 @@ def launch_job(genes, job_config, app_config, use_queue=None):
 
     if app_config['RUN_LOCAL']:
         print("running job locally (may take a while")
-        run_and_render(genes, net_type=job_config['net_type'], features=job_config['features'], GSC=job_config['GSC'], jobname=jobname, output_path=local_job_folder)
+        run_and_render(genes, net_type=job_config['net_type'], features=job_config['features'], GSC=job_config['GSC'], jobname=jobname, job_callback=app_config['BASE_URL']+'update_result', output_path=local_job_folder)
         response = "200"
 
     elif use_queue:

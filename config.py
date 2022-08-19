@@ -3,6 +3,7 @@ import os
 # Base, Development and Production classes.
 
 class BaseConfig(object):
+    BASE_URL = os.getenv('BASE_URL', '')
     SECRET_KEY = os.getenv("SECRET_KEY", "topsecret")
     #FLASK_APP = os.getenv("FLASK_APP", "geneplexus_app")
     MAX_NUM_GENES = 50

@@ -1,0 +1,48 @@
+{% extends "base-sidenav.html" %}
+
+{% block title %}Favorite Results{% endblock %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block app_content %}
+<div class="row">
+    <h2>My Favorite Results</h2>
+</div>
+<div class="row">
+    {% if results %}
+    <table id="resultstable" class="table">
+        <thead>
+            <tr>
+                <th>Result ID</th>
+                <th>Author</th>
+                <th>Network</th>
+                <th>Features</th>
+                <th>Negative Class</th>
+                <th>Performance</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for favorite in favorites %}
+            <tr>
+                <td class="resultID"><a href="{{ url_for('result',resultid=favorite.jobname) }}">{{ favorite.jobname }}</a></td>
+                <td class="resultAuthor">{{ favorite.username }}</td>
+                <td class="resultNetwork">{{ favorite.network }}</td>
+                <td class="resultFeature">{{ favorite.feature }}</td>
+                <td class="resultNegative">{{ favorite.negative }}</td>
+                <td class="resultPerformance">{{ '%0.2f'|format(favorite.p1|float) }}, {{ '%0.2f'|format(favorite.p2|float) }}, {{ '%0.2f'|format(favorite.p3|float) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    You have not favorited any results
+    {% endif %}
+</div>
+
+{% block scripts %}
+<script src="{{url_for('static', filename='public_results.js')}}"></script>
+{% endblock %}
+
+{% endblock %}

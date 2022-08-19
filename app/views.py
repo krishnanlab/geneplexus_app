@@ -7,7 +7,7 @@ from mljob.job_manager import generate_job_id
 
 from werkzeug.exceptions import InternalServerError
 from flask import request, render_template, jsonify, session, redirect, url_for, flash, send_file, Markup, abort,send_from_directory
-from flask_login import login_user, logout_user, current_user
+from flask_login import login_user, logout_user, current_user, login_required
 from app.forms import ValidateForm, JobLookupForm
 
 from flask_dance.contrib.github import github
@@ -51,11 +51,129 @@ def contact():
     session_args = create_sidenav_kwargs()
     return render_template("contact.html", **session_args)
 
+@app.route('/public_results', methods=['GET'])
+def public_results():
+    session_args = create_sidenav_kwargs()
+    pub_results = Result.query.filter_by(public=True).join(User, Result.userid == User.id)\
+                         .add_columns(
+                            Result.jobname,
+                            User.username,
+                            Result.network,
+                            Result.feature,
+                            Result.negative,
+                            Result.p1, Result.p2, Result.p3).all()
+    favorites = None
+    if current_user.is_authenticated:
+        joined_favorites = FavoriteResult.query\
+                           .join(Result, FavoriteResult.resultid == Result.id)\
+                           .add_columns(Result.id, FavoriteResult.id, Result.jobname)\
+                           .filter_by(userid=current_user.id).all()
+        
+        favorites = [f.jobname for f in joined_favorites]
+    return render_template('public_results.html',
+                           results=pub_results,
+                           favorites = favorites,
+                           **session_args)
+
+@login_required
+@app.route('/like_result', methods=['POST'])
+def like_result():
+    data = request.get_json()
+    like_status = None
+    cur_result = Result.query.filter_by(jobname=data['resultid']).first()
+    if cur_result is None:
+        return jsonify(f'Result with job name {data["resultid"]} does not exist'), 404
+    fav_check = FavoriteResult.query.filter_by(resultid=cur_result.id, userid=current_user.id).first()
+    if fav_check is None:
+        like_status = True
+        print('Adding new favorite for {}'.format(data['resultid']))
+        new_fav = FavoriteResult(userid=current_user.id, resultid=cur_result.id)
+        db.session.add(new_fav)
+        db.session.commit()
+    else:
+        like_status = False
+        print('Deleting new favorite for {}'.format(data['resultid']))
+        db.session.delete(fav_check)
+        db.session.commit()
+    return jsonify({'like_status': like_status}), 200
+
+@app.route('/favorite_results', methods=['GET'])
+def favorite_results():
+    session_args = create_sidenav_kwargs()
+    pub_results = Result.query.filter_by(public=True).all()
+    favorites = None
+    if not current_user.is_authenticated:
+        flash('You cannot access favorites unless you are logged in', 'error')
+        return redirect('index')
+    favorites = FavoriteResult.query\
+                        .join(Result, FavoriteResult.resultid == Result.id)\
+                        .join(User, Result.userid == User.id)\
+                        .add_columns(Result.jobname, Result.network, Result.feature, Result.negative, Result.p1, Result.p2, Result.p3, User.username)\
+                        .filter_by(id=current_user.id).all()
+    return render_template('favorite_results.html',
+                           results=pub_results,
+                           favorites = favorites,
+                           **session_args)
+
+@login_required
+@app.route('/my_results', methods=['GET'])
+def my_results():
+    session_args = create_sidenav_kwargs()
+    my_results = Result.query.filter_by(userid=current_user.id).all()
+    return render_template('my_results.html',
+                           results=my_results,
+                           **session_args)
+
+@app.route('/result/<resultid>', methods=['GET'])
+def result(resultid):
+    session_args = create_sidenav_kwargs()
+    cur_results = Result.query.filter_by(jobname=resultid).first()
+    return render_template('result.html',
+                           description=cur_results.description,
+                           resultid=resultid,
+                           author=cur_results.user.username,
+                           network=cur_results.network,
+                           feature=cur_results.feature,
+                           negative=cur_results.negative,
+                           performance='{:.2f}, {:.2f}, {:.2f}'.format(cur_results.p1, cur_results.p2, cur_results.p3),
+                           public=cur_results.public,
+                           **session_args)
+
+@login_required
+@app.route('/update_result_visibility', methods=['POST'])
+def update_result_visibility():
+    data = request.form
+    if 'resultid' not in data:
+        flash('Result ID was not found in request', 'error')
+        return redirect('index')
+    cur_result = Result.query.filter_by(jobname=data['resultid']).first()
+    if cur_result is None:
+        flash('There are no results with ID {}'.format(data['resultid']))
+        return redirect(url_for('result', resultid=data['resultid']))
+    cur_result.public = not cur_result.public
+    db.session.commit()
+    return redirect(url_for('result', resultid=data['resultid']))
+
+@login_required
+@app.route('/update_result_description', methods=['POST'])
+def update_result_description():
+    if 'description' not in request.form:
+        flash('Could not find a description', 'error')
+        return redirect(url_for('result', resultid=request.form['resultid']))
+    data = request.form['description']
+    cur_result = Result.query.filter_by(jobname=request.form['resultid']).first()
+    if cur_result is None:
+        flash('Something went wrong when looking up this result', 'error')
+        return redirect(url_for('result', resultid=request.form['resultid']))
+    cur_result.description = request.form['description']
+    db.session.commit()
+    flash('Description updated successfully', 'success')
+    return redirect(url_for('result', resultid=request.form['resultid']))
+
 
 @app.route("/jobs/", methods=['GET', 'POST'])
 def jobs():
     """ list jobs in session, show form, or show message from submit"""
-
     form = JobLookupForm(request.form)
     jobname = form.jobname.data
 
@@ -67,21 +185,49 @@ def jobs():
 
     jobnames = []
     joblist = {}
+
+    user_jobnames = []
+    user_joblist = {}
+
+    session_jobnames = []
+    session_joblist = {}
+
     if current_user.is_authenticated:
         jobnames = Job.query.filter_by(userid=current_user.id).with_entities(Job.jobid).all()
         jobnames = [job[0] for job in jobnames]
     if 'jobs' in session:
         jobnames = jobnames + session['jobs']
-    
+    # jobnames = list_all_jobs(app.config.get('JOB_PATH'))
     if len(jobnames) > 0:
-        joblist = results_store.job_info_list(jobnames)
-        # this now returns a dictionary.  Make it a list for now
-        
+        joblist = job_info_list(jobnames, app.config)  
 
     session_args = create_sidenav_kwargs()
-    return render_template("jobs.html", jobs = jobnames, 
-                            joblist = joblist, 
-                            form=form, **session_args)
+    return render_template(
+        'jobs.html',
+        user_jobnames = user_jobnames,
+        user_joblist = user_joblist,
+        session_jobnames = session_jobnames,
+        session_joblist = session_joblist,
+        form = form,
+        **session_args
+    )
+
+
+def html_output_table(df, id = "", row_limit = 500):
+    """ given a data frame, create an html output table for job template for a subset of top rows.
+        This assumes the data frame is already in the correct sort order
+        
+    returns : string of html  or empty string if not a data frame
+    """
+
+    #TODO this needs to go away and we need a jinja template macro to build tables instead 
+    # this is formattibng code which does not belong in the view or anywhere execpt for a template
+    if isinstance(df, pd.DataFrame):        
+        html_table = df.head(row_limit).to_html(index=False, classes="table table-striped table-bordered width:100%",table_id = id )
+        return(html_table)
+    else:
+        #TODO log that this is not a dataframe
+        return("")
     
 
 @app.route("/jobs/<jobname>", methods=['GET'])
@@ -94,10 +240,11 @@ def job(jobname):
     if not results_store.exists(jobname): 
         abort(404)
 
-    job_info = results_store.read_job_info(jobname)
-        
+    job_info = retrieve_job_info(jobname, app.config)
+
     if job_info and job_info['has_results']:
-        job_output = results_store.read(jobname)
+        job_output = retrieve_job_outputs(jobname, app.config)
+
     else:
         job_output = {}
 
@@ -391,13 +538,13 @@ def signup():
     db.session.add(user)
     db.session.commit()
     login_user(user)
-    return redirect('index')
+    return redirect('edit_profile')
 
 @app.route('/login', methods=['POST'])
 def login():
-    form_email = request.form.get('email')
+    form_username = request.form.get('username')
     form_pass = request.form.get('password')
-    user = User.query.filter_by(email=form_email).first()
+    user = User.query.filter_by(username=form_username).first()
     if user is None or not user.verify_password(form_pass):
         # Give user some sort of error
         flash('Username and password combination did not match', 'error')
@@ -480,8 +627,8 @@ def create_sidenav_kwargs():
 
 def add_job(jobname):
     if current_user.is_authenticated:
-        userid = current_user.id
-        to_add = Job(jobname, userid)
+        user_id = current_user.id
+        to_add = Job(jobid=jobname, userid=user_id)
         db.session.add(to_add)
         db.session.commit()
     else:
@@ -492,3 +639,64 @@ def add_job(jobname):
 
         sessionjobs.append(jobname)
         session['jobs'] = sessionjobs
+
+def get_or_set_job(jobname):
+    results = None
+    # First we need to check the DB if the job already exists
+    result_check = Result.query.filter_by(jobname=jobname).first()
+    if result_check is not None:
+        print()
+        # If this isn't none then the result already existed within the database, just return that
+        return result_check
+    
+    job_info = retrieve_job_info(jobname, app.config)
+    job_output = {}
+
+    if job_info and job_info['has_results']:
+        job_output = retrieve_job_outputs(jobname, app.config)
+        # If we didn't get it back then we need to check if the job even exists in the jobs table
+        result_check = Job.query.filter_by(jobid=jobname).first()
+        if result_check is not None:
+            # The job exists, we just don't have a result made yet
+            to_add = Result(
+                network = job_info['net_type'],
+                feature = job_info['features'],
+                negative = job_info['GSC'],
+                p1 = job_output['avgps'][0],
+                p2 = job_output['avgps'][1],
+                p3 = job_output['avgps'][2],
+                user = result_check.user,
+            )
+            db.session.add(to_add)
+            db.session.commit()
+    return job_info, job_output
+
+@login_required
+@app.route('/update_result', methods=['POST'])
+def update_result():
+    data = request.get_json()
+    result_check = Result.query.filter_by(jobname=data['jobname']).first()
+    if result_check is not None:
+        return jsonify(f'Result with JobID {data["jobname"]} already has results'), 400
+    result_check = Job.query.filter_by(jobid=data['jobname']).first()
+    if result_check is None:
+        return jsonify(f'Job with JobID {data["jobname"]} does not exists'), 400
+    try:
+        new_result = Result(
+            job = result_check,
+            user = result_check.user,
+            network = data['network'],
+            feature = data['feature'],
+            negative = data['negative'],
+            p1 = data['avgps'][0],
+            p2 = data['avgps'][1],
+            p3 = data['avgps'][2],
+            public = True,
+        )
+        print('New result')
+        print(new_result)
+        db.session.add(new_result)
+        db.session.commit()
+        return jsonify(f'Job with JobID {data["jobname"]} has results created'), 200
+    except Exception as e:
+        return jsonify(str(e)), 400
