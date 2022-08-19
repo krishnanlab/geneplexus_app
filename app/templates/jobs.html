@@ -34,11 +34,11 @@
                 </thead>
                 <tbody>
                     {% for jobname in user_joblist %}
-                        {% set job = joblist[jobname] %}
+                        {% set job = user_joblist[jobname] %}
                         <tr id="job-{{job['jobname']}}" class="{{'table-success' if job['has_results'] }}" >
                         <td> 
                             {% if job['has_results'] %}
-                                <a href="{{url_for('job',jobname=job['jobname']) }}">{{job['jobname']}}</a>
+                                <a href="{{url_for('job',jobname=jobname) }}">{{jobname}}</a>
                             {% else %}
                                 {{job['jobname']}}
                             {% endif %}
@@ -48,7 +48,7 @@
                         <td>
                             {{job['net_type']}}; {{job['features']}}; {{job['GSC']}}
                         </td>
-                        <td>{% if job['has_results'] %}completed{% else %}{{job['status']}}{% endif %}}</td>
+                        <td>{% if job['has_results'] %} completed {% else %} {{job['status']}} {% endif %}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -79,11 +79,11 @@
 
             <tbody>
                 {% for jobname in session_joblist %}
-                    {% set job = joblist[jobname] %}
+                    {% set job = session_joblist[jobname] %}
                     <tr id="job-{{jobname}}" class="{{'table-success' if job['has_results'] }}" >
                     <td> 
                         {% if job['has_results'] %}
-                            <a href="{{url_for('job',jobname}}">{{jobname}}</a>
+                            <a href="{{url_for('job',jobname=jobname)}}">{{jobname}}</a>
                         {% else %}
                             {{jobname}}
                         {% endif %}

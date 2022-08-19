@@ -183,8 +183,6 @@ def jobs():
         else:
             flash(f"Sorry, the job '{jobname}'' was not found")
 
-    jobnames = []
-    joblist = {}
 
     user_jobnames = []
     user_joblist = {}
@@ -193,13 +191,15 @@ def jobs():
     session_joblist = {}
 
     if current_user.is_authenticated:
-        jobnames = Job.query.filter_by(userid=current_user.id).with_entities(Job.jobid).all()
-        jobnames = [job[0] for job in jobnames]
+        user_jobrecords = Job.query.filter_by(userid=current_user.id).with_entities(Job.jobid).all()
+        user_jobnames = [job[0] for job in user_jobrecords]
+        user_joblist = results_store.job_info_list(user_jobnames)
+    
     if 'jobs' in session:
-        jobnames = jobnames + session['jobs']
-    # jobnames = list_all_jobs(app.config.get('JOB_PATH'))
-    if len(jobnames) > 0:
-        joblist = job_info_list(jobnames, app.config)  
+        session_jobnames = session['jobs']
+        if len(session_jobnames) > 0:
+            session_joblist = results_store.job_info_list(session_jobnames)  
+
 
     session_args = create_sidenav_kwargs()
     return render_template(
@@ -240,14 +240,15 @@ def job(jobname):
     if not results_store.exists(jobname): 
         abort(404)
 
-    job_info = retrieve_job_info(jobname, app.config)
+    job_info = results_store.read_job_info(jobname) # retrieve_job_info(jobname, app.config)
 
     if job_info and job_info['has_results']:
-        job_output = retrieve_job_outputs(jobname, app.config)
+        job_output = results_store.read(jobname) # retrieve_job_outputs(jobname, app.config)
 
     else:
         job_output = {}
 
+    # TODO simplify this!   don't need jobexists, results_store.read_job_info always returns a dict if job exists
     return render_template("jobresults.html",
             has_results = job_info['has_results'],
             jobexists = results_store.exists(jobname), 
@@ -274,7 +275,7 @@ def update_job(jobname):
     
     notifyaddress = job_config.get('notifyaddress')
     if notifyaddress: 
-        job_status = results_store.read_status(job_name) 
+        job_status = results_store.read_status(jobname) 
         if job_status == "completed":
             resp = app.notifier.notify_completed(job_config)
         else:
