@@ -51,8 +51,6 @@ class BaseConfig(object):
 class ProdConfig(BaseConfig):
     FLASK_ENV="production"
     FILE_LOC = "local"
-    PREFERRED_URL_SCHEME = 'https'
-
 
 class DevConfig(BaseConfig):
     FLASK_ENV="development"
