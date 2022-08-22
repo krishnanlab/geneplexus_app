@@ -174,8 +174,7 @@ def update_result_description():
         return redirect(url_for('result', resultid=request.form['resultid']))
     cur_result.description = request.form['description']
     db.session.commit()
-    flash('Description updated successfully', 'success')
-    return redirect(url_for('result', resultid=request.form['resultid']))
+    return redirect(url_for('job', jobname=request.form['resultid']))
 
 
 @app.route("/jobs/", methods=['GET', 'POST'])
@@ -257,11 +256,16 @@ def job(jobname):
 
     if job_info and job_info['has_results']:
         job_output = retrieve_job_outputs(jobname, app.config)
+    
+    returned_row = Result.query.filter_by(jobname=jobname).first()
+
+    
 
     return render_template("jobresults.html",
             jobexists = job_exists(jobname, app.config), 
             jobname=jobname,         
-            job_info = job_info,        
+            job_info = job_info, 
+            result_info = returned_row,       
             job_output = job_output)
 
 @app.route("/jobs/<jobname>", methods = ["POST"])

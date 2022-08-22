@@ -127,9 +127,24 @@
                 </div>
             </div>
         </div>
-        <div class="col-4">
-            <textarea class="form-control" aria-label="With textarea"></textarea>
-            <button class="btn btn-primary input-group-text">Save</button>
+        <div class="col-4 ms-2" style="width: 32%">
+            {% if current_user.id == result_info.userid %}
+            <form action="{{ url_for('update_result_description') }}" method="POST">
+                <input type="hidden" value="{{ jobname }}" name="resultid">
+                <div class="row">
+                    <label class="form-label" for="description">Description</label>
+                    <textarea id="description" name="description" class="form-control" aria-label="With textarea">{% if result_info %}{{ result_info.description }}{% endif %}</textarea>
+                </div>
+                <div class="row">
+                    <button type="submit" class="btn btn-primary input-group-text">Save</button>
+                </div>
+            </form>
+            {% else %}
+            <label for="description">Description</label>
+            <div class="row border border-dark" style="height: 74%">
+                <p id="description">{{ result_info.description }}</p>
+            </div>
+            {% endif %}
         </div>
     </div>
     
