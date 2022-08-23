@@ -6,9 +6,7 @@ from slugify import slugify
 from datetime import datetime
 from random import choices as random_choices
 from string import ascii_lowercase, digits
-from mljob import results_storage
 
-from mljob.results_storage import ResultsFileStore
 
 job_status_codes = {200:"Completed", 201:"Created", 202:"Accepted", 404:"Not Found", 500:"Failed", 504:"Timeout"}
 
@@ -22,13 +20,43 @@ job_status_codes = {200:"Completed", 201:"Created", 202:"Accepted", 404:"Not Fou
 #         pass
 
 class LocalLauncher():
-    
-    def __init__(self, data_path, results_store, logging = logging):
+    """ Run the geneplexus machine learning model code on the current computer, e.g. as a 'job',  triggered by a web application.  
+    This is the partner class to UriLauncher which initiates a job by hitting a URL. 
+    This is instantiated at app creation time, and sent to the job_manager as the launcher. 
+    :param data_path: posix path leading to the backend data. 
+    :type data_path: string
+    :param results_store: storage class `ResultsFileStore` for working with job input and output data.  
+    :type results_store: :class `ResultsFileStore`
+    :param callback_url: optional, URI for posting the job status and telling the app the job is complete.  
+                         Optional so that testing can proceed without requiring a URL request
+    :type callback_url: string that is a valid http or https URL
+
+    """
+    def __init__(self, data_path, results_store, callback_url = None):
         """constructor.  Importing geneplexus in private scope since it's only needed for local dev"""
         from mljob.run_geneplexus import run_and_save
+
         self.run_and_save = run_and_save      
         self.data_path = data_path
         self.results_store = results_store
+        
+        self.callback_url = callback_url
+
+    def callback(self,jobname, job_status):
+        """hit the app just like a remote job runner would do"""
+        
+        if not self.callback_url:
+            logging.error("no callback url set for launcher cancelling callback")            
+            return 0
+        
+        job_callback_url = os.path.join(self.callback_url,jobname)
+
+        json_data = json.dumps({'status' : job_status })
+        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        callback_resp = requests.post(job_callback_url, json=json_data, headers = headers )
+        logging.info(f"launcher hit callback {job_callback_url} with response {callback_resp}")
+        return callback_resp
+
 
     def launch(self,jobname):
         """ launch job.  Inputs = job_config dictionary with parameters.   """
@@ -41,20 +69,24 @@ class LocalLauncher():
                 gp_ran = self.run_and_save(jobname, self.results_store, self.data_path, logging = logging, 
                         net_type=job_config.get('net_type'), features=job_config.get('features'), GSC=job_config.get('GSC') )
                 
-                print("gp_ran = {gp_ran}")
-                logging.debug(f"gp_ran value = {gp_ran}")
-
-                if  gp_ran:
-                    logging.info(f"job completed {jobname}")
-                    self.results_store.save_status(jobname, job_status_codes[200]) 
-                    return(200)
-                else:
-                    logging.error(f"{jobname} failed to complete")
-                    self.results_store.save_status(jobname, job_status_codes[500]) 
-                    return(500)
+                print(f"gp_ran = {gp_ran}")
 
             except Exception as e:
                 logging.error(f"{jobname} run error {e}")
+                self.results_store.save_status(jobname, job_status_codes[500]) 
+                return(500)
+            
+            if gp_ran:
+                logging.info(f"job completed {jobname}")
+                self.results_store.save_status(jobname, job_status_codes[200]) 
+                print(f"calling back to {job_config['job_url']}")
+
+                resp = self.callback(jobname, job_status=job_status_codes[200])
+                print(resp)
+                logging.info(f"callback after job success with resp {resp}")
+                return(200)
+            else:
+                logging.error(f"{jobname} failed to complete")
                 self.results_store.save_status(jobname, job_status_codes[500]) 
                 return(500)
             

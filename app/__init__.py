@@ -1,4 +1,5 @@
 from urllib.error import URLError
+from urllib.parse import urlparse
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -11,6 +12,7 @@ from config import ProdConfig, DevConfig
 from dotenv import load_dotenv
 import logging
 from pathlib import Path
+from os import path
 
 # system is based on file storage, but allows for writing a blob storage
 from mljob.results_storage import ResultsFileStore as ResultsStore
@@ -43,9 +45,9 @@ if not Path(logfile).exists():
 
 logging.basicConfig(filename=app.config.get('LOG_FILE'),level=logging.INFO)
 # TODO maybe name the logger
-# logger = logging.getLogger('app')
+logger = logging.getLogger('app')
 
-
+ 
 # job_folder configuration
 # job_folder = Path(app.config.get('JOB_PATH'))
 # if not job_folder.exists():
@@ -57,7 +59,11 @@ results_store = ResultsStore(app.config.get('JOB_PATH'), create_if_missing=True)
 
 # object to kick off jobs
 if app.config.get('RUN_LOCAL'):
-    launcher = LocalLauncher(app.config['DATA_PATH'], results_store)
+    
+    launcher = LocalLauncher(app.config['DATA_PATH'], 
+                    results_store = results_store, 
+                    callback_url = path.join(app.config['BASE_URL'],'jobs')
+                )
 else:
     launcher = UrlLauncher(app.config['QUEUE_URL'])
 

@@ -256,36 +256,93 @@ def job(jobname):
             job_info = job_info,        
             job_output = job_output)
 
-@app.route("/jobs/<jobname>", methods = ["POST"])
-def update_job(jobname):
-    """ update the job info and possibly notify of new jobs status.  Used by external job runner.  """
+##############
 
-    request_data = request.get_json()
-    job_status = request_data.get('status')
-    
-    # sanitize.  if this is an actual jobname this will be idempotent
+@app.route("/jobs/<jobname>", methods = ["POST"])
+def _update_job(jobname):
+    """ update the job info and possibly notify of new jobs status.  Used by external job runner. 
+    if there is a job in the database, create a results file. 
+    :param jobname: name of job
+    :type jobname: string
+     """
+
+    print("callback! ")
+    # check job name 
     jobname = job_manager.cloud_friendly_job_name(jobname)
-    # TODO read the data that was posted! to see the event code
     if not results_store.exists(jobname):
         app.logger.info(f"can't notify, job not found {jobname}")
-        return {'notifiation response': 404}, 404
-    
-    job_config = results_store.read_config(jobname)
-    job_config['job_url'] =  url_for('job', jobname=jobname ,_external=True)
-    
-    notifyaddress = job_config.get('notifyaddress')
-    if notifyaddress: 
-        job_status = results_store.read_status(jobname) 
-        if job_status == "completed":
-            resp = app.notifier.notify_completed(job_config)
-        else:
-            resp = app.notifier.notify(notifyaddress, job_config, job_status)
+        return {f'no job found {jobname}': 404}, 404
 
-        app.logger.info(f"job status email initiated to {job_config['notifyaddress']} with response {resp}")
-        return  {'notification response': resp}, resp
+    # get status from request body. 
+    if request.is_json:
+        request_data = request.get_json()
     else:
-        return  {'notifiation response': 202}, 202
+        request_data = request.data()
 
+    print(request_data)    
+    job_status =  "Completed" # request_data.get('status')
+    job_config = results_store.read_config(jobname)
+    notifyaddress = job_config.get('notifyaddress')
+
+    msg = f"job status acknowledged"
+    resp = 200
+    notifier_resp = ""
+
+    # check if job is complete and has results
+    if job_manager.job_completed(jobname):
+        app.logger.info(f"job completed {jobname} creating results ")
+        ### COMPLETE!   CREATE DB RECORD
+        if Result.query.filter_by(jobname=jobname).first() is not None:
+            msg = f'Result with JobID {jobname} already has results'
+            resp = 405 # method not allowed, can't insert if it exists
+            app.logger.info(msg)
+        else:
+            print(f"looking up job record for {jobname}")
+            job_record = Job.query.filter_by(jobid=jobname).first()
+            if job_record is not None:   # only create results if there is job record.  If no record, this is not an error condition    
+                try:
+                    job_info = results_store.read_job_info(jobname) 
+                    app.logger.info(f"db: saving job {job_info}")
+
+                    new_result = Result(job = job_record,
+                        user = job_record.user,
+                        network = job_info.get('net_type'),
+                        feature = job_info['features'],
+                        negative = job_info['GSC'],
+                        p1 = job_info['avgps'][0],
+                        p2 = job_info['avgps'][1],
+                        p3 = job_info['avgps'][2],
+                        public = True
+                    )
+                    db.session.add(new_result)
+                    db.session.commit()
+                    app.logger.info(f"db: Results record created for {jobname}")
+
+
+                except Exception as e:                    
+                    msg = f"db: error creating result record for {jobname} : {e}"                
+                    resp = 400
+                    app.logger.error(msg)
+            else:
+                app.logger.info(f"db: no job record found, not saving results for {jobname}")
+                msg = "no job record to save results for"
+                resp = 405
+
+        ### JOB COMPLETE!  Notification
+        if notifyaddress:
+            notifier_resp = app.notifier.notify_completed(job_config)
+            app.logger.info(f"job complete status email initiated to {job_config['notifyaddress']} with response {notifier_resp}")
+
+    else:
+        app.logger.info(f"job callback {jobname} but not complete: {job_status}")
+
+        ### incomplete, notify anyway
+        if notifyaddress:
+            notifier_resp = app.notifier.notify(notifyaddress, job_config, job_status)
+            app.logger.info(f"job incomplete status email initiated to {job_config['notifyaddress']} with response {notifier_resp}")
+        
+    msg = f"{msg};{notifier_resp}"
+    return (jsonify({'notification response': msg}), resp)
 
 
 @app.route("/jobs/<jobname>/results",methods=['GET'])
@@ -449,15 +506,13 @@ def run_model():
             else:
                 flash("The job notification email address you provided is not a valid email.  No job notification will be sent", category =  "error")
 
+        app.logger.info(f"saving job to db (if logged in)")  
+        add_job(jobname) # do this before launching job, because the launcher will trigger saving results, which won't work with out a job record
+
         app.logger.info(f"launching job with job config ={job_config}")
-        job_response = job_manager.launch(input_genes, job_config)
-        
+        job_response = job_manager.launch(input_genes, job_config)        
         #TODO handle unsuccessful responses here 
-
         app.logger.info(f"job {job_config['jobid']} launched with response {job_response}")
-
-        add_job(jobname)
-
         job_submit_message = f"Job {jobname} submitted!  The completed job will be available on <a href='{job_config['job_url'] }'>{job_config['job_url']}</a>"
 
         if job_config.get('notifyaddress'):
@@ -650,11 +705,11 @@ def get_or_set_job(jobname):
         # If this isn't none then the result already existed within the database, just return that
         return result_check
     
-    job_info = retrieve_job_info(jobname, app.config)
+    job_info = results_store.read_job_info(jobname) #  retrieve_job_info(jobname, app.config)
     job_output = {}
 
     if job_info and job_info['has_results']:
-        job_output = retrieve_job_outputs(jobname, app.config)
+        job_output = results_store.read(jobname)
         # If we didn't get it back then we need to check if the job even exists in the jobs table
         result_check = Job.query.filter_by(jobid=jobname).first()
         if result_check is not None:
