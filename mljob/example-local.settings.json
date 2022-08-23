@@ -10,6 +10,7 @@
     "AzureWebJobsStorage": "",
     "DATA_PATH" : "/path/on/your/computer/to/geneplexus_data",
     "JOBS_PATH" : "/path/on/your/computer/to/jobs",
-    "QUEUECONNECTIONSTRING": "put queue connection string here"
+    "QUEUECONNECTIONSTRING": "put queue connection string here",
+    "CALLBACK_URL": "http://localhost:5000/"
    }
 }
