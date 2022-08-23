@@ -1,28 +1,15 @@
 
 from operator import truediv
 import pytest, os, shlex
-from mljob.job_manager import generate_job_id, JobManager, LocalLauncher
-
+from mljob.job_manager import generate_job_id, JobManager, LocalLauncher, job_status_codes
+import logging
+logging.basicConfig()
 
 
 @pytest.fixture()
 def job_url():
     """ the goal is to have a url that the job can hit to report status for testing"""
     return("http://localhost:5000/jobs")
-
-# @pytest.fixture()
-# def dummy_job_launcher():
-#     """ class to pass that known to work """
-
-#     class NullLauncher():
-#         def __init__(self,*args):
-#             pass
-#         def launch(self,job_config):
-#             return('200')
-    
-#     nl = NullLauncher('x')
-#     yield nl 
-
 
 @pytest.fixture(scope='module')
 def genelist():
@@ -92,44 +79,50 @@ class NullLauncher():
     def __init__(self,*args):
         pass
     def launch(self,job_name):
-        return('200')
+        return(200)
 
+    
 def test_job_manager_instantiate(results_store,genelist, test_job_config):
     # create a job manager composed of a storage and a launcher
-    job_manager = JobManager(results_store, NullLauncher() )
+    job_manager = JobManager(results_store, NullLauncher(), logging = logging )
     assert job_manager is not None
     assert str(type(job_manager )) == "<class 'mljob.job_manager.JobManager'>"
+
+
+def test_job_manager_null_launch(results_store,genelist, test_job_config):
+    job_manager = JobManager(results_store = results_store, launcher = NullLauncher(), logging = logging )
     resp = job_manager.launch(genes = genelist, job_config = test_job_config)
-    assert resp == '200'
+    assert resp == 200
 
-
-def test_job_local_launcher(data_path, results_store, existing_job_name):
-    # create launcher object
-    launcher = LocalLauncher( data_path, results_store)
-
-    assert launcher is not None
-    assert str(type(launcher)) == "<class 'mljob.job_manager.LocalLauncher'>"   
-    response = launcher.launch(existing_job_name)
-    assert response == '200'
-
-def test_job_manager_null_launcher(results_store, test_job_config, genelist):
     
-    job_manager = JobManager(results_store = results_store,launcher = NullLauncher())
-    resp = job_manager.launch( genes = genelist, job_config = test_job_config)
-    assert resp == '200'     
+def test_job_manager_api(results_store, existing_job_config):
+    job_manager = JobManager(results_store, launcher = NullLauncher() , logging = logging)
+    job_name = existing_job_config['jobname']
+    # first check the job seems 'real'
+    assert type(job_name) == type(" "), "job_name fixture is not a string"
+    assert len(job_name) > 0, "job_name fixture is length 0"
+    assert results_store.exists(job_name), "job fixture is supposed to exist, but doesn't"
+    # now test the job_manager functions
+    assert job_manager.job_exists(job_name) == True
+
 
 def test_job_manager_local_launcher(data_path, results_store, test_job_config, genelist):
+    
+    launcher = LocalLauncher( data_path, results_store, logging = logging)
+    job_manager = JobManager(results_store = results_store,launcher = launcher, logging = logging )
+
     job_name = test_job_config['jobname']
 
-    launcher = LocalLauncher( data_path, results_store)
-    
-    job_manager = JobManager(results_store = results_store,launcher = launcher )
     resp = job_manager.launch( genes = genelist, job_config = test_job_config)
-    assert resp == '200'
+    # this will wait until the job is completed
+    assert resp == 200
+    assert results_store.has_results(job_name) == True 
+    assert results_store.read_status(job_name) == job_status_codes[200]
+    assert job_manager.job_completed(job_name) == True
 
-    assert results_store.has_results(job_name) == True
     # basic tests that the job info is legit
     job_info = results_store.read_job_info(job_name)
+
     assert job_info is not None
     assert type(job_info) == type({})
     assert 'df_convert_out_subset_file' in list(job_info.keys())

@@ -10,34 +10,57 @@ from mljob import results_storage
 
 from mljob.results_storage import ResultsFileStore
 
-job_status_codes = {200:"Completed", 201:"Created", 202:"Accepted", 404:"Not Found", 500:"Internal Server Error", 504:"Timeout"}
+job_status_codes = {200:"Completed", 201:"Created", 202:"Accepted", 404:"Not Found", 500:"Failed", 504:"Timeout"}
 
-    
+# class Launcher():
+#     """ Base """
+#     def __init__(self, **kwargs):
+#         for k in kwargs:
+#             self.k = kwargs[k]
+
+#     def launch(self,job_name):
+#         pass
+
 class LocalLauncher():
     
-    def __init__(self, data_path, results_store):
+    def __init__(self, data_path, results_store, logging = logging):
+        """constructor.  Importing geneplexus in private scope since it's only needed for local dev"""
         from mljob.run_geneplexus import run_and_save
+        self.run_and_save = run_and_save      
         self.data_path = data_path
         self.results_store = results_store
 
-    def launch(self,job_name):
+    def launch(self,jobname):
         """ launch job.  Inputs = job_config dictionary with parameters.   """
-        job_config = self.results_store.read_config(job_name)
+        job_config = self.results_store.read_config(jobname)
         
         if job_config:
-            logging.info(f"launching {job_name}")
-        
-            try:
-                gp_ran = self.run_and_save(job_name, self.results_store, self.data_path, logging = logging, 
-                    net_type=job_config.get('net_type'), features=job_config.get('features'), GSC=job_config.get('GSC') )
+            logging.info(f"launching {jobname}")
+    
+            try: 
+                gp_ran = self.run_and_save(jobname, self.results_store, self.data_path, logging = logging, 
+                        net_type=job_config.get('net_type'), features=job_config.get('features'), GSC=job_config.get('GSC') )
+                
+                print("gp_ran = {gp_ran}")
+                logging.debug(f"gp_ran value = {gp_ran}")
+
+                if  gp_ran:
+                    logging.info(f"job completed {jobname}")
+                    self.results_store.save_status(jobname, job_status_codes[200]) 
+                    return(200)
+                else:
+                    logging.error(f"{jobname} failed to complete")
+                    self.results_store.save_status(jobname, job_status_codes[500]) 
+                    return(500)
+
             except Exception as e:
-                return('500')
+                logging.error(f"{jobname} run error {e}")
+                self.results_store.save_status(jobname, job_status_codes[500]) 
+                return(500)
             
-            if gp_ran:
-                return('200')
-            else:
-                return('500')
         else:
+            self.results_store.save_status(jobname, job_status_codes[404])
+            logging.error("local launcher; no job config")
             return('404')
 
 
@@ -50,7 +73,7 @@ class UrlLauncher():
         job_manager =  JobManager(storage, launcher)
         job_manager.launch(job_config, data)
     """
-    def __init__(self,launch_url):
+    def __init__(self,launch_url, logging = logging):
         self.launch_url = launch_url
 
     def launch(self,jobname):
@@ -73,10 +96,19 @@ def generate_job_id():
     return(eight_char_rand_id)
 
 
-class JobManager():
-    """creates jobs, runs them and checks status"""
 
-    def __init__(self,results_store, launcher):
+class JobManager():
+    """A helper class for running machine learning jobs as part of the Geneplexus App. Can launch new jobs by working with the store, and checks status
+    
+    :param results_store: a storage system for writing/reading job data, for example class:`ResultsFileStore`
+    :type results_store: class:`results_storage.ResultsFileStore`
+    :param launcher: class that supports a `launch(jobname)` method
+    :param type: class:`UriLauncher`
+    """
+
+
+    def __init__(self,results_store, launcher, logging = logging):
+        """constructor"""
         self.results_store = results_store
         self.launcher = launcher
         self.required_job_config_keys = ['net_type', 'features', 'GSC','jobname', 'job_url']
@@ -85,7 +117,13 @@ class JobManager():
 
 
     def cloud_friendly_job_name(self, job_name):
-        """ job name must be useable to create file paths and other cloud resources, so remove unuesable or unicode characters"""
+        """a job name must be useable to create file paths and other cloud resources, so this method remove unuesable or unicode characters
+        and doubles as a security sanitizer
+        :param job_name: name of job to sanitize
+        :type job_name: string
+        :return: sanitized job name
+        :rtype: string
+        """
         #rules for conainters: The container name must contain no more than 63 characters and must match the regex '[a-z0-9]([-a-z0-9]*[a-z0-9])?' (e.g. 'my-name')."
         # this needs to be idempotent becuase we may call it on an already modified job_name to be safe
 
@@ -100,12 +138,13 @@ class JobManager():
 
         return(j)
 
-    def path_friendly_job_name(self, job_name):
-        """ for backwards compatibility with existing code """
-        return self.cloud_friendly_job_name(job_name)
-
     def job_exists(self, job_name):
-        """ convenience api to detect if job has been started at any time"""
+        """checks if job has been started at any time, using method from `results_store`
+        :param job_name: name of job 
+        :type job_name: string
+        :return: True if job exists
+        :rtype: Boolean
+        """
         # assume that if there is an entry in the store, that a job was created 
         return ( self.results_store.exists(job_name) ) 
 
@@ -140,12 +179,12 @@ class JobManager():
 
         if self.job_exists(job_name):
             logging.error('error: job already exists {job_name}')
-            return False
+            return None
             # this prevents a failed job from being retried
 
         if not self.validate_job_config(job_config):
             logging.error('invalid job configuration')
-            return False
+            return None
 
         # passed validation, create storage 
         j = self.results_store.create(job_name)
@@ -157,27 +196,31 @@ class JobManager():
         job_config['input_file_name']  = self.results_store.save_input_file(job_name, genes)
         logging.info(f"input file = {job_config['input_file_name']}")
 
-        # TODO verify saving notifier address in job info, and can read it
-        # change how we we are recovering notifier address (no longer in individual file but part of job_info)
-        # remove notifier_file_name = results_store.s_notifyaddress(job_config, app_config)
-
-        # we are misusibng this "save results" method to save an input config file
         job_config_file = self.results_store.save_json_results(job_name, 'job_config', job_config)
         logging.info(f"job_config_file = {job_config_file}")
-        # TODO resolve that the 'local' launcher hsa to be given a results-store but URL launcher must self-configure
-        response = self.launcher.launch(job_name)
 
-        # TODO need to handle non-OK responses in the job status. e.g. submission failed, need to save that
         self.results_store.save_status(job_name, 'submitted')
-
+        response = self.launcher.launch(job_name)
         
         return response
 
+    def job_completed(self, job_name):
+        """ standardized method for determining if a job has completed.   If ther status is completed and if 
+        parameters: job_name 
+        job_status optional job status.  If not provided will be read from the results store.  
+        :return: False 
+        """
 
+        if not self.results_store.exists(job_name):
+            logging.debug("when testing job {job_name}, it does not exist")
+            return False
+    
+        job_status = self.results_store.read_status(job_name)
 
-
-
-
-
-
+        logging.debug("checking job completion, job status = {job_status}")
+        
+        if job_status == job_status_codes[200] and self.results_store.has_results(job_name):
+            return True
+        else:
+            return False
 
