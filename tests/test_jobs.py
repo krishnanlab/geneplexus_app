@@ -108,7 +108,7 @@ def test_job_manager_api(results_store, existing_job_config):
 
 def test_job_manager_local_launcher(data_path, results_store, test_job_config, genelist):
     
-    launcher = LocalLauncher( data_path, results_store, logging = logging)
+    launcher = LocalLauncher( data_path, results_store)
     job_manager = JobManager(results_store = results_store,launcher = launcher, logging = logging )
 
     job_name = test_job_config['jobname']
