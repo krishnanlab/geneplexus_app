@@ -59,3 +59,13 @@ class DevConfig(BaseConfig):
     # set this to force the jobs to run on the same machine
     RUN_LOCAL = (os.getenv('RUN_LOCAL', 'False').lower() == 'true')
     DEBUG = (os.getenv('DEBUG', 'False').lower() == 'true')
+
+class TestConfig(BaseConfig):
+    FLASK_ENV="test"
+    FLASK_DEBUG="1"
+    FILE_LOC="local"
+    RUN_LOCAL='true'
+    DEBUG='true'
+    SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite://')
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    TESTING='true'
