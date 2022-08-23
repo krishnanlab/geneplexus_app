@@ -12,15 +12,11 @@ from app import db as flask_db
 from config import TestConfig
 
 @pytest.fixture(scope='session')
-def app(request):
-    multiprocessing.set_start_method("fork") # This is because OSX and Windows uses spawn which isn't supported by pytest
+def app():
     flask_app.config.from_object(TestConfig)
-    ctx = flask_app.app_context()
-    ctx.push()
-    def teardown():
-        ctx.pop()
-    request.addfinalizer(teardown)
-    return flask_app
+    with flask_app.test_client() as client:
+        with flask_app.app_context():
+            yield flask_app
 
 @pytest.fixture(scope='session')
 def db(request, app):

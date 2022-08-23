@@ -45,3 +45,18 @@ def test_add_result(session):
 
     result_test = Result.query.all()
     assert len(result_test) == 1
+
+def login(client, username, password):
+    return client.post('/login', data={
+        'username': username,
+        'password': password,
+    }, follow_redirects=True)
+
+def test_login(client, session):
+    new_user = User('test', 'test', 'test@test.test', 'Test Name')
+    session.add(new_user)
+    session.commit()
+
+    rv = login(client, 'test', 'test')
+
+    assert b'Username and password combination did not match' not in rv.data
