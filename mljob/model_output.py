@@ -16,6 +16,10 @@ def save_output(output_path, jobname, net_type, features, GSC, avgps, input_coun
     df_convert_out_subset_file = save_df_output(output_path, jobname, 'df_convert_out_subset', df_convert_out_subset)
     df_dis_file = save_df_output(output_path, jobname, 'df_dis',df_dis)
     df_edgelist_file = save_df_output(output_path, jobname, 'df_edgelist', df_edgelist )
+
+    # placeholder : this was the HTML representation of the 
+    results_file_content = f"<html><body><p>{jobname}</p></html>"
+    results_file = save_txt_output(output_path, jobname, 'results.txt', results_file_content )
     
     # the 'graph' is a dict of dicts (node, edges), so save in different format
     graph_file = save_graph_output(output_path, jobname, graph)
@@ -70,6 +74,18 @@ def read_output(output_path, jobname):
     # returns None or empty if no job info was found
     return(job_info)
 
+#============== file save functions by format
+
+def save_txt_output(job_dir, jobname, output_name, output_content):
+    """ save any data from job, output name must have the extension"""
+    output_filename = construct_output_filename(jobname, output_name)
+    output_filepath = construct_output_filepath(job_dir, jobname, output_filename)
+    try:
+        with open(output_filepath, 'w') as outfile:
+            outfile.writelines(output_content)
+        return(output_filename)
+    except Exception as e:
+        return("")     
 
 def save_df_output(output_path, jobname, output_name, output_df):
     """ save data frames from model runs in a consistent way"""

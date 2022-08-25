@@ -1,20 +1,19 @@
 from flask.helpers import make_response
 from slugify.slugify import slugify
-from mljob.jobs import path_friendly_jobname, launch_job, retrieve_job_folder,retrieve_results,job_info_list,valid_results_filename,results_file_dir,job_exists,retrieve_job_info,generate_job_id, job_status_codes, retrieve_job_outputs
+# from mljob.jobs import path_friendly_jobname, launch_job, retrieve_job_folder,retrieve_results,job_info_list,valid_results_filename,results_file_dir,job_exists,retrieve_job_info,generate_job_id, job_status_codes, retrieve_job_outputs
+from app import app, db, results_store, job_manager
+from mljob.job_manager import generate_job_id
 
 
 from werkzeug.exceptions import InternalServerError
 from flask import request, render_template, jsonify, session, redirect, url_for, flash, send_file, Markup, abort,send_from_directory
 from flask_login import login_user, logout_user, current_user, login_required
 from app.forms import ValidateForm, JobLookupForm
-from app import app, db
 
 from flask_dance.contrib.github import github
 
 from app.models import *
 from app.validation_utils import intial_ID_convert, make_validation_df
-from mljob import geneplexus
-geneplexus.data_path = app.config.get("DATA_PATH")
 
 import os
 import numpy as np
@@ -184,13 +183,11 @@ def jobs():
     jobname = form.jobname.data
 
     if request.method == 'POST' and form.lookup.data:
-        if retrieve_job_folder(jobname, app.config):
+        if results_store.exists(jobname): #   retrieve_job_folder(jobname, app.config):
             return(redirect(url_for('job',jobname=jobname)))
         else:
             flash(f"Sorry, the job '{jobname}'' was not found")
 
-    jobnames = []
-    joblist = {}
 
     user_jobnames = []
     user_joblist = {}
@@ -199,15 +196,16 @@ def jobs():
     session_joblist = {}
 
     if current_user.is_authenticated:
-        user_jobnames = Job.query.filter_by(userid=current_user.id).with_entities(Job.jobid).all()
-        user_jobnames = [job[0] for job in user_jobnames]
-        if len(user_jobnames) > 0:
-            user_joblist = job_info_list(user_jobnames, app.config)
+        user_jobrecords = Job.query.filter_by(userid=current_user.id).with_entities(Job.jobid).all()
+        user_jobnames = [job[0] for job in user_jobrecords]
+        user_joblist = results_store.job_info_list(user_jobnames)
+    
     if 'jobs' in session:
         session_jobnames = session['jobs']
         if len(session_jobnames) > 0:
-            session_joblist = job_info_list(session_jobnames, app.config)
-    
+            session_joblist = results_store.job_info_list(session_jobnames)  
+
+
     session_args = create_sidenav_kwargs()
     return render_template(
         'jobs.html',
@@ -237,115 +235,141 @@ def html_output_table(df, id = "", row_limit = 500):
         return("")
     
 
-'''
-From here we need to look up if a job is actually done first. If it is done but not in the Results table we do a read
-on the jobs folder, get the data to put in the DB, then we read everything from there to feed into the results page
-'''
 @app.route("/jobs/<jobname>", methods=['GET'])
 def job(jobname):
     """ show info about job: results if there are some but otherwise basic job information"""
     # sanitize.  if this is an actual jobname this will be idempotent
-    jobname = path_friendly_jobname(jobname)
+    jobname = job_manager.cloud_friendly_job_name(jobname)
 
     #TODO check valid job and 404 if not
-    if not job_exists(jobname, app.config): 
+    if not results_store.exists(jobname): 
         abort(404)
-    
-    job_info = retrieve_job_info(jobname, app.config)
-    job_output = {}
+
+    job_info = results_store.read_job_info(jobname) # retrieve_job_info(jobname, app.config)
 
     if job_info and job_info['has_results']:
-        job_output = retrieve_job_outputs(jobname, app.config)
-    
-    returned_row = Result.query.filter_by(jobname=jobname).first()
+        job_output = results_store.read(jobname) # retrieve_job_outputs(jobname, app.config)
 
-    
+    else:
+        job_output = {}
 
+    # TODO simplify this!   don't need jobexists, results_store.read_job_info always returns a dict if job exists
     return render_template("jobresults.html",
-            jobexists = job_exists(jobname, app.config), 
+            has_results = job_info['has_results'],
+            jobexists = results_store.exists(jobname), 
             jobname=jobname,         
             job_info = job_info, 
             result_info = returned_row,       
             job_output = job_output)
 
+##############
+
 @app.route("/jobs/<jobname>", methods = ["POST"])
-def update_job(jobname):
-    """ update the job info and possibly notify of new jobs status.  Used by external job runner.  """
+def _update_job(jobname):
+    """ update the job info and possibly notify of new jobs status.  Used by external job runner. 
+    if there is a job in the database, create a results file. 
+    :param jobname: name of job
+    :type jobname: string
+     """
 
-    request_data = request.get_json()
-    job_status = request_data.get('status')
-    
-    # sanitize.  if this is an actual jobname this will be idempotent
-    jobname = path_friendly_jobname(jobname)
-    # TODO read the data that was posted! to see the event code
-    job_config = retrieve_job_info(jobname, app.config)
-    job_config['job_url'] =  url_for('job', jobname=jobname ,_external=True)
-    
-    notifyaddress = job_config.get('notifyaddress')
-    if notifyaddress:    
-        if job_status_codes.get(job_status ).lower() == "completed":
-            resp = app.notifier.notify_completed(job_config)
-        else:
-            resp = app.notifier.notify(notifyaddress, job_config, job_status)         
-        app.logger.info(f"job completed email initiated to {job_config['notifyaddress']} with response {resp}")
-        return  {'notification response': resp}, resp
+    print("callback! ")
+    # check job name 
+    jobname = job_manager.cloud_friendly_job_name(jobname)
+    if not results_store.exists(jobname):
+        app.logger.info(f"can't notify, job not found {jobname}")
+        return {f'no job found {jobname}': 404}, 404
+
+    # get status from request body. 
+    if request.is_json:
+        request_data = request.get_json()
     else:
-        return  {'notifiation response': 202}, 202
+        request_data = request.data()
 
+    print(request_data)    
+    job_status =  "Completed" # request_data.get('status')
+    job_config = results_store.read_config(jobname)
+    notifyaddress = job_config.get('notifyaddress')
+
+    msg = f"job status acknowledged"
+    resp = 200
+    notifier_resp = ""
+
+    # check if job is complete and has results
+    if job_manager.job_completed(jobname):
+        app.logger.info(f"job completed {jobname} creating results ")
+        ### COMPLETE!   CREATE DB RECORD
+        if Result.query.filter_by(jobname=jobname).first() is not None:
+            msg = f'Result with JobID {jobname} already has results'
+            resp = 405 # method not allowed, can't insert if it exists
+            app.logger.info(msg)
+        else:
+            print(f"looking up job record for {jobname}")
+            job_record = Job.query.filter_by(jobid=jobname).first()
+            if job_record is not None:   # only create results if there is job record.  If no record, this is not an error condition    
+                try:
+                    job_info = results_store.read_job_info(jobname) 
+                    app.logger.info(f"db: saving job {job_info}")
+
+                    new_result = Result(job = job_record,
+                        user = job_record.user,
+                        network = job_info.get('net_type'),
+                        feature = job_info['features'],
+                        negative = job_info['GSC'],
+                        p1 = job_info['avgps'][0],
+                        p2 = job_info['avgps'][1],
+                        p3 = job_info['avgps'][2],
+                        public = True
+                    )
+                    db.session.add(new_result)
+                    db.session.commit()
+                    app.logger.info(f"db: Results record created for {jobname}")
+
+
+                except Exception as e:                    
+                    msg = f"db: error creating result record for {jobname} : {e}"                
+                    resp = 400
+                    app.logger.error(msg)
+            else:
+                app.logger.info(f"db: no job record found, not saving results for {jobname}")
+                msg = "no job record to save results for"
+                resp = 405
+
+        ### JOB COMPLETE!  Notification
+        if notifyaddress:
+            notifier_resp = app.notifier.notify_completed(job_config)
+            app.logger.info(f"job complete status email initiated to {job_config['notifyaddress']} with response {notifier_resp}")
+
+    else:
+        app.logger.info(f"job callback {jobname} but not complete: {job_status}")
+
+        ### incomplete, notify anyway
+        if notifyaddress:
+            notifier_resp = app.notifier.notify(notifyaddress, job_config, job_status)
+            app.logger.info(f"job incomplete status email initiated to {job_config['notifyaddress']} with response {notifier_resp}")
+        
+    msg = f"{msg};{notifier_resp}"
+    return (jsonify({'notification response': msg}), resp)
 
 
 @app.route("/jobs/<jobname>/results",methods=['GET'])
 def jobresults_content(jobname):
-    """ read the results into memory and return """
-    results_content = retrieve_results(jobname, app.config)
-    if results_content:
-        return(results_content) # or in future, send this html to a template wrapper        
-    else:
-        return(f'<html><body><h3 style="padding-top:50px"> No results yet for the job "{jobname}"</h3></body><html>')
-
-# @app.route("/jobs/<jobname>/job_output",methods=['GET'])
-# def jobresults_content(jobname):
-#     """ get all the ouptut from the job and render tables and visualization """
-
-#     if not job_exists(jobname, app.config):
-#         flash(f"No job exists {jobname}")
-#         redirect('/', code=404)
-
-#     # dictionary of stuff
-#     job_info =  retrieve_job_info(jobname, app.config)
-
-#     return render_template("job_output.html", jobname=jobname, job_info = job_info,
-#         probs_table=job_info['df_probs'].head(row_limit).to_html(index=False, classes='table table-striped table-bordered" style="width: 100%;" id = "probstable"'),
-#         go_table=job_info['df_GO'].head(row_limit).to_html(index=False,classes='table table-striped table-bordered nowrap" style="width: 100%;" id = "gotable"'),
-#         dis_table=job_info['df_dis'].head(row_limit).to_html(index=False, classes='table table-striped table-bordered" style="width: 100%;" id = "distable"'),
-#         validate_results=job_info['df_convert_out_subset'].head(row_limit).to_html(index=False,classes='table table-striped table-bordered" style="width: 100%;" id = "validateresults"'),
-#         graph=job_info['graph'],
-#         **session_args )
-
-#         # get all of this from job_info dictionary
-
-#         # network=net_type,   
-#         # features=features,
-#         # negativeclass=GSC,
-#         # avgps=avgps,
-#         # input_count=input_count,
-#         # positive_genes=positive_genes,
+    """ this is not longer user, not generating static html results  """
+    job_url = url_for('job', jobname=jobname)
+    return(f'<html><body><h3 style="padding-top:50px">For results, see <a href="{job_url}">{job_url}</a></h3></body><html>')
     
 
-# download results file 
 @app.route("/jobs/<jobname>/results/download/<results_file_name>",methods=['GET'])
 def jobresults_download(jobname,results_file_name):
     """get the contents of one of the results outputs and iniate a download.  If no file name or results type is sent
     as a parameter, by default just sent the rendered html.  
     """
     # sanitize the filename using a method for job module
-    results_file_name = valid_results_filename(results_file_name)
-
-    # results_file_name = valid_results_filename(request.values.get('resultsfile', ''))
+    # results_file_name =  job_manager.cloud_friendly_job_name(results_file_name)
     # if there is any filename left after sanitizing...
-    if ( results_file_name ):
+
+    if results_store.results_has_file(jobname, results_file_name):
         # retrieve the file_path, or nothing if the job or file does not exist
-        results_directory =  results_file_dir(jobname, app.config,results_file_name)
+        results_directory =  results_store.results_folder(jobname)
         if(results_directory):  
             return send_from_directory(results_directory, results_file_name, as_attachment=True)    
     
@@ -397,6 +421,7 @@ def validate():
     # run all the components of the model and pass to the results form
     convert_IDs, df_convert_out = intial_ID_convert(input_genes)
 
+    
     jobid = generate_job_id()
     form.jobid.data = jobid
 
@@ -464,7 +489,7 @@ def run_model():
     else:
         jobname = jobid
 
-    jobname = path_friendly_jobname(jobname)
+    jobname = job_manager.cloud_friendly_job_name(jobname)
 
     # this means someone clicked the form to run the batch job. 
     if form.runbatch.data :
@@ -487,16 +512,13 @@ def run_model():
             else:
                 flash("The job notification email address you provided is not a valid email.  No job notification will be sent", category =  "error")
 
-        print("launching job with job config =")
-        print(job_config)
+        app.logger.info(f"saving job to db (if logged in)")  
+        add_job(jobname) # do this before launching job, because the launcher will trigger saving results, which won't work with out a job record
 
-        add_job(jobname)
-
-        job_response = launch_job(input_genes, job_config, app.config)
+        app.logger.info(f"launching job with job config ={job_config}")
+        job_response = job_manager.launch(input_genes, job_config)        
+        #TODO handle unsuccessful responses here 
         app.logger.info(f"job {job_config['jobid']} launched with response {job_response}")
-
-
-
         job_submit_message = f"Job {jobname} submitted!  The completed job will be available on <a href='{job_config['job_url'] }'>{job_config['job_url']}</a>"
 
         if job_config.get('notifyaddress'):
@@ -504,18 +526,9 @@ def run_model():
             app.logger.info(f"email initiated to {job_config['notifyaddress']} with response {email_response}")
             job_submit_message = job_submit_message + f" and notification sent to {job_config['notifyaddress']}"
 
-
         flash(Markup(job_submit_message), category = 'success')
 
         return redirect('jobs')
-
-    # this option is for testing, and not usually available as a button on the website
-    # if form.runlocal.data : 
-    #     # this runs the model on the spot and simply returns the results as HTML file
-    #     app.logger.info('running model, jobname %s', jobname)
-    #     results_html = geneplexus.run_and_render(input_genes, net_type, features, GSC, jobname)
-    #     app.logger.info('model complete, rendering template')
-    #     return(results_html)
 
     # we reach here if the submit button value is neither possibility
     return("invalid form data ")
@@ -698,11 +711,11 @@ def get_or_set_job(jobname):
         # If this isn't none then the result already existed within the database, just return that
         return result_check
     
-    job_info = retrieve_job_info(jobname, app.config)
+    job_info = results_store.read_job_info(jobname) #  retrieve_job_info(jobname, app.config)
     job_output = {}
 
     if job_info and job_info['has_results']:
-        job_output = retrieve_job_outputs(jobname, app.config)
+        job_output = results_store.read(jobname)
         # If we didn't get it back then we need to check if the job even exists in the jobs table
         result_check = Job.query.filter_by(jobid=jobname).first()
         if result_check is not None:

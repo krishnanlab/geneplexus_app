@@ -10,3 +10,5 @@ pytest-selenium
 pytest-variables
 selenium
 webdriver-manager
+# not needed for most of the app, but needed for testing
+geneplexus

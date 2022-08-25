@@ -17,10 +17,11 @@
     
     <hr class="mt-3">
 
-    <h4 class="mt-4">Jobs Submitted ( by this user ) </h4>
     
     {% if current_user.is_authenticated %}
         {% if user_joblist %}
+        <h4 class="mt-4">Jobs Submitted ( by this user ) </h4>
+
             <hr>
             <table class="table w-100" style="width:100%;" id="jobstable">
                 <thead>
@@ -32,36 +33,34 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for job in user_joblist %}
-                    
-                    <tr id="job-{{job['jobname']}}" class="{{'table-success' if job['has_results'] }}" >
+                    {% for jobname in user_joblist %}
+                        {% set job = user_joblist[jobname] %}
+                        <tr id="job-{{job['jobname']}}" class="{{'table-success' if job['has_results'] }}" >
                         <td> 
                             {% if job['has_results'] %}
-                                <a href="{{url_for('job',jobname=job['jobname']) }}">{{job['jobname']}}</a>
+                                <a href="{{url_for('job',jobname=jobname) }}">{{jobname}}</a>
                             {% else %}
                                 {{job['jobname']}}
                             {% endif %}
                         </td>
-                            
-                        </td>
+
                         <td>{{job['submit_time']}}</td>
-                        <td>{% if job['params'] %}
-                            {{job['params']['GP_NET_TYPE']}}; {{job['params']['GP_FEATURES']}}; {{job['params']['GP_GSC']}}
-                            {% endif %}
+                        <td>
+                            {{job['net_type']}}; {{job['features']}}; {{job['GSC']}}
                         </td>
-                        <td>{{job['status']}}</td>
+                        <td>{% if job['has_results'] %} completed {% else %} {{job['status']}} {% endif %}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
 
-            {% else %}        
+        {% else %}        
                 <p class="mt-1">No recent jobs have been saved in this session.  Search by full job name below, 
                     or <a href="{{url_for('geneset')}}">upload a geneset and start a new one</a><br>
                 For more information see our <a href="{{ url_for('help') }}">Help</a> page.</p>
 
-            {% endif %}
         {% endif %}
+    {% endif %}
 
     <h4 class="mt-4">Jobs Submitted ( in this session ) </h4>
         
@@ -76,36 +75,38 @@
                 <th>Status</th>
                 </tr>
             </thead>
+
+
             <tbody>
-                {% for job in session_joblist %}
-                
-                <tr id="job-{{job['jobname']}}" class="{{'table-success' if job['has_results'] }}" >
+                {% for jobname in session_joblist %}
+                    {% set job = session_joblist[jobname] %}
+                    <tr id="job-{{jobname}}" class="{{'table-success' if job['has_results'] }}" >
                     <td> 
                         {% if job['has_results'] %}
-                            <a href="{{url_for('job',jobname=job['jobname']) }}">{{job['jobname']}}</a>
+                            <a href="{{url_for('job',jobname=jobname)}}">{{jobname}}</a>
                         {% else %}
-                            {{job['jobname']}}
+                            {{jobname}}
                         {% endif %}
                     </td>
                         
                     </td>
                     <td>{{job['submit_time']}}</td>
-                    <td>{% if job['params'] %}
-                        {{job['params']['GP_NET_TYPE']}}; {{job['params']['GP_FEATURES']}}; {{job['params']['GP_GSC']}}
-                        {% endif %}
+                    <td>{{job['net_type']}}; {{job['features']}}; {{job['GSC']}}
+                            {# old way, delete the following #} 
+                            {% if job['params'] %}{{job['params']['GP_NET_TYPE']}}; {{job['params']['GP_FEATURES']}}; {{job['params']['GP_GSC']}}{% endif %}
                     </td>
-                    <td>{{job['status']}}</td>
+                    <td>{% if job['has_results'] %}completed{% else %}{{job['status']}}{% endif %}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
 
-        {% else %}        
+    {% else %}        
             <p class="mt-1">No recent jobs have been saved in this session.  Search by full job name below, 
                 or <a href="{{url_for('geneset')}}">upload a geneset and start a new one</a><br>
             For more information see our <a href="{{ url_for('help') }}">Help</a> page.</p>
 
-        {% endif %}
+    {% endif %}
 
         <hr class="mt-3">
 
