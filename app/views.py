@@ -124,26 +124,46 @@ def my_results():
                            results=my_results,
                            **session_args)
 
+def get_results_for_user(resultid, user):
+    cur_result = Result.query.filter_by(jobname=resultid).first()
+    if cur_result is None:
+        return None
+    if not cur_result.public:
+        if not user.is_authenticated:
+            return None
+        if cur_result.userid != current_user.id:
+            return None
+    return cur_result
+
+def is_result_available_to_user(resultid, user):
+    cur_result = Result.query.filter_by(jobname=resultid).first()
+    if cur_result is None:
+        return True
+    if not cur_result.public:
+        if not user.is_authenticated:
+            return False
+        if cur_result.userid != current_user.id:
+            return False
+    return True
+    
 @app.route('/result/<resultid>', methods=['GET'])
 def result(resultid):
     session_args = create_sidenav_kwargs()
-    cur_results = Result.query.filter_by(jobname=resultid).first()
+    cur_results = get_results_for_user(resultid, current_user)
     if cur_results is None:
-        flash('Result {} does not exist'.format(resultid), 'error')
+        flash(f'Result {resultid} either does not exist or is private', 'error')
         return redirect(url_for('index'))
-    if not current_user.is_authenticated or (not cur_results.public and current_user.id != cur_results.userid):
-        flash('You do not have access to this result', 'error')
-        return redirect(url_for('index'))
-    return render_template('result.html',
-                           description=cur_results.description,
-                           resultid=resultid,
-                           author=cur_results.user.username,
-                           network=cur_results.network,
-                           feature=cur_results.feature,
-                           negative=cur_results.negative,
-                           performance='{:.2f}, {:.2f}, {:.2f}'.format(cur_results.p1, cur_results.p2, cur_results.p3),
-                           public=cur_results.public,
-                           **session_args)
+    else:
+        return render_template('result.html',
+                            description=cur_results.description,
+                            resultid=resultid,
+                            author=cur_results.user.username,
+                            network=cur_results.network,
+                            feature=cur_results.feature,
+                            negative=cur_results.negative,
+                            performance='{:.2f}, {:.2f}, {:.2f}'.format(cur_results.p1, cur_results.p2, cur_results.p3),
+                            public=cur_results.public,
+                            **session_args)
 
 @login_required
 @app.route('/update_result_visibility', methods=['POST'])
@@ -243,7 +263,8 @@ def job(jobname):
 
     #TODO check valid job and 404 if not
     if not results_store.exists(jobname): 
-        abort(404)
+        flash(f'Result "{jobname}" either does not exist or is private', 'error')
+        return redirect(url_for('index'))
 
     job_info = results_store.read_job_info(jobname) # retrieve_job_info(jobname, app.config)
 
@@ -252,14 +273,18 @@ def job(jobname):
 
     else:
         job_output = {}
-
+    
+    is_accessible = is_result_available_to_user(jobname, current_user)
+    if not is_accessible:
+        flash(f'Result "{jobname}" either does not exist or is private', 'error')
+        return redirect(url_for('index'))
+    
     # TODO simplify this!   don't need jobexists, results_store.read_job_info always returns a dict if job exists
     return render_template("jobresults.html",
             has_results = job_info['has_results'],
             jobexists = results_store.exists(jobname), 
             jobname=jobname,         
-            job_info = job_info, 
-            result_info = returned_row,       
+            job_info = job_info,   
             job_output = job_output)
 
 ##############
