@@ -3,7 +3,7 @@ import json
 import os, sys, pathlib #, re, errno
 from slugify import slugify
 from datetime import datetime
-from mljob.geneplexus import run_and_render
+from mljob.geneplexus_previous import run_and_render
 from mljob.model_output import read_output
 
 from random import choices as random_choices
@@ -183,8 +183,9 @@ def job_json(job_config, app_config):
 
     return json.dumps(job_data)
 
+#TODO when queue is fully tested, remove use_queue argument here
 
-def launch_job(genes, job_config, app_config):
+def launch_job(genes, job_config, app_config, use_queue=None):
     """prep job inputs for use with file paths, create JSON data, 
     save the input file (and json) to the share folder, 
     then send json to the logic app url that launches the job container
@@ -236,7 +237,19 @@ def launch_job(genes, job_config, app_config):
         run_and_render(genes, net_type=job_config['net_type'], features=job_config['features'], GSC=job_config['GSC'], jobname=jobname, job_callback=app_config['BASE_URL']+'update_result', output_path=local_job_folder)
         response = "200"
 
+    elif use_queue:
+        if app_config.get('QUEUE_URL'):
+            # submit using new queue mechanism
+            queue_params = json.dumps({'jobids':[jobname]})
+            jsonHeaders = {'Content-type': 'application/json'}
+            response = requests.post(app_config['QUEUE_URL'], data=queue_params, headers=jsonHeaders)
+            print(f"Job data queuesd for {jobname}.  Status code: {response.status_code}", file=sys.stderr)
+        else:
+            print(f"Queue requests for  {jobname} but queue URL not set", file=sys.stderr)
+            response = "500"
     else:
+        # 
+        # submit using existing logic app mechanism
         jsonHeaders = {'Content-type': 'application/json', 'Accept': 'text/plain'}
 
         # launch! 

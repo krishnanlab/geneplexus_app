@@ -58,7 +58,7 @@
 <div class="result_container">
 
 {% if jobexists %} {# this is probably not necessary since view method redirects to 404 if no job found #}
-{% if job_info['has_results'] == true and 'jobname' in job_output %}
+{% if has_results == true %}
     <h4 class="col-12">
         <div class="row">
             <span class="col-9">
@@ -66,7 +66,7 @@
             </span>
             <!-- add large button on same row as header -->
             <div class="col-3 float-right">
-                <a href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['jobname']}}.zip"
+                <a href="/jobs/{{jobname}}/results/download/{{jobname}}.zip"
                     class="btn btn-success">
                     Download all results as zip file
                 </a>
@@ -82,7 +82,7 @@
         <div class="box_padding">
             <div class="row">
                 <div class="col text-left">
-                    <label><b>Job Name:</b>&nbsp</label>{{( job_output['jobname'] )}}<br>
+                    <label><b>Job Name:</b>&nbsp</label>{{( jobname )}}<br>
                 </div>
                 <div class="col text-left">
                     <label><b>Network:</b>&nbsp</label>{{ job_output['net_type'] }}<br>
@@ -90,39 +90,36 @@
                 <div class="col text-left">
                     <label><b>Features:</b>&nbsp</label>{{job_output['features']}}<br>
                 </div>
-                <div class="col text-left">
-                    <label><b>Negative Class:</b>&nbsp</label>{{job_output['GSC']}}<br>
-                </div>
-            </div>
-            <br>
-            <div class="row">
-                <div class="col-xs-12 col-sm-12">  
-                    {# checking that the value is a list here to accommodate previous jobs that output a single string (median) #}                  
-                    {% if job_output['avgps'] is not string %} 
-                    
-                        <label>Results for {{ job_output['avgps']|length}}-fold cross validation in terms of <em>log2(auPRC/prior)</em>:&nbsp;
-                        <strong>{{ job_output['avgps']|join(", ") }}.</strong>
-                        </label>
-                        <a href="#" data-bs-toggle="popover" data-bs-trigger="manual" data-bs-placement="right"
-                            data-bs-content="If the number of genes in the positive class is greater than 15,
-                            these metrics report the fold change of the area under the precision-recall curve
-                            (auPRC) over the prior auPRC expected by random chance. For example, a value of 1
-                            indicates that the model performs twice as good as a random ranking of genes.">
-                            <i class="fas fa-question-circle"></i>
-                        </a>
-                    {% else %}
-                        {# for jobs output that have just a single string #}
-                        <label>The median value of the log2(auPRC/prior)
-                            for 5-fold cross validation is &nbsp</label>{{ job_output['avgps'] }}.
-                        </label>&nbsp
-                        <a href="#" data-bs-toggle="popover" data-bs-trigger="manual" data-bs-placement="right"
-                            data-bs-content="If the number of genes in the positive class is greater than 20,
-                            this metric reports the fold change of the area under the precision-recall curve
-                            (auPRC) over the prior auPRC expected by random chance. For example, a value of 1
-                            indicates that the model performs twice as good as a random ranking of genes.">
-                            <i class="fas fa-question-circle"></i>
-                        </a>
-                    {% endif %}
+                <br>
+                <div class="row">
+                    <div class="col-xs-12 col-sm-12">  
+                        {# checking that the value is a list here to accommodate previous jobs that output a single string (median) #}                  
+                        {% if job_output['avgps'] is not string %} 
+                        
+                            <label>Results for {{ job_output['avgps']|length}}-fold cross validation in terms of <em>log2(auPRC/prior)</em>:&nbsp;
+                            <strong>{{ job_output['avgps']|join(", ") }}.</strong>
+                            </label>
+                            <a href="#" data-bs-toggle="popover" data-bs-trigger="manual" data-bs-placement="right"
+                                data-bs-content="If the number of genes in the positive class is greater than 15,
+                                these metrics report the fold change of the area under the precision-recall curve
+                                (auPRC) over the prior auPRC expected by random chance. For example, a value of 1
+                                indicates that the model performs twice as good as a random ranking of genes.">
+                                <i class="fas fa-question-circle"></i>
+                            </a>
+                        {% else %}
+                            {# for jobs output that have just a single string #}
+                            <label>The median value of the log2(auPRC/prior)
+                                for 5-fold cross validation is &nbsp</label>{{ job_output['avgps'] }}.
+                            </label>&nbsp
+                            <a href="#" data-bs-toggle="popover" data-bs-trigger="manual" data-bs-placement="right"
+                                data-bs-content="If the number of genes in the positive class is greater than 20,
+                                this metric reports the fold change of the area under the precision-recall curve
+                                (auPRC) over the prior auPRC expected by random chance. For example, a value of 1
+                                indicates that the model performs twice as good as a random ranking of genes.">
+                                <i class="fas fa-question-circle"></i>
+                            </a>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
@@ -169,7 +166,7 @@
                             <li>Known/Novel: Indicates whether the gene was part of the input gene list (therefore <strong>Known</strong>) or not (therefore <strong>Novel</strong>).</li>
                             </ul>
                         <p>Use the buttons on the top-right of the table to download the top predictions. Download the prediction probability of all the genes in the network as a tab-separated file at this link. 
-                            <a href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_probs_file']}}" class="btn btn-outline-success">Download All Predictions</a>
+                            <a href="/jobs/{{jobname}}/results/download/{{job_output['df_probs_file']}}" class="btn btn-outline-success">Download All Predictions</a>
                         </p>
 
                     </div>
@@ -184,7 +181,7 @@
                         <p>The table below shows network-based ML models trained on sets of genes associated with Gene Ontology Biological Process terms ranked by their similarity to the custom ML model trained on the input genes. See the Help page for more information.</p>
 
                         <p>Use the buttons on the top-right of the table to download the table of terms shown below. Download the similarity to all Biological Processes as a tab-separated file at this link.
-                            <a href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_GO_file']}}" class="btn btn-outline-success">Download All Similarities</a>
+                            <a href="/jobs/{{jobname}}/results/download/{{job_output['df_GO_file']}}" class="btn btn-outline-success">Download All Similarities</a>
                         </p>
                     </div>
                     {{job_output['df_GO'].head(500).reindex(columns=['Rank', 'ID', 'Name', 'Similarity']).to_html(index=False, classes='datatables table table-striped table-bordered, width: 100%;', table_id = "gotable")   |safe }}
@@ -197,7 +194,7 @@
                         <p>The table below shows network-based ML models trained on sets of genes associated with diseases in the DisGeNet database ranked by their similarity to the custom ML model trained on the input genes. See the Help page for more information.
 
                         <p>Use the buttons on the top-right of the table to download the table of terms shown below. Download the similarity to all Diseases as a tab-separated file at this link.
-                            <a href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_dis_file']}}" class="btn  btn-outline-success">Download All Similarities</a>
+                            <a href="/jobs/{{jobname}}/results/download/{{job_output['df_dis_file']}}" class="btn  btn-outline-success">Download All Similarities</a>
                         </p>
                     </div>
                     {{job_output['df_dis'].head(500).reindex(columns=['Rank', 'ID', 'Name', 'Similarity']).to_html(index=False, classes='datatables table table-striped table-bordered', table_id = "distable")   |safe }}
@@ -218,7 +215,7 @@
                             <p> The graph can be exported as a PNG or SVG file and the entire list of edges as a tab-separated file.
                                 <a id="download_as_png" class="btn btn-outline-success "  href="#">PNG</a>
                                 <a id="download_as_svg" class="btn btn-outline-success "  href="#">SVG</a>
-                                <a class="btn  btn-outline-success " " href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_edgelist_file']}}" >Edgelist</a>                               
+                                <a class="btn  btn-outline-success " " href="/jobs/{{jobname}}/results/download/{{job_output['df_edgelist_file']}}" >Edgelist</a>                               
                             </p>
                         </div>
                     </div>
@@ -333,7 +330,7 @@
                             <br><br>
                             To download the current subset of the table use the Copy, Excel or PDF buttons on the top right of the table. At most the table will display the top 500 results. 
                             To download the validation data as a tab separated values file click the following button:
-                            <a href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_convert_out_subset_file']}}" class="btn btn-outline-success">Download Validation Data</a>
+                            <a href="/jobs/{{jobname}}/results/download/{{job_output['df_convert_out_subset_file']}}" class="btn btn-outline-success">Download Validation Data</a>
                         </p>
                     </div>
 
@@ -375,6 +372,7 @@
                     </ul>
                 </div>
             </div>
+            {{ job_info }}
         </div>
 </div> <!-- redundant close div from above (so modal is not part of this snippet)-->
 {% endif %} {# job was found and had results #}

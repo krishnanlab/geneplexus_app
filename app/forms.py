@@ -1,7 +1,7 @@
 from app import app
 from flask_wtf import FlaskForm
 from wtforms.validators import DataRequired, Optional, Email
-from wtforms import FileField, SelectField, StringField, TextAreaField, SubmitField
+from wtforms import FileField, SelectField, StringField, TextAreaField, SubmitField, BooleanField
 
 
 class ModalForm(FlaskForm):
@@ -41,6 +41,8 @@ class ValidateForm(FlaskForm):
     features = SelectField('features', choices=features, default=None, validators=[DataRequired()])
     negativeclass = SelectField('negativeclass', choices=negativeclass, default=None, validators=[DataRequired()])
     notifyaddress = StringField('notifyaddress',validators=[Email()])
+
+    use_queue = BooleanField('use_queue', false_values=None)
 
     runbatch = SubmitField(label='Submit')
 

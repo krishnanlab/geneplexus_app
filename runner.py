@@ -9,7 +9,7 @@
 # from app.models import data_path, max_num_genes
 import argparse
 import os, sys
-from mljob import geneplexus
+from mljob import geneplexus_previous
 
 def read_input_gene_file(filename):
     """ convert file to array of input gene ids
@@ -97,9 +97,9 @@ if __name__ == "__main__":
         load_dotenv()
 
         # this is a module-level var that must be set prior to running
-        geneplexus.data_path = data_path
+        geneplexus_previous.data_path = data_path
         # run and save the html.  this command has by-product of also saving data files
-        html = geneplexus.run_and_render(input_genes, net_type=args.net_type,
+        html = geneplexus_previous.run_and_render(input_genes, net_type=args.net_type,
                 features=args.features, GSC=args.GSC, jobname=jobname,
                 output_path=output_path)
                
