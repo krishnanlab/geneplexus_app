@@ -657,7 +657,7 @@ def edit_profile():
         # This is a huge problem if this happens. Means that we got to this screen without being logged in
         return redirect('index')
     db.session.commit()
-    return redirect('edit_profile')
+    return render_template("edit_profile.html", **session_args)
 
 
 @app.route('/update_user', methods=['POST'])
