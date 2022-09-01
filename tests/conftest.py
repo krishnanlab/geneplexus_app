@@ -18,6 +18,7 @@ from app import app as flask_app
 from app import db as flask_db
 from config import TestConfig
 
+
 @pytest.fixture(scope='session')
 def app():
     flask_app.config.from_object(TestConfig)
