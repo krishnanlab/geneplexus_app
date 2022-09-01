@@ -1,7 +1,7 @@
 from time import sleep
 
 import pytest
-from os import path
+from os import path, environ
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -46,6 +46,7 @@ def try_get_element(driver, element_type: By, element_name: str, max_attempts: i
     return None
 
 @pytest.mark.dependency(name='modal_show')
+@pytest.mark.ui
 def test_ui_modal(driver):
     driver.get('http://127.0.0.1:5000/')
     geneBtn = try_get_element(driver, By.ID, 'geneBtn')
@@ -58,6 +59,7 @@ def test_ui_modal(driver):
     assert 'show' in modalClasses, 'Modal not showing'
 
 @pytest.mark.dependency(name='sample_insert', depends=['modal_show'])
+@pytest.mark.ui
 def test_ui_sample_button(driver):
     driver.get('http://127.0.0.1:5000/')
     try_get_element(driver, By.ID, 'geneBtn').click()
@@ -71,6 +73,7 @@ def test_ui_sample_button(driver):
     assert inputGeneText == exampleGenes, 'Example gene list button did not product expected results'
 
 @pytest.mark.dependency(name='upload_file', depends=['modal_show'])
+@pytest.mark.ui
 def test_ui_modal_upload(driver, example_gene_file):
     """ test opening model, clicking load buttons, pasting text and uploading from a file"""
 
@@ -97,6 +100,7 @@ def test_ui_modal_upload(driver, example_gene_file):
     assert inputGeneText == exampleGenes
 
 @pytest.mark.dependency(name='enter_genes', depends=['modal_show'])
+@pytest.mark.ui
 def test_ui_modal_entry(driver):
     driver.get('http://127.0.0.1:5000/')
     inputGeneBtn = try_get_element(driver, By.ID, 'geneBtn').click()
@@ -111,6 +115,7 @@ def test_ui_modal_entry(driver):
 
 
 @pytest.mark.dependency(name='download_file', depends=['modal_show'])
+@pytest.mark.ui
 def test_ui_modal_download(driver):
     driver.get('http://127.0.0.1:5000/')
     inputGeneBtn = try_get_element(driver, By.ID, 'geneBtn').click()
@@ -121,6 +126,7 @@ def test_ui_modal_download(driver):
     assert payload.status_code == 200, 'Sample download link returned a bad request status code: {}'.format(payload.status_code)
 
 @pytest.mark.dependency(name='test_clear', depends=['modal_show', 'sample_insert'])
+@pytest.mark.ui
 def test_ui_clear_input(driver):
     driver.get('http://127.0.0.1:5000/')
     try_get_element(driver, By.ID, 'geneBtn').click()
@@ -132,4 +138,4 @@ def test_ui_clear_input(driver):
     clearBtn.click()
     inputGeneArea = try_get_element(driver, By.ID, 'enterGenes')
     inputGeneText = inputGeneArea.get_attribute('value')
-    assert inputGeneText == '', 'Clear button did not clear out all text' 
+    assert inputGeneText == '', 'Clear button did not clear out all text'

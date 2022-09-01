@@ -81,4 +81,22 @@ def create_db():
     from app import db
     db.create_all()
 
+# Tests the app excluding Selenium tests
+@click.command('test')
+@with_appcontext
+def test_app():
+    import os
+    import pytest
+    args = ['--rootdir', './tests', '-m',  'not ui']
+    pytest.main(args)
+
+@click.command('test-ui')
+@with_appcontext
+def test_app_ui():
+    import pytest
+    args = ['-k', 'ui']
+    pytest.main(args)
+
 app.cli.add_command(create_db)
+app.cli.add_command(test_app)
+app.cli.add_command(test_app_ui)
