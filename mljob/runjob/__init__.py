@@ -116,8 +116,8 @@ def main(msg: func.QueueMessage) -> None:
     # the app uses slugify to remove slashes and periods 
     # join main website url with job name and guarantee exactly one slash between 
     # job name must _not_ start with a slash
-    
-    callback_url = Path(callback_url,jobname)
+
+    callback_url = str(Path(callback_url,jobname))
     
     json_data = json.dumps({'status' : results_store.read_status(jobname) })
     headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
