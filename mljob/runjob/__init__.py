@@ -10,7 +10,6 @@ import logging
 from os import getenv, path
 import requests, json
 from urllib.parse import urlparse
-from pathlib import Path
 from job_manager import job_status_codes
 
 import azure.functions as func
@@ -117,7 +116,8 @@ def main(msg: func.QueueMessage) -> None:
     # join main website url with job name and guarantee exactly one slash between 
     # job name must _not_ start with a slash
 
-    callback_url = str(Path(callback_url,jobname))
+
+    callback_url = path.join(callback_url,jobname)
     
     json_data = json.dumps({'status' : results_store.read_status(jobname) })
     headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
