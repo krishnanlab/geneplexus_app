@@ -1,4 +1,5 @@
-# add_file_share.sh  
+#! /bin/bash 
+# file_share.sh  
 # this is a temporary script to learn how the CLI can be used to add file share
 # to a function app.  This is necessary to connect the geneplexus data and job files
 # so the function app can read/write them.   The goal is to move this into the terraform 
