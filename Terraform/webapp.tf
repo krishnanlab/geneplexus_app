@@ -12,30 +12,6 @@ variable "mount_path"{
   default =  "/geneplexus_files"
 }
 
-# storage account for storing job and backend data, must have file shares 
-
-
-resource "azurerm_storage_account" "mldata" {
-  name                     = "${var.project}${var.env}storage"
-  resource_group_name      = azurerm_resource_group.main.name
-  location                 = azurerm_resource_group.main.location
-  account_tier             = "Premium"
-  account_replication_type = "LRS"
-  shared_access_key_enabled  = true
-  account_kind             = "FileStorage"
-  tags                     = local.common_tags
-}
-
-### this turns on 'AzureFiles' in the storage account above, for mounting in 
-# both this web app and the function app 
-resource "azurerm_storage_share" "mldata" {
-  name                 = "${var.project}${var.env}files"
-  storage_account_name = azurerm_storage_account.mldata.name
-  depends_on           = [azurerm_storage_account.mldata]
-  quota                = 50
-
-}
-
 
 resource "azurerm_service_plan" "gpapp" {
   name                = "${var.project}-${var.env}-appplan"
@@ -54,7 +30,7 @@ resource "azurerm_linux_web_app" "gpapp" {
     azurerm_storage_account.mldata
   ]
 
-  name                = "${var.project}-${var.env}"
+  name                = local.web_app_name
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
   service_plan_id     = azurerm_service_plan.gpapp.id
@@ -87,12 +63,26 @@ resource "azurerm_linux_web_app" "gpapp" {
         type = "SystemAssigned"
     }
 
+# note for DATABASE URI ssl mode options, see https://www.postgresql.org/docs/current/libpq-ssl.html
+# using 'require' does not insist on client side certificate but will encrypt
+
   app_settings = {
-    "DATA_PATH"="${var.mount_path}/data"
-    "JOB_PATH"= "${var.mount_path}/jobs"
-    "QUEUE_URL"="${azurerm_linux_function_app.ml_runner.default_hostname}/api/enqueue"
-    "SQLALCHEMY_DATABASE_URI"="sqlite:///test.db"
+    "DATA_PATH" = "${var.data_path}"
+    "JOBS_PATH" = "${var.jobs_path}"
+    "BASE_URL"  = "https://${local.web_app_name}.azurewebsites.net/"
+    "SQLALCHEMY_DATABASE_URI"="postgresql://${azurerm_postgresql_server.postgresql-server.administrator_login}%40${azurerm_postgresql_server.postgresql-server.name}:${var.postgresql-admin-password}@${azurerm_postgresql_server.postgresql-server.name}.postgres.database.azure.com:5432/${azurerm_postgresql_database.postgresql-db.name}?sslmode=require"  
+    "LOG_FILE"="/home/site/flask.log"
+    "QUEUE_URL"="https://${local.fn_app_name}.azurewebsites.net/api/enqueue"
+    "OAUTHLIB_RELAX_TOKEN_SCOPE"="1"
+    "GITHUB_ID"="${var.github_id_for_auth}"
+    "GITHUB_SECRET"="${var.github_secret_for_auth}"
+
+
   }
+
+  # some previous versions of these config variables saved while this is under development
+  # "QUEUE_URL"="${azurerm_linux_function_app.ml_runner.default_hostname}/api/enqueue"
+  # "SQLALCHEMY_DATABASE_URI"="sqlite:///test.db"
 
 }
 

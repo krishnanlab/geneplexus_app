@@ -4,13 +4,19 @@
 # existing resources
 variable "existing_storage_account_rg" {
   type = string
-
+  default = ""
 }
 
 variable "existing_storage_account_name" {
   type = string
-
+  default = ""
 }
+
+variable "existing_storage_account_share_name" {
+  type = string
+  default = ""
+}
+
 
 #####
 # project level variables (used to name and tag things)
@@ -119,6 +125,18 @@ variable "jobs_path" {
   default =  "/geneplexus_files/jobs"
 }
 
+variable "github_id_for_auth" {
+  type = string
+  description = "id from github after registering this app, default is empty string so app can be created before registering"
+  default =  ""
+}
+
+variable "github_secret_for_auth" {
+  type = string
+  description = "secret from github after registering this app, default is empty string so app can be created before registering"
+  default =  ""
+}
+
 
 ########## 
 #computed variables (locals)
@@ -133,5 +151,10 @@ locals {
     created_on = timestamp()
     id = random_string.random_id.result
   }
+
+  # calculate these here so they can be used without circular reference ('cycle' in TF terms)
+  web_app_name = "${var.project}-${var.env}"
+  fn_app_name  = "${var.project}-${var.env}-fn"
+
 }
 
