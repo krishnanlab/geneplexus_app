@@ -22,3 +22,11 @@ postgresql-admin-login =   enter a new admin name here
 postgresql-admin-password = enter a new password here
 database-instance-name =  "geneplexus_app"
 ipaddress-db-access =  add your computers IP address here
+
+data_path =  "/geneplexus_files/geneplexus_data"
+jobs_path =  "/geneplexus_files/jobs"
+
+# acquire these values from github by registering this 'app' with the home page URL
+github_id_for_auth = ""
+github_secret_for_auth = ""
+
