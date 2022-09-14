@@ -6,7 +6,7 @@ from mljob.job_manager import generate_job_id
 
 
 from werkzeug.exceptions import InternalServerError
-from flask import request, render_template, jsonify, session, redirect, url_for, flash, send_file, Markup, abort,send_from_directory
+from flask import request, render_template, session, redirect, url_for, flash, send_file, Markup, abort,send_from_directory
 from flask_login import login_user, logout_user, current_user, login_required
 from app.forms import ValidateForm, JobLookupForm
 
@@ -74,28 +74,6 @@ def public_results():
                            results=pub_results,
                            favorites = favorites,
                            **session_args)
-
-@login_required
-@app.route('/like_result', methods=['POST'])
-def like_result():
-    data = request.get_json()
-    like_status = None
-    cur_result = Result.query.filter_by(jobname=data['resultid']).first()
-    if cur_result is None:
-        return jsonify(f'Result with job name {data["resultid"]} does not exist'), 404
-    fav_check = FavoriteResult.query.filter_by(resultid=cur_result.id, userid=current_user.id).first()
-    if fav_check is None:
-        like_status = True
-        print('Adding new favorite for {}'.format(data['resultid']))
-        new_fav = FavoriteResult(userid=current_user.id, resultid=cur_result.id)
-        db.session.add(new_fav)
-        db.session.commit()
-    else:
-        like_status = False
-        print('Deleting new favorite for {}'.format(data['resultid']))
-        db.session.delete(fav_check)
-        db.session.commit()
-    return jsonify({'like_status': like_status}), 200
 
 @app.route('/favorite_results', methods=['GET'])
 def favorite_results():
@@ -289,92 +267,6 @@ def job(jobname):
 
 ##############
 
-@app.route("/jobs/<jobname>", methods = ["POST"])
-def _update_job(jobname):
-    """ update the job info and possibly notify of new jobs status.  Used by external job runner. 
-    if there is a job in the database, create a results file. 
-    :param jobname: name of job
-    :type jobname: string
-     """
-
-    print("callback! ")
-    # check job name 
-    jobname = job_manager.cloud_friendly_job_name(jobname)
-    if not results_store.exists(jobname):
-        app.logger.info(f"can't notify, job not found {jobname}")
-        return {f'no job found {jobname}': 404}, 404
-
-    # get status from request body. 
-    if request.is_json:
-        request_data = request.get_json()
-    else:
-        request_data = request.data()
-
-    print(request_data)    
-    job_status =  "Completed" # request_data.get('status')
-    job_config = results_store.read_config(jobname)
-    notifyaddress = job_config.get('notifyaddress')
-
-    msg = f"job status acknowledged"
-    resp = 200
-    notifier_resp = ""
-
-    # check if job is complete and has results
-    if job_manager.job_completed(jobname):
-        app.logger.info(f"job completed {jobname} creating results ")
-        ### COMPLETE!   CREATE DB RECORD
-        if Result.query.filter_by(jobname=jobname).first() is not None:
-            msg = f'Result with JobID {jobname} already has results'
-            resp = 405 # method not allowed, can't insert if it exists
-            app.logger.info(msg)
-        else:
-            print(f"looking up job record for {jobname}")
-            job_record = Job.query.filter_by(jobid=jobname).first()
-            if job_record is not None:   # only create results if there is job record.  If no record, this is not an error condition    
-                try:
-                    job_info = results_store.read_job_info(jobname) 
-                    app.logger.info(f"db: saving job {job_info}")
-
-                    new_result = Result(job = job_record,
-                        user = job_record.user,
-                        network = job_info.get('net_type'),
-                        feature = job_info['features'],
-                        negative = job_info['GSC'],
-                        p1 = job_info['avgps'][0],
-                        p2 = job_info['avgps'][1],
-                        p3 = job_info['avgps'][2],
-                        public = True
-                    )
-                    db.session.add(new_result)
-                    db.session.commit()
-                    app.logger.info(f"db: Results record created for {jobname}")
-
-
-                except Exception as e:                    
-                    msg = f"db: error creating result record for {jobname} : {e}"                
-                    resp = 400
-                    app.logger.error(msg)
-            else:
-                app.logger.info(f"db: no job record found, not saving results for {jobname}")
-                msg = "no job record to save results for"
-                resp = 405
-
-        ### JOB COMPLETE!  Notification
-        if notifyaddress:
-            notifier_resp = app.notifier.notify_completed(job_config)
-            app.logger.info(f"job complete status email initiated to {job_config['notifyaddress']} with response {notifier_resp}")
-
-    else:
-        app.logger.info(f"job callback {jobname} but not complete: {job_status}")
-
-        ### incomplete, notify anyway
-        if notifyaddress:
-            notifier_resp = app.notifier.notify(notifyaddress, job_config, job_status)
-            app.logger.info(f"job incomplete status email initiated to {job_config['notifyaddress']} with response {notifier_resp}")
-        
-    msg = f"{msg};{notifier_resp}"
-    return (jsonify({'notification response': msg}), resp)
-
 
 @app.route("/jobs/<jobname>/results",methods=['GET'])
 def jobresults_content(jobname):
@@ -472,11 +364,6 @@ def uploads(filename):
     # Returning file from appended path
     return send_file(uploads, as_attachment=True)
 
-@app.route('/get_slugified_text', methods=['POST'])
-def get_slugified_text():
-    prefix = request.get_json()['prefix']
-    clean_text = slugify(prefix.lower())
-    return jsonify(success=True, clean_text=clean_text, prefix_too_long=(len(clean_text) > app.config['MAX_PREFIX_LENGTH']), too_long_by=(len(clean_text) - app.config['MAX_PREFIX_LENGTH']))
 
 
 @app.route("/run_model", methods=['POST'])
@@ -557,55 +444,6 @@ def run_model():
 
     # we reach here if the submit button value is neither possibility
     return("invalid form data ")
-
-
-@app.route("/clearinput", methods=['GET','POST'])
-def clearinput():
-    try:
-        session.pop('genes')
-    except KeyError:
-        pass
-
-    return jsonify(success=True)
-
-
-@app.route("/postgenes", methods=['GET','POST'])
-def postgenes():
-
-    try:
-        session.pop('genes')
-    except KeyError:
-        pass
-
-
-    genes = request.form['genes']
-    no_quotes = genes.translate(str.maketrans({"'": None}))  # remove any single quotes if they exist
-    # input_genes_list = no_quotes.split(",") # turn into a list
-    input_genes_list = no_quotes.splitlines()  # turn into a list
-    input_genes_upper = np.array([item.upper() for item in input_genes_list])
-    session['genes'] = [x.strip(' ') for x in input_genes_upper] # remove any whitespace
-
-    return jsonify(success=True, filename=None)
-
-
-@app.route("/uploadgenes", methods=['POST'])
-def uploadgenes():
-
-    # remove genes from session
-    session.pop('genes', None)
-
-    file = request.files['formData'].filename
-    try:
-        string = request.files['formData'].stream.read().decode("UTF8")
-        no_quotes = string.translate(str.maketrans({"'": None}))
-        input_genes_list = no_quotes.splitlines()  # turn into a list
-        input_genes_upper = np.array([item.upper() for item in input_genes_list])
-        # remove any whitespace
-        toReturn = [x.strip(' ') for x in input_genes_upper]
-        return jsonify(success=True, data=toReturn)
-    except Exception as e:
-        print(e)
-        return jsonify(success=False, filename=None)
 
 @app.route('/signup', methods=['POST'])
 def signup():
@@ -757,33 +595,3 @@ def get_or_set_job(jobname):
             db.session.add(to_add)
             db.session.commit()
     return job_info, job_output
-
-@login_required
-@app.route('/update_result', methods=['POST'])
-def update_result():
-    data = request.get_json()
-    result_check = Result.query.filter_by(jobname=data['jobname']).first()
-    if result_check is not None:
-        return jsonify(f'Result with JobID {data["jobname"]} already has results'), 400
-    result_check = Job.query.filter_by(jobid=data['jobname']).first()
-    if result_check is None:
-        return jsonify(f'Job with JobID {data["jobname"]} does not exists'), 400
-    try:
-        new_result = Result(
-            job = result_check,
-            user = result_check.user,
-            network = data['network'],
-            feature = data['feature'],
-            negative = data['negative'],
-            p1 = data['avgps'][0],
-            p2 = data['avgps'][1],
-            p3 = data['avgps'][2],
-            public = True,
-        )
-        print('New result')
-        print(new_result)
-        db.session.add(new_result)
-        db.session.commit()
-        return jsonify(f'Job with JobID {data["jobname"]} has results created'), 200
-    except Exception as e:
-        return jsonify(str(e)), 400
