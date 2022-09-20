@@ -33,16 +33,15 @@ data "azurerm_storage_share" "existing_storage_account_share" {
 data "azurerm_storage_account_sas" "existing_storage_account" {
   connection_string = data.azurerm_storage_account.existing_storage_account.primary_connection_string
   https_only        = true
-  signed_version    = "2017-07-29"
 
   resource_types {
     service   = true
-    container = false
-    object    = false
+    container = true
+    object    = true
   }
 
   services {
-    blob  = true
+    blob  = false
     queue = false
     table = false
     file  = true
@@ -95,16 +94,15 @@ resource "azurerm_storage_share" "mldata" {
 data "azurerm_storage_account_sas" "mldata" {
   connection_string = azurerm_storage_account.mldata.primary_connection_string
   https_only        = true
-  signed_version    = "2017-07-29"
 
   resource_types {
     service   = true
-    container = false
-    object    = false
+    container = true
+    object    = true
   }
 
   services {
-    blob  = true
+    blob  = false
     queue = false
     table = false
     file  = true
@@ -133,18 +131,35 @@ data "azurerm_storage_account_sas" "mldata" {
 # azcopy copy '<local-directory-path>/*' 'https://<storage-account-name>.file.core.windows.net/<file-share-name>/<directory-path><SAS-token>'
 # assume source data is in folder "geneplexus_data" and app-mounted storage also uses geneplexus_data for back-end data
 
-resource "null_resource" "copy_mldata" {
-    provisioner "local-exec" {
-        command= <<CMD
-azcopy copy "https://${data.azurerm_storage_account.existing_storage_account.name}.file.core.windows.net/${data.azurerm_storage_share.existing_storage_account_share.name}/geneplexus_data${data.azurerm_storage_account_sas.existing_storage_account.sas}" \
-    "https://${azurerm_storage_account.mldata.name}.file.core.windows.net/${azurerm_storage_share.mldata.name}${data.azurerm_storage_account_sas.mldata.sas}" --recursive
-        CMD
-    }
-}
+# resource "null_resource" "copy_mldata" {
+
+#   depends_on = [data.azurerm_storage_account.existing_storage_account,
+#                 data.azurerm_storage_share.existing_storage_account_share,
+#                 azurerm_storage_account.mldata,
+#                 azurerm_storage_share.mldata,
+#                 data.azurerm_storage_account_sas.mldata,
+#                 data.azurerm_storage_account_sas.existing_storage_account
+#   ]
+
+#   triggers = { "SASstrings" = "${data.azurerm_storage_account_sas.mldata.sas} ${data.azurerm_storage_account_sas.existing_storage_account.sas}"}
+  
+#   provisioner "local-exec" {
+#         command= <<CMD
+#      azcopy copy \
+#     'https://${data.azurerm_storage_account.existing_storage_account.name}.file.core.windows.net/${data.azurerm_storage_share.existing_storage_account_share.name}/geneplexus_data${data.azurerm_storage_account_sas.existing_storage_account.sas}' \
+#     'https://${azurerm_storage_account.mldata.name}.file.core.windows.net/${azurerm_storage_share.mldata.name}/geneplexus_data${data.azurerm_storage_account_sas.mldata.sas}' --recursive
+#         CMD
+#     }
+# }
 
 #########
 # create job folder
 # the storage share has a folder for storing job outputs
+
+# az storage directory create --name jobs \
+#                           --share-name geneplexusmldevfiles \
+#                            --account-name  geneplexusmldevstorage \
+#                            --sas-token $dest_sas
 
 resource "null_resource" "create_job_folder" {
     provisioner "local-exec" {
@@ -152,22 +167,56 @@ resource "null_resource" "create_job_folder" {
 az storage directory create --name "jobs" \
 --account-name ${azurerm_storage_account.mldata.name} \
 --share-name ${azurerm_storage_share.mldata.name} \
---sas-token '${data.azurerm_storage_account_sas.mldata.sas}'
+--sas-token ${data.azurerm_storage_account_sas.mldata.sas}
         CMD
     }
 }
 
-output "cmd_to_make_jobs_folder" {
-  value =  <<CMD
-az storage directory create --name "jobs" \
+resource "null_resource" "create_data_folder" {
+  
+    depends_on = [data.azurerm_storage_account.existing_storage_account, 
+      data.azurerm_storage_account_sas.existing_storage_account,
+      azurerm_storage_account.mldata,
+      data.azurerm_storage_account_sas.mldata
+    ]
+
+    provisioner "local-exec" {
+        command= <<CMD
+az storage directory create --name "geneplexus_data" \
 --account-name ${azurerm_storage_account.mldata.name} \
 --share-name ${azurerm_storage_share.mldata.name} \
---sas-token '${data.azurerm_storage_account_sas.mldata.sas}'
+--sas-token ${data.azurerm_storage_account_sas.mldata.sas}
+
+azcopy copy \
+'https://${data.azurerm_storage_account.existing_storage_account.name}.file.core.windows.net/${data.azurerm_storage_share.existing_storage_account_share.name}/geneplexus_data${data.azurerm_storage_account_sas.existing_storage_account.sas}' \
+'https://${azurerm_storage_account.mldata.name}.file.core.windows.net/${azurerm_storage_share.mldata.name}${data.azurerm_storage_account_sas.mldata.sas}' --recursive
+
         CMD
-    
-  description = "run this if the provisioner doesn't work"
-  sensitive = true
+    }
 }
+
+output "cmd_to_copy_files" {
+  value = <<CMD
+azcopy copy \
+'https://${data.azurerm_storage_account.existing_storage_account.name}.file.core.windows.net/${data.azurerm_storage_share.existing_storage_account_share.name}/geneplexus_data${data.azurerm_storage_account_sas.existing_storage_account.sas}' \
+'https://${azurerm_storage_account.mldata.name}.file.core.windows.net/${azurerm_storage_share.mldata.name}${data.azurerm_storage_account_sas.mldata.sas}' --recursive
+            CMD
+
+  sensitive = true
+  description = "azcopy command to copy data backend from known azure file location to file share for this environment"
+}
+
+# output "cmd_to_make_jobs_folder" {
+#   value =  <<CMD
+# az storage directory create --name "jobs" \
+# --account-name ${azurerm_storage_account.mldata.name} \
+# --share-name ${azurerm_storage_share.mldata.name} \
+# --sas-token ${data.azurerm_storage_account_sas.mldata.sas}
+#         CMD
+    
+#   description = "run this if the provisioner doesn't work"
+#   sensitive = true
+# }
 
 
 output "AZSA" {
@@ -175,6 +224,10 @@ output "AZSA" {
   description = "storage account name used for machine learning"
 }
 
+output "AZSHARE" {
+  value = azurerm_storage_share.mldata.name
+  description = "name of storage share"
+}
 
 # this code is currently living in functionapp.tf
 

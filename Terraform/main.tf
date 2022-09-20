@@ -19,6 +19,9 @@
 ############
 # resources
 
+data "azurerm_subscription" "main" {
+}
+
 resource "azurerm_resource_group" "main" {
   name     = "${var.project}-${var.env}-rg"
   location = var.location
@@ -30,7 +33,6 @@ output "AZRG" {
   value = azurerm_resource_group.main.name
   description = "resource group"
 }
-
 
 
 output "function_app_id" {

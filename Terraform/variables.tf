@@ -83,10 +83,15 @@ variable "database-instance-name" {
   description = "name of the database, not the server, required"
 }
 
-variable "ipaddress-db-access" {
-  type = string
-  description = "ip address to acces db for psql"
-}
+# this is a developmen setting, to allow db access outside of the app
+# you can also set access to all azure services, and access from cloud shell during dev
+# the FW rules should allow access from the the web app for create-db command
+# variable "ipaddress-db-access" {
+#   type = string
+#   description = "ip address to acces db for psql"
+#   default = "0.0.0.0"
+
+# }
 
 
 
@@ -110,7 +115,20 @@ variable "python_enable_debug_logging" {
 variable "function_app_sku_name" {
   type = string
   description = "Function SKU for Elastic or Consumption function app plans (Y1, EP1, EP2, and EP3)"
-  default =  "Y1"
+  # Geneplexus needs at least 7gb to run and perhaps more
+  default =  "EP3"
+}
+
+variable "function_maximum_elastic_worker_count" {
+  type = number
+  description = "Function app maximum workers allowed to scale to for Elastic or Consumption function app plans"
+  default =  10
+}
+
+variable "mount_path" {
+  type = string
+  description = "the base path where jobs are stored"
+  default =  "/geneplexus_files"
 }
 
 variable "data_path" {
@@ -148,7 +166,6 @@ locals {
     created_by = var.userid
     project   = var.project
     environment = var.env
-    created_on = timestamp()
     id = random_string.random_id.result
   }
 
