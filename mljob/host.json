@@ -1,7 +1,6 @@
 {
-  "functions": [ "check","testfn","enqueue","runjob" ],
+  "functions": [ "check","enqueue","runjob" ],
   "version": "2.0",
-  "functionTimeout": "00:20:00",
   "logging": {
     "fileLoggingMode": "always",
       "logLevel": {
