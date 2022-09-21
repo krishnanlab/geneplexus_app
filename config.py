@@ -28,6 +28,8 @@ class BaseConfig(object):
 
     # used in the JSON sent to the trigger, that are sent to container launcher
     JOB_CONTAINER_FILE_MOUNT = os.getenv('JOB_CONTAINER_FILE_MOUNT', '' )
+
+    SERIALIZER_SECRET = os.getenv('SERIALIZER_SECRET', 'thisisasecret')
     
     JOB_URL = os.getenv('JOB_URL', '')  # the URL for the logic app trigger
 

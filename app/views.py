@@ -656,14 +656,14 @@ def send_reset():
     if cur_user.email is None or cur_user.email == '':
         # ALSO do nothing but say you are sending an email. This is problematic but when it comes to information and security it should be this way
         pass
-    url_token = URLSafeTimedSerializer('this is a secret')
+    url_token = URLSafeTimedSerializer(app.config['SERIALIZER_SECRET'])
     url_string = url_token.dumps([cur_user.username, cur_user.password])
     print(url_string)
     return render_template('index.html')
 
 @app.route('/reset_password/<string:url_hash>')
 def reset_password(url_hash):
-    serializer = URLSafeTimedSerializer('this is a secret')
+    serializer = URLSafeTimedSerializer(app.config['SERIALIZER_SECRET'])
     try:
         username, password = serializer.loads(url_hash, max_age=42300)
     except Exception as e:
