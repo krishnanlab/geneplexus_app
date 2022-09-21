@@ -14,12 +14,17 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(64), unique=True, nullable=False)
     name = db.Column(db.String(64))
     email = db.Column(db.String(64))
-    password = db.Column(db.String(64))
+    password = db.Column(db.String(128))
+    security_token = db.Column(db.String(64), nullable=True)
+    token_expiration = db.Column(db.DateTime, nullable=True)
 
     def __init__(self, username, password, email, name):
         self.username = username
         self.email = email
         self.name = name
+        self.password = generate_password_hash(password)
+    
+    def update_password(self, password):
         self.password = generate_password_hash(password)
 
     def __repr__(self):
@@ -71,7 +76,7 @@ class Result(db.Model):
     description = db.Column(db.String(512), default='')
 
     userid = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    jobname = db.Column(db.Integer, db.ForeignKey('jobs.jobid'))
+    jobname = db.Column(db.String(64), db.ForeignKey('jobs.jobid'))
 
     user = db.relationship('User', backref=db.backref('results', lazy=True))
     job = db.relationship('Job', backref=db.backref('results', lazy=True))

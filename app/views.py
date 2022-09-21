@@ -3,6 +3,7 @@ from slugify.slugify import slugify
 # from mljob.jobs import path_friendly_jobname, launch_job, retrieve_job_folder,retrieve_results,job_info_list,valid_results_filename,results_file_dir,job_exists,retrieve_job_info,generate_job_id, job_status_codes, retrieve_job_outputs
 from app import app, db, results_store, job_manager
 from mljob.job_manager import generate_job_id
+from itsdangerous import URLSafeSerializer, URLSafeTimedSerializer
 
 
 from werkzeug.exceptions import InternalServerError
@@ -11,6 +12,8 @@ from flask_login import login_user, logout_user, current_user, login_required
 from app.forms import ValidateForm, JobLookupForm
 
 from flask_dance.contrib.github import github
+
+from itsdangerous import URLSafeSerializer
 
 from app.models import *
 from app.validation_utils import intial_ID_convert, make_validation_df
@@ -621,7 +624,6 @@ def signup():
         flash('Passwords did not match', 'error')
         return redirect('index')
     user = User(form_username, form_pass, form_email, form_name)
-
     db.session.add(user)
     db.session.commit()
     login_user(user)
@@ -643,6 +645,56 @@ def login():
 def logout():
     logout_user()
     return redirect('index')
+
+@app.route('/send_reset', methods=['POST'])
+def send_reset():
+    form_username = request.form.get('username')
+    cur_user = User.query.filter_by(username=form_username).first()
+    if cur_user is None:
+        # Do nothing but say you are sending an email if the account exists
+        pass
+    if cur_user.email is None or cur_user.email == '':
+        # ALSO do nothing but say you are sending an email. This is problematic but when it comes to information and security it should be this way
+        pass
+    url_token = URLSafeTimedSerializer('this is a secret')
+    url_string = url_token.dumps([cur_user.username, cur_user.password])
+    print(url_string)
+    return render_template('index.html')
+
+@app.route('/reset_password/<string:url_hash>')
+def reset_password(url_hash):
+    serializer = URLSafeTimedSerializer('this is a secret')
+    try:
+        username, password = serializer.loads(url_hash, max_age=42300)
+    except Exception as e:
+        flash('Invalid URL', 'error')
+        return render_template('index.html')
+    user_try = User.query.filter_by(username=username, password=password).first()
+    if user_try is None:
+        flash('Invalid URL', 'error')
+        return render_template('index.html')
+    if user_try.password == password:
+        return render_template('reset_password.html', username=username)
+    return render_template('index.html')
+
+@app.route('/change_password', methods=['POST'])
+def change_password():
+    form_username = request.form.get('username')
+    form_password = request.form.get('password')
+    form_verify = request.form.get('pass_verify')
+    if form_password != form_verify:
+        flash('Passwords didn\' match', 'error')
+        return render_template('index.html')
+    cur_user = User.query.filter_by(username=form_username).first()
+    if cur_user is None:
+        flash('Something went terribly wrong', 'error') #Change this later, debug message for now
+        return render_template('index.html')
+    cur_user.update_password(form_password)
+    db.session.commit()
+    flash('Successfully updated password', 'success')
+    return render_template('index.html')
+
+
 
 @app.route('/edit_profile', methods=['GET', 'POST'])
 def edit_profile():
