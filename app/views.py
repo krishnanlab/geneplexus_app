@@ -648,34 +648,34 @@ def logout():
 
 @app.route('/send_reset', methods=['POST'])
 def send_reset():
-    form_username = request.form.get('username')
-    cur_user = User.query.filter_by(username=form_username).first()
-    if cur_user is None:
-        # Do nothing but say you are sending an email if the account exists
-        pass
-    if cur_user.email is None or cur_user.email == '':
-        # ALSO do nothing but say you are sending an email. This is problematic but when it comes to information and security it should be this way
-        pass
-    url_token = URLSafeTimedSerializer(app.config['SERIALIZER_SECRET'])
-    url_string = url_token.dumps([cur_user.username, cur_user.password])
-    print(url_string)
+    form_email = request.form.get('reset_email')
+    cur_user = User.query.filter_by(email=form_email).first()
+    flash('If the account exists, an email will be mailed with a link to reset shortly', 'success')
+    if cur_user is None or cur_user.email is None or cur_user.email == '':
+        return render_template('index.html')
+    url_token = URLSafeSerializer(app.config['SERIALIZER_SECRET'])
+    url_string = url_token.dumps([cur_user.username])
+    print('\n')
+    print(url_string) # Replace this with emailing function
+    print('\n')
     return render_template('index.html')
 
-@app.route('/reset_password/<string:url_hash>')
+@app.route('/reset_password/<url_hash>')
 def reset_password(url_hash):
-    serializer = URLSafeTimedSerializer(app.config['SERIALIZER_SECRET'])
+    serializer = URLSafeSerializer(app.config['SERIALIZER_SECRET'])
     try:
-        username, password = serializer.loads(url_hash, max_age=42300)
+        username = serializer.loads(url_hash, max_age=app.config['PASSWORD_RESET_TIMEOUT'])[0]
     except Exception as e:
+        print(e)
+        print('Serializer error')
         flash('Invalid URL', 'error')
         return render_template('index.html')
-    user_try = User.query.filter_by(username=username, password=password).first()
+    print(username)
+    user_try = User.query.filter_by(username=username).first()
     if user_try is None:
         flash('Invalid URL', 'error')
         return render_template('index.html')
-    if user_try.password == password:
-        return render_template('reset_password.html', username=username)
-    return render_template('index.html')
+    return render_template('reset_password.html', username=username)
 
 @app.route('/change_password', methods=['POST'])
 def change_password():

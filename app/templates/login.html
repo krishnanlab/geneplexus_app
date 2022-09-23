@@ -130,8 +130,8 @@
                 <div class="container">
                     <form action="{{ url_for('send_reset') }}" method="POST">
                         <div class="mb-3 row">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="username" name="username" required>
+                            <label for="reset_email" class="form-label">Email</label>
+                            <input type="text" class="form-control" id="reset_email" name="reset_email" required>
                         </div>
                         <div class="row justify-content-center">
                             <button type="submit" class="btn btn-primary col-5">Send Reset Email</button>
