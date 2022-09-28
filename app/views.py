@@ -1,7 +1,8 @@
 from flask.helpers import make_response
 from slugify.slugify import slugify
 # from mljob.jobs import path_friendly_jobname, launch_job, retrieve_job_folder,retrieve_results,job_info_list,valid_results_filename,results_file_dir,job_exists,retrieve_job_info,generate_job_id, job_status_codes, retrieve_job_outputs
-from app import app, db, results_store, job_manager
+from app import results_store, job_manager
+from flask import current_app
 from mljob.job_manager import generate_job_id
 from itsdangerous import URLSafeSerializer, URLSafeTimedSerializer
 
@@ -22,39 +23,39 @@ import os
 import numpy as np
 import pandas as pd
 
-@app.route("/", methods=['GET'])
-@app.route("/index", methods=['GET'])
+@current_app.route("/", methods=['GET'])
+@current_app.route("/index", methods=['GET'])
 def index():
     if request.method == 'GET':
         session_args = create_sidenav_kwargs()
         return render_template("index.html", **session_args)
 
-@app.route("/geneset", methods=['GET'])
+@current_app.route("/geneset", methods=['GET'])
 def geneset():
     if request.method == 'GET':
         session_args = create_sidenav_kwargs()
         return render_template("validation.html", **session_args)
 
 
-@app.route("/about", methods=['GET'])
+@current_app.route("/about", methods=['GET'])
 def about():
     if request.method == 'GET':
         session_args = create_sidenav_kwargs()
         return render_template("about.html", **session_args)
 
 
-@app.route("/help", methods=['GET'])
+@current_app.route("/help", methods=['GET'])
 def help():
     if request.method == 'GET':
         session_args = create_sidenav_kwargs()
         return render_template("help.html", **session_args)
 
-@app.route("/contact", methods=['GET'])
+@current_app.route("/contact", methods=['GET'])
 def contact():
     session_args = create_sidenav_kwargs()
     return render_template("contact.html", **session_args)
 
-@app.route('/public_results', methods=['GET'])
+@current_app.route('/public_results', methods=['GET'])
 def public_results():
     session_args = create_sidenav_kwargs()
     pub_results = Result.query.filter_by(public=True).join(User, Result.userid == User.id)\
@@ -79,7 +80,7 @@ def public_results():
                            **session_args)
 
 @login_required
-@app.route('/like_result', methods=['POST'])
+@current_app.route('/like_result', methods=['POST'])
 def like_result():
     data = request.get_json()
     like_status = None
@@ -100,7 +101,7 @@ def like_result():
         db.session.commit()
     return jsonify({'like_status': like_status}), 200
 
-@app.route('/favorite_results', methods=['GET'])
+@current_app.route('/favorite_results', methods=['GET'])
 def favorite_results():
     session_args = create_sidenav_kwargs()
     pub_results = Result.query.filter_by(public=True).all()
@@ -119,7 +120,7 @@ def favorite_results():
                            **session_args)
 
 @login_required
-@app.route('/my_results', methods=['GET'])
+@current_app.route('/my_results', methods=['GET'])
 def my_results():
     session_args = create_sidenav_kwargs()
     my_results = Result.query.filter_by(userid=current_user.id).all()
@@ -149,7 +150,7 @@ def is_result_available_to_user(resultid, user):
             return False
     return True
     
-@app.route('/result/<resultid>', methods=['GET'])
+@current_app.route('/result/<resultid>', methods=['GET'])
 def result(resultid):
     session_args = create_sidenav_kwargs()
     cur_results = get_results_for_user(resultid, current_user)
@@ -169,7 +170,7 @@ def result(resultid):
                             **session_args)
 
 @login_required
-@app.route('/update_result_visibility', methods=['POST'])
+@current_app.route('/update_result_visibility', methods=['POST'])
 def update_result_visibility():
     data = request.form
     if 'resultid' not in data:
@@ -184,7 +185,7 @@ def update_result_visibility():
     return redirect(url_for('result', resultid=data['resultid']))
 
 @login_required
-@app.route('/update_result_description', methods=['POST'])
+@current_app.route('/update_result_description', methods=['POST'])
 def update_result_description():
     if 'description' not in request.form:
         flash('Could not find a description', 'error')
@@ -199,14 +200,14 @@ def update_result_description():
     return redirect(url_for('job', jobname=request.form['resultid']))
 
 
-@app.route("/jobs/", methods=['GET', 'POST'])
+@current_app.route("/jobs/", methods=['GET', 'POST'])
 def jobs():
     """ list jobs in session, show form, or show message from submit"""
     form = JobLookupForm(request.form)
     jobname = form.jobname.data
 
     if request.method == 'POST' and form.lookup.data:
-        if results_store.exists(jobname): #   retrieve_job_folder(jobname, app.config):
+        if results_store.exists(jobname): #   retrieve_job_folder(jobname, current_app.config):
             return(redirect(url_for('job',jobname=jobname)))
         else:
             flash(f"Sorry, the job '{jobname}'' was not found")
@@ -258,7 +259,7 @@ def html_output_table(df, id = "", row_limit = 500):
         return("")
     
 
-@app.route("/jobs/<jobname>", methods=['GET'])
+@current_app.route("/jobs/<jobname>", methods=['GET'])
 def job(jobname):
     """ show info about job: results if there are some but otherwise basic job information"""
     # sanitize.  if this is an actual jobname this will be idempotent
@@ -269,10 +270,10 @@ def job(jobname):
         flash(f'Result "{jobname}" either does not exist or is private', 'error')
         return redirect(url_for('index'))
 
-    job_info = results_store.read_job_info(jobname) # retrieve_job_info(jobname, app.config)
+    job_info = results_store.read_job_info(jobname) # retrieve_job_info(jobname, current_app.config)
 
     if job_info and job_info['has_results']:
-        job_output = results_store.read(jobname) # retrieve_job_outputs(jobname, app.config)
+        job_output = results_store.read(jobname) # retrieve_job_outputs(jobname, current_app.config)
 
     else:
         job_output = {}
@@ -292,7 +293,7 @@ def job(jobname):
 
 ##############
 
-@app.route("/jobs/<jobname>", methods = ["POST"])
+@current_app.route("/jobs/<jobname>", methods = ["POST"])
 def _update_job(jobname):
     """ update the job info and possibly notify of new jobs status.  Used by external job runner. 
     if there is a job in the database, create a results file. 
@@ -304,7 +305,7 @@ def _update_job(jobname):
     # check job name 
     jobname = job_manager.cloud_friendly_job_name(jobname)
     if not results_store.exists(jobname):
-        app.logger.info(f"can't notify, job not found {jobname}")
+        current_app.logger.info(f"can't notify, job not found {jobname}")
         return {f'no job found {jobname}': 404}, 404
 
     # get status from request body. 
@@ -324,19 +325,19 @@ def _update_job(jobname):
 
     # check if job is complete and has results
     if job_manager.job_completed(jobname):
-        app.logger.info(f"job completed {jobname} creating results ")
+        current_app.logger.info(f"job completed {jobname} creating results ")
         ### COMPLETE!   CREATE DB RECORD
         if Result.query.filter_by(jobname=jobname).first() is not None:
             msg = f'Result with JobID {jobname} already has results'
             resp = 405 # method not allowed, can't insert if it exists
-            app.logger.info(msg)
+            current_app.logger.info(msg)
         else:
             print(f"looking up job record for {jobname}")
             job_record = Job.query.filter_by(jobid=jobname).first()
             if job_record is not None:   # only create results if there is job record.  If no record, this is not an error condition    
                 try:
                     job_info = results_store.read_job_info(jobname) 
-                    app.logger.info(f"db: saving job {job_info}")
+                    current_app.logger.info(f"db: saving job {job_info}")
 
                     new_result = Result(job = job_record,
                         user = job_record.user,
@@ -350,43 +351,43 @@ def _update_job(jobname):
                     )
                     db.session.add(new_result)
                     db.session.commit()
-                    app.logger.info(f"db: Results record created for {jobname}")
+                    current_app.logger.info(f"db: Results record created for {jobname}")
 
 
                 except Exception as e:                    
                     msg = f"db: error creating result record for {jobname} : {e}"                
                     resp = 400
-                    app.logger.error(msg)
+                    current_app.logger.error(msg)
             else:
-                app.logger.info(f"db: no job record found, not saving results for {jobname}")
+                current_app.logger.info(f"db: no job record found, not saving results for {jobname}")
                 msg = "no job record to save results for"
                 resp = 405
 
         ### JOB COMPLETE!  Notification
         if notifyaddress:
-            notifier_resp = app.notifier.notify_completed(job_config)
-            app.logger.info(f"job complete status email initiated to {job_config['notifyaddress']} with response {notifier_resp}")
+            notifier_resp = current_app.notifier.notify_completed(job_config)
+            current_app.logger.info(f"job complete status email initiated to {job_config['notifyaddress']} with response {notifier_resp}")
 
     else:
-        app.logger.info(f"job callback {jobname} but not complete: {job_status}")
+        current_app.logger.info(f"job callback {jobname} but not complete: {job_status}")
 
         ### incomplete, notify anyway
         if notifyaddress:
-            notifier_resp = app.notifier.notify(notifyaddress, job_config, job_status)
-            app.logger.info(f"job incomplete status email initiated to {job_config['notifyaddress']} with response {notifier_resp}")
+            notifier_resp = current_app.notifier.notify(notifyaddress, job_config, job_status)
+            current_app.logger.info(f"job incomplete status email initiated to {job_config['notifyaddress']} with response {notifier_resp}")
         
     msg = f"{msg};{notifier_resp}"
     return (jsonify({'notification response': msg}), resp)
 
 
-@app.route("/jobs/<jobname>/results",methods=['GET'])
+@current_app.route("/jobs/<jobname>/results",methods=['GET'])
 def jobresults_content(jobname):
     """ this is not longer user, not generating static html results  """
     job_url = url_for('job', jobname=jobname)
     return(f'<html><body><h3 style="padding-top:50px">For results, see <a href="{job_url}">{job_url}</a></h3></body><html>')
     
 
-@app.route("/jobs/<jobname>/results/download/<results_file_name>",methods=['GET'])
+@current_app.route("/jobs/<jobname>/results/download/<results_file_name>",methods=['GET'])
 def jobresults_download(jobname,results_file_name):
     """get the contents of one of the results outputs and iniate a download.  If no file name or results type is sent
     as a parameter, by default just sent the rendered html.  
@@ -407,7 +408,7 @@ def jobresults_download(jobname,results_file_name):
 
 
 
-@app.route("/results", methods=['GET','POST'])
+@current_app.route("/results", methods=['GET','POST'])
 def results():
 
     if request.method == 'GET':
@@ -416,7 +417,7 @@ def results():
 
         return render_template("results.html")
 
-@app.route("/cleargenes", methods=['POST'])
+@current_app.route("/cleargenes", methods=['POST'])
 def cleargenes():
     session.pop('genes', None)
     session.pop('pos', None)
@@ -424,11 +425,11 @@ def cleargenes():
     session.pop('table_summary', None)
     session.pop('jobid', None)
 
-@app.route("/validate", methods=['GET','POST'])
+@current_app.route("/validate", methods=['GET','POST'])
 def validate():
     form = ValidateForm()
 
-    app.logger.info('validate button')
+    current_app.logger.info('validate button')
 
     string = request.form['genesInput'] # read in the file
     # convert the FileStorage object to a string
@@ -468,21 +469,21 @@ def validate():
     #                        validate_table=df_convert_out.to_html(index=False,
     #                        classes='table table-striped table-bordered" id = "validatetable'))
 
-@app.route('/uploads/<path:filename>', methods=['GET', 'POST'])
+@current_app.route('/uploads/<path:filename>', methods=['GET', 'POST'])
 def uploads(filename):
     # Appending app path to upload folder path within app root folder
-    uploads = os.path.join(app.root_path, 'static', filename)
+    uploads = os.path.join(current_app.root_path, 'static', filename)
     # Returning file from appended path
     return send_file(uploads, as_attachment=True)
 
-@app.route('/get_slugified_text', methods=['POST'])
+@current_app.route('/get_slugified_text', methods=['POST'])
 def get_slugified_text():
     prefix = request.get_json()['prefix']
     clean_text = slugify(prefix.lower())
-    return jsonify(success=True, clean_text=clean_text, prefix_too_long=(len(clean_text) > app.config['MAX_PREFIX_LENGTH']), too_long_by=(len(clean_text) - app.config['MAX_PREFIX_LENGTH']))
+    return jsonify(success=True, clean_text=clean_text, prefix_too_long=(len(clean_text) > current_app.config['MAX_PREFIX_LENGTH']), too_long_by=(len(clean_text) - current_app.config['MAX_PREFIX_LENGTH']))
 
 
-@app.route("/run_model", methods=['POST'])
+@current_app.route("/run_model", methods=['POST'])
 def run_model():
     """post-only route to run model locally or trigger cloud, depending on button """
     form = ValidateForm()
@@ -511,8 +512,8 @@ def run_model():
     # the two fields together.  Otherwise the jobname is the jobid
     if form.prefix.data != '':
         friendly_prefix = slugify(form.prefix.data.lower())
-        if len(friendly_prefix) > app.config['MAX_PREFIX_LENGTH']:
-            friendly_prefix = friendly_prefix[:app.config['MAX_PREFIX_LENGTH']]
+        if len(friendly_prefix) > current_app.config['MAX_PREFIX_LENGTH']:
+            friendly_prefix = friendly_prefix[:current_app.config['MAX_PREFIX_LENGTH']]
         jobname = f'{friendly_prefix}-{jobid}'
     else:
         jobname = jobid
@@ -540,18 +541,18 @@ def run_model():
             else:
                 flash("The job notification email address you provided is not a valid email.  No job notification will be sent", category =  "error")
 
-        app.logger.info(f"saving job to db (if logged in)")  
+        current_app.logger.info(f"saving job to db (if logged in)")  
         add_job(jobname) # do this before launching job, because the launcher will trigger saving results, which won't work with out a job record
 
-        app.logger.info(f"launching job with job config ={job_config}")
+        current_app.logger.info(f"launching job with job config ={job_config}")
         job_response = job_manager.launch(input_genes, job_config)        
         #TODO handle unsuccessful responses here 
-        app.logger.info(f"job {job_config['jobid']} launched with response {job_response}")
+        current_app.logger.info(f"job {job_config['jobid']} launched with response {job_response}")
         job_submit_message = f"Job {jobname} submitted!  The completed job will be available on <a href='{job_config['job_url'] }'>{job_config['job_url']}</a>"
 
         if job_config.get('notifyaddress'):
-            email_response = app.notifier.notify_accepted(job_config)   # notify(job_url, job_email = job_config['notifyaddress'], config = app.config)
-            app.logger.info(f"email initiated to {job_config['notifyaddress']} with response {email_response}")
+            email_response = current_app.notifier.notify_accepted(job_config)   # notify(job_url, job_email = job_config['notifyaddress'], config = current_app.config)
+            current_app.logger.info(f"email initiated to {job_config['notifyaddress']} with response {email_response}")
             job_submit_message = job_submit_message + f" and notification sent to {job_config['notifyaddress']}"
 
         flash(Markup(job_submit_message), category = 'success')
@@ -562,7 +563,7 @@ def run_model():
     return("invalid form data ")
 
 
-@app.route("/clearinput", methods=['GET','POST'])
+@current_app.route("/clearinput", methods=['GET','POST'])
 def clearinput():
     try:
         session.pop('genes')
@@ -572,7 +573,7 @@ def clearinput():
     return jsonify(success=True)
 
 
-@app.route("/postgenes", methods=['GET','POST'])
+@current_app.route("/postgenes", methods=['GET','POST'])
 def postgenes():
 
     try:
@@ -591,7 +592,7 @@ def postgenes():
     return jsonify(success=True, filename=None)
 
 
-@app.route("/uploadgenes", methods=['POST'])
+@current_app.route("/uploadgenes", methods=['POST'])
 def uploadgenes():
 
     # remove genes from session
@@ -610,7 +611,7 @@ def uploadgenes():
         print(e)
         return jsonify(success=False, filename=None)
 
-@app.route('/signup', methods=['POST'])
+@current_app.route('/signup', methods=['POST'])
 def signup():
     form_username = request.form.get('username')
     form_email = request.form.get('email')
@@ -629,7 +630,7 @@ def signup():
     login_user(user)
     return redirect('edit_profile')
 
-@app.route('/login', methods=['POST'])
+@current_app.route('/login', methods=['POST'])
 def login():
     form_username = request.form.get('username')
     form_pass = request.form.get('password')
@@ -641,30 +642,30 @@ def login():
     login_user(user)
     return redirect('index')
 
-@app.route('/logout', methods=['GET', 'POST'])
+@current_app.route('/logout', methods=['GET', 'POST'])
 def logout():
     logout_user()
     return redirect('index')
 
-@app.route('/send_reset', methods=['POST'])
+@current_app.route('/send_reset', methods=['POST'])
 def send_reset():
     form_email = request.form.get('reset_email')
     cur_user = User.query.filter_by(email=form_email).first()
     flash('If the account exists, an email will be mailed with a link to reset shortly', 'success')
     if cur_user is None or cur_user.email is None or cur_user.email == '':
         return render_template('index.html')
-    url_token = URLSafeSerializer(app.config['SERIALIZER_SECRET'])
+    url_token = URLSafeSerializer(current_app.config['SERIALIZER_SECRET'])
     url_string = url_token.dumps([cur_user.username])
     print('\n')
     print(url_string) # Replace this with emailing function
     print('\n')
     return render_template('index.html')
 
-@app.route('/reset_password/<url_hash>')
+@current_app.route('/reset_password/<url_hash>')
 def reset_password(url_hash):
-    serializer = URLSafeSerializer(app.config['SERIALIZER_SECRET'])
+    serializer = URLSafeSerializer(current_app.config['SERIALIZER_SECRET'])
     try:
-        username = serializer.loads(url_hash, max_age=app.config['PASSWORD_RESET_TIMEOUT'])[0]
+        username = serializer.loads(url_hash, max_age=current_app.config['PASSWORD_RESET_TIMEOUT'])[0]
     except Exception as e:
         print(e)
         print('Serializer error')
@@ -677,7 +678,7 @@ def reset_password(url_hash):
         return render_template('index.html')
     return render_template('reset_password.html', username=username)
 
-@app.route('/change_password', methods=['POST'])
+@current_app.route('/change_password', methods=['POST'])
 def change_password():
     form_username = request.form.get('username')
     form_password = request.form.get('password')
@@ -696,7 +697,7 @@ def change_password():
 
 
 
-@app.route('/edit_profile', methods=['GET', 'POST'])
+@current_app.route('/edit_profile', methods=['GET', 'POST'])
 def edit_profile():
     session_args = create_sidenav_kwargs()
     if request.method == 'GET':
@@ -712,17 +713,17 @@ def edit_profile():
     return redirect('edit_profile')
 
 
-@app.route('/update_user', methods=['POST'])
+@current_app.route('/update_user', methods=['POST'])
 def update_user():
     return redirect('index')
 
-@app.route('/github_login', methods=['GET','POST'])
+@current_app.route('/github_login', methods=['GET','POST'])
 def github_login():
     resp = github.get("/user")
     return redirect('index')
 
 
-@app.errorhandler(InternalServerError)
+@current_app.errorhandler(InternalServerError)
 def handle_500(e):
     original = getattr(e, "original_exception", None)
 
@@ -733,7 +734,7 @@ def handle_500(e):
     # wrapped unhandled error
     return render_template("/redirects/500_unhandled.html", e=original), 500
 
-@app.context_processor
+@current_app.context_processor
 def inject_template_scope():
     injections = dict()
     def cookies_check():
@@ -760,7 +761,7 @@ def create_sidenav_kwargs():
                             classes='table table-striped table-bordered" id = "validatetable')
         return {'existing_genes': session['genes'], 'pos': session['pos'], 
         'table_summary': session['table_summary'], 'validate_table': validate_html, 'valid_form': form,
-        'prefix_limit': app.config['MAX_PREFIX_LENGTH']}
+        'prefix_limit': current_app.config['MAX_PREFIX_LENGTH']}
 
     return {}
 
@@ -788,7 +789,7 @@ def get_or_set_job(jobname):
         # If this isn't none then the result already existed within the database, just return that
         return result_check
     
-    job_info = results_store.read_job_info(jobname) #  retrieve_job_info(jobname, app.config)
+    job_info = results_store.read_job_info(jobname) #  retrieve_job_info(jobname, current_app.config)
     job_output = {}
 
     if job_info and job_info['has_results']:
@@ -811,7 +812,7 @@ def get_or_set_job(jobname):
     return job_info, job_output
 
 @login_required
-@app.route('/update_result', methods=['POST'])
+@current_app.route('/update_result', methods=['POST'])
 def update_result():
     data = request.get_json()
     result_check = Result.query.filter_by(jobname=data['jobname']).first()

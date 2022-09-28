@@ -5,6 +5,10 @@ import os
 class BaseConfig(object):
     BASE_URL = os.getenv('BASE_URL', '')
     SECRET_KEY = os.getenv("SECRET_KEY", "topsecret")
+
+    SECURITY_PASSWORD_SALT = os.getenv("SECURITY_PASSWORD_SALT", '146585145368132386173505678016728509634')
+
+
     #FLASK_APP = os.getenv("FLASK_APP", "geneplexus_app")
     MAX_NUM_GENES = 50
     # prefix for finding all backend data.   Must end with path separtor

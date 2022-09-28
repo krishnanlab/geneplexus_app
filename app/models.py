@@ -1,8 +1,9 @@
-from app import login_manager, db
-from flask_login import UserMixin
+from app.db import db, login_manager
+from flask_security import UserMixin, RoleMixin
 from flask_dance.consumer.storage.sqla import OAuthConsumerMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.orm.collections import attribute_mapped_collection
+from flask_security.models import fsqla_v3 as fsqla
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -15,8 +16,7 @@ class User(db.Model, UserMixin):
     name = db.Column(db.String(64))
     email = db.Column(db.String(64))
     password = db.Column(db.String(128))
-    security_token = db.Column(db.String(64), nullable=True)
-    token_expiration = db.Column(db.DateTime, nullable=True)
+    fs_uniquifier = db.Column(db.String(255), unique=True, nullable=False)
 
     def __init__(self, username, password, email, name):
         self.username = username
@@ -32,6 +32,23 @@ class User(db.Model, UserMixin):
     
     def verify_password(self, pwd):
         return check_password_hash(self.password, pwd)
+
+
+class Role(db.Model, RoleMixin):
+    __tablename__ = 'role'
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(80), unique=True)
+    description = db.Column(db.String(255))
+    permissions = db.Column(db.UnicodeText)
+
+class RolesUsers(db.Model):
+    __tablename__ = 'roles_users'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
+    role_id = db.Column(db.Integer, db.ForeignKey(Role.id), nullable=False)
+
+    user = db.relationship('User', backref=db.backref('roles_users', lazy=True))
+    role = db.relationship('Role', backref=db.backref('role', lazy=True))
     
 class OAuth(OAuthConsumerMixin, db.Model):
     __table_args__ = (db.UniqueConstraint("provider", "provider_user_id"),)

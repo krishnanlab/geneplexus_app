@@ -1,3 +1,5 @@
+import os
+
 from flask import flash, url_for, request
 from flask_login import current_user, login_user
 from flask_dance.contrib.github import make_github_blueprint
@@ -5,13 +7,13 @@ from flask_dance.consumer import oauth_authorized, oauth_error
 from flask_dance.consumer.storage.sqla import SQLAlchemyStorage
 from sqlalchemy.orm.exc import NoResultFound
 
-from app import db, app
+from app.db import db
 from app.models import User, OAuth
 
 # This is the blueprint that will registered with the app when the app is initialized
 github_blueprint = make_github_blueprint(
-    app.config.get('GITHUB_ID'),
-    app.config.get('GITHUB_SECRET'),
+    os.getenv('GITHUB_ID'),
+    os.getenv('GITHUB_SECRET'),
     storage=SQLAlchemyStorage(OAuth, db.session, user=current_user)
 )
 

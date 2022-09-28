@@ -3,8 +3,8 @@ import json
 import numpy as np
 import pandas as pd
 
-from app import app
-data_path = app.config.get("DATA_PATH")
+from flask import current_app
+data_path = current_app.config.get("DATA_PATH")
 
 def load_txtfile(file_type, dtype_=str, net_type_=None, GSC_=None, target_set_=None):
     if file_type == 'net_genes':
