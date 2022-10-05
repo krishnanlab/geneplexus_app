@@ -1,4 +1,5 @@
 import os
+import secrets
 
 # Base, Development and Production classes.
 
@@ -6,7 +7,7 @@ class BaseConfig(object):
     BASE_URL = os.getenv('BASE_URL', '')
     SECRET_KEY = os.getenv("SECRET_KEY", "topsecret")
 
-    SECURITY_PASSWORD_SALT = os.getenv("SECURITY_PASSWORD_SALT", '146585145368132386173505678016728509634')
+    SECURITY_PASSWORD_SALT = os.getenv("SECURITY_PASSWORD_SALT", str(secrets.SystemRandom().getrandbits(128)))
 
 
     #FLASK_APP = os.getenv("FLASK_APP", "geneplexus_app")

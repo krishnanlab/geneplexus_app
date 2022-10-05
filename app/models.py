@@ -9,30 +9,11 @@ from flask_security.models import fsqla_v3 as fsqla
 def load_user(user_id):
     return User.query.filter_by(id=user_id).first()
 
-class User(db.Model, UserMixin):
-    __tablename__ = 'users'
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(64), unique=True, nullable=False)
-    name = db.Column(db.String(64))
-    email = db.Column(db.String(64))
-    password = db.Column(db.String(128))
-    fs_uniquifier = db.Column(db.String(255), unique=True, nullable=False)
-
-    def __init__(self, username, password, email, name):
-        self.username = username
-        self.email = email
-        self.name = name
-        self.password = generate_password_hash(password)
-    
-    def update_password(self, password):
-        self.password = generate_password_hash(password)
-
-    def __repr__(self):
-        return f'<User {self.name}; Email {self.email}>'
-    
-    def verify_password(self, pwd):
-        return check_password_hash(self.password, pwd)
-
+class RolesUsers(db.Model):
+    __tablename__ = 'roles_users'
+    id = db.Column(db.Integer(), primary_key=True)
+    user_id = db.Column('user_id', db.Integer(), db.ForeignKey('user.id'))
+    role_id = db.Column('role_id', db.Integer(), db.ForeignKey('role.id'))
 
 class Role(db.Model, RoleMixin):
     __tablename__ = 'role'
@@ -41,14 +22,22 @@ class Role(db.Model, RoleMixin):
     description = db.Column(db.String(255))
     permissions = db.Column(db.UnicodeText)
 
-class RolesUsers(db.Model):
-    __tablename__ = 'roles_users'
+class User(db.Model, UserMixin):
+    __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
-    role_id = db.Column(db.Integer, db.ForeignKey(Role.id), nullable=False)
-
-    user = db.relationship('User', backref=db.backref('roles_users', lazy=True))
-    role = db.relationship('Role', backref=db.backref('role', lazy=True))
+    email = db.Column(db.String(255), unique=True)
+    username = db.Column(db.String(255), unique=True, nullable=True)
+    password = db.Column(db.String(255), nullable=False)
+    last_login_at = db.Column(db.DateTime())
+    current_login_at = db.Column(db.DateTime())
+    last_login_ip = db.Column(db.String(100))
+    current_login_ip = db.Column(db.String(100))
+    login_count = db.Column(db.Integer)
+    active = db.Column(db.Boolean())
+    fs_uniquifier = db.Column(db.String(255), unique=True, nullable=False)
+    confirmed_at = db.Column(db.DateTime())
+    roles = db.relationship('Role', secondary='roles_users',
+                         backref=db.backref('users', lazy='dynamic'))
     
 class OAuth(OAuthConsumerMixin, db.Model):
     __table_args__ = (db.UniqueConstraint("provider", "provider_user_id"),)
@@ -72,7 +61,7 @@ class Job(db.Model):
     __tablename__ = 'jobs'
     id = db.Column(db.Integer, primary_key=True)
     jobid = db.Column(db.String(64), unique=True, nullable=False)
-    userid = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    userid = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     user = db.relationship('User', backref=db.backref('jobs', lazy=True))
 
@@ -92,7 +81,7 @@ class Result(db.Model):
     public = db.Column(db.Boolean)
     description = db.Column(db.String(512), default='')
 
-    userid = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    userid = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     jobname = db.Column(db.String(64), db.ForeignKey('jobs.jobid'))
 
     user = db.relationship('User', backref=db.backref('results', lazy=True))
@@ -102,7 +91,7 @@ class FavoriteResult(db.Model):
     __tablename__ = 'favoriteresults'
     id = db.Column(db.Integer, primary_key=True)
 
-    userid = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    userid = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     resultid = db.Column(db.Integer, db.ForeignKey('results.id'), nullable=False)
 
     user = db.relationship('User', backref=db.backref('favoriteresults', lazy=True))

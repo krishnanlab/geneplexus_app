@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_dance.contrib.github import make_github_blueprint, github
 from flask.cli import with_appcontext
+from flask_wtf import CSRFProtect
 import click
 from config import ProdConfig, DevConfig
 from dotenv import load_dotenv
@@ -29,6 +30,7 @@ load_dotenv('.env')
 results_store = None
 launcher = None
 job_manager = None
+csrf_protect = CSRFProtect()
 
 def create_app() -> Flask:
     app = Flask(__name__)
@@ -45,10 +47,13 @@ def create_app() -> Flask:
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
+    csrf_protect.init_app(app)
 
     from app.models import User, Role
     user_datastore = SQLAlchemySessionUserDatastore(db.session, User, Role)
     app.security = Security(app, user_datastore)
+
+    
 
     from app.oauth.github import github_blueprint
     app.register_blueprint(github_blueprint)
@@ -98,6 +103,7 @@ def create_app() -> Flask:
 
     app.cli.add_command(create_db)
 
+    # Unsure if this could be an issue outside of local testing, need to check this
     with app.app_context():
         from app import views
 

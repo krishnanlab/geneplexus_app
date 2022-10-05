@@ -7,9 +7,11 @@ from mljob.job_manager import generate_job_id
 from itsdangerous import URLSafeSerializer, URLSafeTimedSerializer
 
 
+
+
 from werkzeug.exceptions import InternalServerError
 from flask import request, render_template, jsonify, session, redirect, url_for, flash, send_file, Markup, abort,send_from_directory
-from flask_login import login_user, logout_user, current_user, login_required
+from flask_security import current_user, auth_required, hash_password
 from app.forms import ValidateForm, JobLookupForm
 
 from flask_dance.contrib.github import github
@@ -79,7 +81,7 @@ def public_results():
                            favorites = favorites,
                            **session_args)
 
-@login_required
+@auth_required
 @current_app.route('/like_result', methods=['POST'])
 def like_result():
     data = request.get_json()
@@ -119,7 +121,7 @@ def favorite_results():
                            favorites = favorites,
                            **session_args)
 
-@login_required
+@auth_required
 @current_app.route('/my_results', methods=['GET'])
 def my_results():
     session_args = create_sidenav_kwargs()
@@ -169,7 +171,7 @@ def result(resultid):
                             public=cur_results.public,
                             **session_args)
 
-@login_required
+@auth_required
 @current_app.route('/update_result_visibility', methods=['POST'])
 def update_result_visibility():
     data = request.form
@@ -184,7 +186,7 @@ def update_result_visibility():
     db.session.commit()
     return redirect(url_for('result', resultid=data['resultid']))
 
-@login_required
+@auth_required
 @current_app.route('/update_result_description', methods=['POST'])
 def update_result_description():
     if 'description' not in request.form:
@@ -613,6 +615,7 @@ def uploadgenes():
 
 @current_app.route('/signup', methods=['POST'])
 def signup():
+    '''
     form_username = request.form.get('username')
     form_email = request.form.get('email')
     form_pass = request.form.get('password')
@@ -629,6 +632,23 @@ def signup():
     db.session.commit()
     login_user(user)
     return redirect('edit_profile')
+    '''
+    form_username = request.form.get('username')
+    form_email = request.form.get('email')
+    form_pass = request.form.get('password')
+    form_valid = request.form.get('validpassword')
+    if form_pass != form_valid:
+        flash('Passwords did not match', 'error')
+        return redirect('index')
+    if not current_app.security.datastore.find_user(email=form_email):
+        current_app.security.datastore.create_user(username=form_username, email=form_email, password=hash_password(form_pass))
+        db.session.commit()
+        flash('Created user successfully', 'success')
+        return redirect('index')
+    else:
+        flash('User with email {} alread exists'.format(form_email))
+        return redirect('index')
+    
 
 @current_app.route('/login', methods=['POST'])
 def login():
@@ -811,7 +831,7 @@ def get_or_set_job(jobname):
             db.session.commit()
     return job_info, job_output
 
-@login_required
+@auth_required
 @current_app.route('/update_result', methods=['POST'])
 def update_result():
     data = request.get_json()
