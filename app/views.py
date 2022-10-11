@@ -9,7 +9,10 @@ from itsdangerous import URLSafeSerializer, URLSafeTimedSerializer
 from werkzeug.exceptions import InternalServerError
 from flask import request, render_template, jsonify, session, redirect, url_for, flash, send_file, Markup, abort,send_from_directory
 from flask_login import login_user, logout_user, current_user, login_required
+from secrets import token_urlsafe
 from app.forms import ValidateForm, JobLookupForm
+
+import datetime
 
 from flask_dance.contrib.github import github
 
@@ -652,29 +655,27 @@ def send_reset():
     cur_user = User.query.filter_by(email=form_email).first()
     flash('If the account exists, an email will be mailed with a link to reset shortly', 'success')
     if cur_user is None or cur_user.email is None or cur_user.email == '':
-        return render_template('index.html')
-    url_token = URLSafeSerializer(app.config['SERIALIZER_SECRET'])
-    url_string = url_token.dumps([cur_user.username])
+        return redirect(url_for('index'))
+    #url_token = URLSafeSerializer(app.config['SERIALIZER_SECRET'])
+    #url_string = url_token.dumps([cur_user.username])
+    url_string = token_urlsafe(32)
+    cur_user.security_token = url_string
+    cur_user.token_expiration = datetime.datetime.utcnow() + datetime.timedelta(seconds=5)
+    # Replace the current lines with email sending
     print('\n')
-    print(url_string) # Replace this with emailing function
+    print(cur_user.security_token)
+    print(cur_user.token_expiration)
     print('\n')
-    return render_template('index.html')
+    db.session.commit()
+    return redirect(url_for('index'))
 
-@app.route('/reset_password/<url_hash>')
-def reset_password(url_hash):
-    serializer = URLSafeSerializer(app.config['SERIALIZER_SECRET'])
-    try:
-        username = serializer.loads(url_hash, max_age=app.config['PASSWORD_RESET_TIMEOUT'])[0]
-    except Exception as e:
-        print(e)
-        print('Serializer error')
-        flash('Invalid URL', 'error')
-        return render_template('index.html')
-    print(username)
-    user_try = User.query.filter_by(username=username).first()
-    if user_try is None:
-        flash('Invalid URL', 'error')
-        return render_template('index.html')
+@app.route('/reset_password/<security_token>')
+def reset_password(security_token):
+    user_try = User.query.filter_by(security_token=security_token).first()
+    if user_try is None or datetime.datetime.utcnow() > user_try.token_expiration:
+        flash('This url does not exist', 'error')
+        return redirect(url_for('index'))
+    username = user_try.username
     return render_template('reset_password.html', username=username)
 
 @app.route('/change_password', methods=['POST'])
