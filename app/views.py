@@ -11,7 +11,7 @@ from itsdangerous import URLSafeSerializer, URLSafeTimedSerializer
 
 from werkzeug.exceptions import InternalServerError
 from flask import request, render_template, jsonify, session, redirect, url_for, flash, send_file, Markup, abort,send_from_directory
-from flask_security import current_user, auth_required, hash_password
+from flask_security import current_user, auth_required, hash_password, login_user
 from app.forms import ValidateForm, JobLookupForm
 
 from flask_dance.contrib.github import github
@@ -19,6 +19,7 @@ from flask_dance.contrib.github import github
 from itsdangerous import URLSafeSerializer
 
 from app.models import *
+from app.forms import *
 from app.validation_utils import intial_ID_convert, make_validation_df
 
 import os
@@ -615,24 +616,6 @@ def uploadgenes():
 
 @current_app.route('/signup', methods=['POST'])
 def signup():
-    '''
-    form_username = request.form.get('username')
-    form_email = request.form.get('email')
-    form_pass = request.form.get('password')
-    form_valid = request.form.get('validpassword')
-    form_name = request.form.get('name')
-    if User.query.filter_by(username=form_username).first() is not None:
-        flash('An account with this username already exists', 'error')
-        return redirect('index')
-    if form_pass != form_valid:
-        flash('Passwords did not match', 'error')
-        return redirect('index')
-    user = User(form_username, form_pass, form_email, form_name)
-    db.session.add(user)
-    db.session.commit()
-    login_user(user)
-    return redirect('edit_profile')
-    '''
     form_username = request.form.get('username')
     form_email = request.form.get('email')
     form_pass = request.form.get('password')
@@ -644,14 +627,31 @@ def signup():
         current_app.security.datastore.create_user(username=form_username, email=form_email, password=hash_password(form_pass))
         db.session.commit()
         flash('Created user successfully', 'success')
-        return redirect('index')
+        return redirect('edit_profile')
     else:
         flash('User with email {} alread exists'.format(form_email))
         return redirect('index')
     
 
-@current_app.route('/login', methods=['POST'])
+@current_app.route('/login', methods=['GET', 'POST'])
 def login():
+    if request.method == 'POST':
+        login_form = request.form
+        print(login_form)
+        return render_template('index.html')
+    return render_template('login_user.html')
+
+@current_app.route('/register', methods=['GET','POST'])
+def register():
+    print('In register')
+    if request.method == 'POST':
+        register_form = request.form
+        print(register_form)
+        return redirect('index')
+    return render_template('register_user.html')
+'''
+@current_app.route('/login', methods=['POST'])
+def my_login():
     form_username = request.form.get('username')
     form_pass = request.form.get('password')
     user = User.query.filter_by(username=form_username).first()
@@ -661,6 +661,7 @@ def login():
         return redirect('index')
     login_user(user)
     return redirect('index')
+'''
 
 @current_app.route('/logout', methods=['GET', 'POST'])
 def logout():

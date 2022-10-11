@@ -5,9 +5,12 @@ import secrets
 
 class BaseConfig(object):
     BASE_URL = os.getenv('BASE_URL', '')
-    SECRET_KEY = os.getenv("SECRET_KEY", "topsecret")
+    SECRET_KEY = os.getenv("SECRET_KEY", secrets.token_urlsafe())
 
     SECURITY_PASSWORD_SALT = os.getenv("SECURITY_PASSWORD_SALT", str(secrets.SystemRandom().getrandbits(128)))
+    SECURITY_LOGIN_USER_TEMPLATE = 'login_user.html'
+    SECURITY_REGISTER_USER_TEMPLATE = 'register_user.html'
+    SECURITY_REGISTERABLE = True
 
 
     #FLASK_APP = os.getenv("FLASK_APP", "geneplexus_app")

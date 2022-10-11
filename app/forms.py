@@ -1,7 +1,8 @@
 from flask import current_app
 from flask_wtf import FlaskForm
 from wtforms.validators import DataRequired, Optional, Email
-from wtforms import FileField, SelectField, StringField, TextAreaField, SubmitField, BooleanField
+from wtforms import FileField, SelectField, StringField, TextAreaField, SubmitField, BooleanField, PasswordField
+from flask_security import RegisterForm
 
 
 class ModalForm(FlaskForm):
@@ -46,3 +47,9 @@ class ValidateForm(FlaskForm):
 
     runbatch = SubmitField(label='Submit')
 
+class SignupForm(RegisterForm):
+    email = StringField('Email', validators=[DataRequired()])
+    username = StringField('Username')
+    password = PasswordField('Password', validators=[DataRequired()])
+    password_confirm = PasswordField('Confirm Password', validators=[DataRequired()])
+    name = StringField('Name')

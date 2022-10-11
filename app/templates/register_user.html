@@ -1,0 +1,45 @@
+{% extends "base-sidenav.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block app_content %}
+<div class="row justify-content-center">
+    <div class="col-2">
+        <h2>Register</h2>
+    </div>
+</div>
+<form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <div class="mb-3 row">
+        <label for="username" class="form-label">Username</label>
+        <input type="text" class="form-control" id="username" name="username" required>
+    </div>
+    <div class="mb-3 row">
+        <label for="inputPassword" class="form-label">Password</label>
+        <input type="password" class="form-control" name="password" id="inputPassword">
+    </div>
+    <div class="mb-3 row">
+        <label for="confirmPassword" class="form-label">Confirm Password</label>
+        <input type="password" class="form-control" name="validpassword" id="confirmPassword">
+    </div>
+    <div class="mb-3 row">
+        <label for="email" class="form-label">Email address</label>
+        <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com">
+    </div>
+    <div class="mb-3 row">
+        <label for="name" class="form-label">Name</label>
+        <input type="text" class="form-control" id="name" name="name">
+    </div>
+    <div class="row justify-content-center">
+        <button type="submit" class="btn btn-primary col-3">Signup</button>
+    </div>
+</form>
+
+{% block scripts %}
+{% endblock %}
+
+{% endblock %}

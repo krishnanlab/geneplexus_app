@@ -43,7 +43,8 @@
                     </svg>
                 </div>
                 {% else %}
-                <a class="nav-link" href="#login_modal" data-bs-toggle="modal" data-bs-target="#login_modal">Login</a>
+                <!--<a class="nav-link" href="#login_modal" data-bs-toggle="modal" data-bs-target="#login_modal">Login</a>-->
+                <a class="nav-link" href="{{ url_for_security('login') }}">Login</a>
                 {% endif %}
             </li>
         </ul>

@@ -28,6 +28,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(255), unique=True)
     username = db.Column(db.String(255), unique=True, nullable=True)
     password = db.Column(db.String(255), nullable=False)
+    name = db.Column(db.String(255), nullable=True)
     last_login_at = db.Column(db.DateTime())
     current_login_at = db.Column(db.DateTime())
     last_login_ip = db.Column(db.String(100))
