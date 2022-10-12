@@ -669,33 +669,23 @@ def send_reset():
     db.session.commit()
     return redirect(url_for('index'))
 
-@app.route('/reset_password/<security_token>')
+@app.route('/reset_password/<security_token>', methods=['GET', 'POST'])
 def reset_password(security_token):
     user_try = User.query.filter_by(security_token=security_token).first()
     if user_try is None or datetime.datetime.utcnow() > user_try.token_expiration:
         flash('This url does not exist', 'error')
         return redirect(url_for('index'))
-    username = user_try.username
-    return render_template('reset_password.html', username=username)
-
-@app.route('/change_password', methods=['POST'])
-def change_password():
-    form_username = request.form.get('username')
-    form_password = request.form.get('password')
-    form_verify = request.form.get('pass_verify')
-    if form_password != form_verify:
-        flash('Passwords didn\' match', 'error')
-        return render_template('index.html')
-    cur_user = User.query.filter_by(username=form_username).first()
-    if cur_user is None:
-        flash('Something went terribly wrong', 'error') #Change this later, debug message for now
-        return render_template('index.html')
-    cur_user.update_password(form_password)
-    db.session.commit()
-    flash('Successfully updated password', 'success')
-    return render_template('index.html')
-
-
+    if request.method == 'POST':
+        password = request.form['password']
+        pass_check = request.form['pass_verify']
+        if password != pass_check:
+            flash('Passwords do not match', 'error')
+            return render_template('reset_password.html', security_token=security_token)
+        user_try.update_password(password)
+        db.session.commit()
+        flash('Successfully updated password', 'success')
+        return redirect(url_for('index'))
+    return render_template('reset_password.html', security_token=security_token)
 
 @app.route('/edit_profile', methods=['GET', 'POST'])
 def edit_profile():
