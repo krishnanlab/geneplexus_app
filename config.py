@@ -51,6 +51,9 @@ class BaseConfig(object):
     GITHUB_ID = os.getenv('GITHUB_ID', '')
     GITHUB_SECRET = os.getenv('GITHUB_SECRET', '')
 
+    # Amount of time in hours (can be a floating point number) until a "forgot password" token expires
+    SECURITY_TOKEN_EXPIRATION = os.getenv('SECURITY_TOKEN_EXPIRATION', 6)
+
 class ProdConfig(BaseConfig):
     FLASK_ENV="production"
     FILE_LOC = "local"

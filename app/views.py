@@ -660,7 +660,7 @@ def send_reset():
     #url_string = url_token.dumps([cur_user.username])
     url_string = token_urlsafe(32)
     cur_user.security_token = url_string
-    cur_user.token_expiration = datetime.datetime.utcnow() + datetime.timedelta(seconds=5)
+    cur_user.token_expiration = datetime.datetime.utcnow() + datetime.timedelta(hours=app.config['SECURITY_TOKEN_EXPIRATION'])
     # Replace the current lines with email sending
     print('\n')
     print(cur_user.security_token)
