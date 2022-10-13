@@ -104,4 +104,11 @@ def create_db():
     from app import db
     db.create_all()
 
+@click.command('drop-db')
+@with_appcontext
+def drop_db():
+    from app import db
+    db.drop_all()
+
 app.cli.add_command(create_db)
+app.cli.add_command(drop_db)
