@@ -682,6 +682,8 @@ def reset_password(security_token):
             flash('Passwords do not match', 'error')
             return render_template('reset_password.html', security_token=security_token)
         user_try.update_password(password)
+        user_try.security_token = None
+        user_try.token_expiration = None
         db.session.commit()
         flash('Successfully updated password', 'success')
         return redirect(url_for('index'))
