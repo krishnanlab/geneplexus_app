@@ -71,7 +71,7 @@ class Result(db.Model):
     description = db.Column(db.String(512), default='')
 
     userid = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    jobname = db.Column(db.Integer, db.ForeignKey('jobs.jobid'))
+    jobname = db.Column(db.String(64), db.ForeignKey('jobs.jobid'))
 
     user = db.relationship('User', backref=db.backref('results', lazy=True))
     job = db.relationship('Job', backref=db.backref('results', lazy=True))

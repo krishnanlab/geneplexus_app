@@ -1,6 +1,7 @@
 from urllib.error import URLError
 from urllib.parse import urlparse
 from flask import Flask
+from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_dance.contrib.github import make_github_blueprint, github
@@ -37,6 +38,11 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 login_manager = LoginManager(app)
+
+app.config['SESSION_TYPE'] = 'sqlalchemy'
+app.config['SESSION_SQLALCHEMY'] = db
+
+session_manager = Session(app)
 
 from app.oauth.github import github_blueprint
 app.register_blueprint(github_blueprint)
