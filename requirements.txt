@@ -28,3 +28,4 @@ Flask-Dance
 blinker
 # postgresql
 psycopg2
+Flask-Session==0.4.0
