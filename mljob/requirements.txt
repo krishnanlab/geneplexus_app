@@ -1,7 +1,7 @@
 
 # requirements.txt file just  azure functions in this folder.   Ignore for flask app
 azure-functions
-geneplexus==1.0.0.dev6
+geneplexus==v1.0.0-dev.5
 python-slugify==6.1.2
 
 # for using blob and table storage, not in effect but saved to remember
