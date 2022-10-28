@@ -4,7 +4,10 @@ terraform {
   required_providers {
     azurerm = {
       source = "hashicorp/azurerm"
-      version = "~>3.7"
+      version = "~>3.23"
+    }
+    azapi = {
+      source = "azure/azapi"
     }
   }
 
@@ -14,6 +17,9 @@ terraform {
 # providers
 provider "azurerm" {
   features {}
+}
+
+provider "azapi" {
 }
 
 # for random id used in tags

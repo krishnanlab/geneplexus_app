@@ -124,7 +124,7 @@ LOCALURL='http://localhost:7071/api'
 
 curl --request GET --location $LOCALURL/testfn \
  --header 'Content-Type: application/json' \
- --data-raw '{"jobname": "8e3jt5kz"}'
+ --data-raw '{"jobnames": ["8e3jt5kz"]}'
 
 curl -X POST ${LOCALURL}/enqueue -H "Content-Type: application/json"    -d '{"jobname": "8e3jt5kz"}'
 
@@ -152,8 +152,8 @@ curl -X POST $LOCALURL -H "Content-Type: application/json"    -d '{"jobnames": [
 
 ```bash
 existing_job_name=8e3jt5kz
-
-curl -X POST $AZURL/enqueue -H "Content-Type: application/json"  \
+# QUEUE_URL is set as a env var config value
+curl -X POST $QUEUE_URL -H "Content-Type: application/json"  \
       -d '{"jobnames": ["'${existing_job_name}'"]}'
 ```
 

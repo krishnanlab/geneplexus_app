@@ -9,7 +9,7 @@ from results_storage import ResultsFileStore
 import logging
 from os import getenv, path
 import requests, json
-from urllib.parse import urlparse, urljoin
+from urllib.parse import urlparse
 from job_manager import job_status_codes
 
 import azure.functions as func
@@ -113,7 +113,12 @@ def main(msg: func.QueueMessage) -> None:
     # url is present and valid
     # add the jobname to the path.   this assumes the job name does not contain any url-like string
     # the app uses slugify to remove slashes and periods 
-    callback_url = urljoin(base = callback_url, url= jobname, allow_fragments=False)
+    # join main website url with job name and guarantee exactly one slash between 
+    # job name must _not_ start with a slash
+
+
+    callback_url = path.join(callback_url,jobname)
+    
     json_data = json.dumps({'status' : results_store.read_status(jobname) })
     headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
     

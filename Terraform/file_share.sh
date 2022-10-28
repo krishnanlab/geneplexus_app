@@ -1,16 +1,10 @@
-# add_file_share.sh  
+#! /bin/bash 
+# file_share.sh  
 # this is a temporary script to learn how the CLI can be used to add file share
 # to a function app.  This is necessary to connect the geneplexus data and job files
 # so the function app can read/write them.   The goal is to move this into the terraform 
 # provisioning script 
 
-# this is based on current repo structure.  you may have to edit this for your own computer, 
-gp_folder=..
-# edit this to match current dev resource group
-envsuffix=dev202205
-source $gp_folder/azure/azuredeploy.sh
-az_check_account 
-az_set_vars $envsuffix
 
 # names are from the output of terraform
 # the resource group and name of your function. 
