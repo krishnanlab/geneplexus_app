@@ -662,10 +662,8 @@ def send_reset():
     cur_user.security_token = url_string
     cur_user.token_expiration = datetime.datetime.utcnow() + datetime.timedelta(hours=app.config['SECURITY_TOKEN_EXPIRATION'])
     # Replace the current lines with email sending
-    print('\n')
-    print(cur_user.security_token)
-    print(cur_user.token_expiration)
-    print('\n')
+    app.logger.info('Security token for "{}": {}'.format(cur_user.username, cur_user.security_token))
+    app.logger.info('Security token expiration: {}'.format(cur_user.token_expiration))
     db.session.commit()
     return redirect(url_for('index'))
 
