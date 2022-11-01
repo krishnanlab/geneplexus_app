@@ -697,10 +697,20 @@ def edit_profile():
     form_username = request.form.get('username')
     form_email = request.form.get('email')
     form_name = request.form.get('fullname')
-    user = User.query.filter_by(username=form_username).update({'email': form_email, 'name': form_name}, synchronize_session='fetch')
-    if user is None:
-        # This is a huge problem if this happens. Means that we got to this screen without being logged in
+    if current_user.username != form_username:
+        # This is a big no-no. We cannot have a user in the edit profile screen without a matching username (this could be because of a malicious user)
+        flash('Something went terribly wrong, please try again', 'error')
         return redirect('index')
+    user = User.query.filter_by(username=form_username).first()
+    if user is None:
+        # This would entail some other kinda bad state, this time a DB error of some sort
+        flash('Something went terribly wrong, please try again', 'error')
+        return redirect('index')
+    email_test = User.query.filter_by(email=form_email).first()
+    if email_test.username != user.username:
+        flash('Another user with this email already exists, please try another', 'error')
+        return redirect('edit_profile')
+    user.update({'email': form_email, 'name': form_name}, synchronize_session='fetch')
     db.session.commit()
     return redirect('edit_profile')
 

@@ -13,7 +13,7 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, nullable=False)
     name = db.Column(db.String(64))
-    email = db.Column(db.String(64))
+    email = db.Column(db.String(64), unique=True)
     password = db.Column(db.String(128))
     security_token = db.Column(db.String(64), nullable=True)
     token_expiration = db.Column(db.DateTime, nullable=True)
