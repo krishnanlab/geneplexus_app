@@ -687,7 +687,7 @@ def reset_password(security_token):
         db.session.commit()
         flash('Successfully updated password', 'success')
         return redirect(url_for('index'))
-    return render_template('reset_password.html', security_token=security_token)
+    return render_template('reset_password.html', security_token=security_token, username=user_try.username)
 
 @app.route('/edit_profile', methods=['GET', 'POST'])
 def edit_profile():
