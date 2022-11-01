@@ -656,10 +656,9 @@ def send_reset():
     flash('If the account exists, an email will be mailed with a link to reset shortly', 'success')
     if cur_user is None or cur_user.email is None or cur_user.email == '':
         return redirect(url_for('index'))
-    #url_token = URLSafeSerializer(app.config['SERIALIZER_SECRET'])
-    #url_string = url_token.dumps([cur_user.username])
-    url_string = token_urlsafe(32)
+    url_string = token_urlsafe(32) # Generate a random token that is url safe
     cur_user.security_token = url_string
+    # The token expiration is computed up front based on environment variables
     cur_user.token_expiration = datetime.datetime.utcnow() + datetime.timedelta(hours=app.config['SECURITY_TOKEN_EXPIRATION'])
     # Replace the current lines with email sending
     app.logger.info('Security token for "{}": {}'.format(cur_user.username, cur_user.security_token))
@@ -670,17 +669,18 @@ def send_reset():
 @app.route('/reset_password/<security_token>', methods=['GET', 'POST'])
 def reset_password(security_token):
     user_try = User.query.filter_by(security_token=security_token).first()
+    # Check if a user with this security token even exists
     if user_try is None or datetime.datetime.utcnow() > user_try.token_expiration:
         flash('This url does not exist', 'error')
         return redirect(url_for('index'))
-    if request.method == 'POST':
+    if request.method == 'POST': # If we are posting this form then it means that the user input the new information and are submitting
         password = request.form['password']
         pass_check = request.form['pass_verify']
-        if password != pass_check:
+        if password != pass_check: # Check if the two provided passwords are the same
             flash('Passwords do not match', 'error')
             return render_template('reset_password.html', security_token=security_token)
         user_try.update_password(password)
-        user_try.security_token = None
+        user_try.security_token = None # Make sure the same security token cannot be used again
         user_try.token_expiration = None
         db.session.commit()
         flash('Successfully updated password', 'success')
@@ -698,12 +698,12 @@ def edit_profile():
     if current_user.username != form_username:
         # This is a big no-no. We cannot have a user in the edit profile screen without a matching username (this could be because of a malicious user)
         flash('Something went terribly wrong, please try again', 'error')
-        return redirect('index')
+        return redirect(url_for('index'))
     user = User.query.filter_by(username=form_username).first()
     if user is None:
         # This would entail some other kinda bad state, this time a DB error of some sort
         flash('Something went terribly wrong, please try again', 'error')
-        return redirect('index')
+        return redirect(url_for('index'))
     email_test = User.query.filter_by(email=form_email).first()
     if email_test is not None and email_test.username != user.username:
         flash('Another user with this email already exists, please try another', 'error')
@@ -712,7 +712,7 @@ def edit_profile():
     user.name = form_name
     db.session.commit()
     flash('Successfully updated account', 'success')
-    return redirect('edit_profile')
+    return redirect(url_for('edit_profile'))
 
 
 @app.route('/update_user', methods=['POST'])
