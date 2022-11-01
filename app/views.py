@@ -707,11 +707,13 @@ def edit_profile():
         flash('Something went terribly wrong, please try again', 'error')
         return redirect('index')
     email_test = User.query.filter_by(email=form_email).first()
-    if email_test.username != user.username:
+    if email_test is not None and email_test.username != user.username:
         flash('Another user with this email already exists, please try another', 'error')
         return redirect('edit_profile')
-    user.update({'email': form_email, 'name': form_name}, synchronize_session='fetch')
+    user.email = form_email
+    user.name = form_name
     db.session.commit()
+    flash('Successfully updated account', 'success')
     return redirect('edit_profile')
 
 
