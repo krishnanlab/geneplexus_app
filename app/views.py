@@ -653,16 +653,33 @@ def logout():
 def send_reset():
     form_email = request.form.get('reset_email')
     cur_user = User.query.filter_by(email=form_email).first()
-    flash('If the account exists, an email will be mailed with a link to reset shortly', 'success')
     if cur_user is None or cur_user.email is None or cur_user.email == '':
         return redirect(url_for('index'))
     url_string = token_urlsafe(32) # Generate a random token that is url safe
     cur_user.security_token = url_string
     # The token expiration is computed up front based on environment variables
-    cur_user.token_expiration = datetime.datetime.utcnow() + datetime.timedelta(hours=app.config['SECURITY_TOKEN_EXPIRATION'])
+    expiration_hours=app.config['SECURITY_TOKEN_EXPIRATION']
+    cur_user.token_expiration = datetime.datetime.utcnow() + datetime.timedelta(hours=expiration_hours)
     # Replace the current lines with email sending
     app.logger.info('Security token for "{}": {}'.format(cur_user.username, cur_user.security_token))
     app.logger.info('Security token expiration: {}'.format(cur_user.token_expiration))
+
+    password_reset_url = url_for('reset_password', security_token = cur_user.security_token, _external = True)
+    # craft and send email to user    
+    reset_message = f"""<p>Someone requested password reset for the Geneplexus web application on {url_for('index', _external = True)}</p>
+ .  
+    <p>To reset your password, please use this link:  {password_reset_url}.  It will expire in approximately {expiration_hours} hours</p>"""
+
+    app.notifier.send_email(to_address = form_email, 
+        message_content = reset_message, 
+        subject_line = "Geneplexus web application password reset request")
+
+    # log this 
+    app.logger.info(f"password reset sent to {form_email} message {reset_message}")
+
+    # return to home page
+    flash('Password reset requested: if the account exists, an email will be sent with a link to reset within the hour.', 'success')
+
     db.session.commit()
     return redirect(url_for('index'))
 
