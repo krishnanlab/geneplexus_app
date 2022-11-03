@@ -28,6 +28,9 @@ class BaseConfig(object):
 
     # used in the JSON sent to the trigger, that are sent to container launcher
     JOB_CONTAINER_FILE_MOUNT = os.getenv('JOB_CONTAINER_FILE_MOUNT', '' )
+
+    SERIALIZER_SECRET = os.getenv('SERIALIZER_SECRET', 'thisisasecret')
+    PASSWORD_RESET_TIMEOUT = os.getenv('PASSWORD_RESET_TIMEOUT', 0)
     
     JOB_URL = os.getenv('JOB_URL', '')  # the URL for the logic app trigger
 
@@ -47,6 +50,9 @@ class BaseConfig(object):
 
     GITHUB_ID = os.getenv('GITHUB_ID', '')
     GITHUB_SECRET = os.getenv('GITHUB_SECRET', '')
+
+    # Amount of time in hours (can be a floating point number) until a "forgot password" token expires
+    SECURITY_TOKEN_EXPIRATION = os.getenv('SECURITY_TOKEN_EXPIRATION', 6)
 
 class ProdConfig(BaseConfig):
     FLASK_ENV="production"

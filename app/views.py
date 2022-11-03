@@ -3,14 +3,20 @@ from slugify.slugify import slugify
 # from mljob.jobs import path_friendly_jobname, launch_job, retrieve_job_folder,retrieve_results,job_info_list,valid_results_filename,results_file_dir,job_exists,retrieve_job_info,generate_job_id, job_status_codes, retrieve_job_outputs
 from app import app, db, results_store, job_manager
 from mljob.job_manager import generate_job_id
+from itsdangerous import URLSafeSerializer, URLSafeTimedSerializer
 
 
 from werkzeug.exceptions import InternalServerError
 from flask import request, render_template, jsonify, session, redirect, url_for, flash, send_file, Markup, abort,send_from_directory
 from flask_login import login_user, logout_user, current_user, login_required
+from secrets import token_urlsafe
 from app.forms import ValidateForm, JobLookupForm
 
+import datetime
+
 from flask_dance.contrib.github import github
+
+from itsdangerous import URLSafeSerializer
 
 from app.models import *
 from app.validation_utils import intial_ID_convert, make_validation_df
@@ -621,7 +627,6 @@ def signup():
         flash('Passwords did not match', 'error')
         return redirect('index')
     user = User(form_username, form_pass, form_email, form_name)
-
     db.session.add(user)
     db.session.commit()
     login_user(user)
@@ -644,6 +649,61 @@ def logout():
     logout_user()
     return redirect('index')
 
+@app.route('/send_reset', methods=['POST'])
+def send_reset():
+    form_email = request.form.get('reset_email')
+    cur_user = User.query.filter_by(email=form_email).first()
+    if cur_user is None or cur_user.email is None or cur_user.email == '':
+        return redirect(url_for('index'))
+    url_string = token_urlsafe(32) # Generate a random token that is url safe
+    cur_user.security_token = url_string
+    # The token expiration is computed up front based on environment variables
+    expiration_hours=app.config['SECURITY_TOKEN_EXPIRATION']
+    cur_user.token_expiration = datetime.datetime.utcnow() + datetime.timedelta(hours=expiration_hours)
+    # Replace the current lines with email sending
+    app.logger.info('Security token for "{}": {}'.format(cur_user.username, cur_user.security_token))
+    app.logger.info('Security token expiration: {}'.format(cur_user.token_expiration))
+
+    password_reset_url = url_for('reset_password', security_token = cur_user.security_token, _external = True)
+    # craft and send email to user    
+    reset_message = f"""<p>Someone requested password reset for the Geneplexus web application on {url_for('index', _external = True)}</p>
+ .  
+    <p>To reset your password, please use this link:  {password_reset_url}.  It will expire in approximately {expiration_hours} hours</p>"""
+
+    app.notifier.send_email(to_address = form_email, 
+        message_content = reset_message, 
+        subject_line = "Geneplexus web application password reset request")
+
+    # log this 
+    app.logger.info(f"password reset sent to {form_email} message {reset_message}")
+
+    # return to home page
+    flash('Password reset requested: if the account exists, an email will be sent with a link to reset within the hour.', 'success')
+
+    db.session.commit()
+    return redirect(url_for('index'))
+
+@app.route('/reset_password/<security_token>', methods=['GET', 'POST'])
+def reset_password(security_token):
+    user_try = User.query.filter_by(security_token=security_token).first()
+    # Check if a user with this security token even exists
+    if user_try is None or datetime.datetime.utcnow() > user_try.token_expiration:
+        flash('This url does not exist', 'error')
+        return redirect(url_for('index'))
+    if request.method == 'POST': # If we are posting this form then it means that the user input the new information and are submitting
+        password = request.form['password']
+        pass_check = request.form['pass_verify']
+        if password != pass_check: # Check if the two provided passwords are the same
+            flash('Passwords do not match', 'error')
+            return render_template('reset_password.html', security_token=security_token)
+        user_try.update_password(password)
+        user_try.security_token = None # Make sure the same security token cannot be used again
+        user_try.token_expiration = None
+        db.session.commit()
+        flash('Successfully updated password', 'success')
+        return redirect(url_for('index'))
+    return render_template('reset_password.html', security_token=security_token, username=user_try.username)
+
 @app.route('/edit_profile', methods=['GET', 'POST'])
 def edit_profile():
     session_args = create_sidenav_kwargs()
@@ -652,12 +712,24 @@ def edit_profile():
     form_username = request.form.get('username')
     form_email = request.form.get('email')
     form_name = request.form.get('fullname')
-    user = User.query.filter_by(username=form_username).update({'email': form_email, 'name': form_name}, synchronize_session='fetch')
+    if current_user.username != form_username:
+        # This is a big no-no. We cannot have a user in the edit profile screen without a matching username (this could be because of a malicious user)
+        flash('Something went terribly wrong, please try again', 'error')
+        return redirect(url_for('index'))
+    user = User.query.filter_by(username=form_username).first()
     if user is None:
-        # This is a huge problem if this happens. Means that we got to this screen without being logged in
-        return redirect('index')
+        # This would entail some other kinda bad state, this time a DB error of some sort
+        flash('Something went terribly wrong, please try again', 'error')
+        return redirect(url_for('index'))
+    email_test = User.query.filter_by(email=form_email).first()
+    if email_test is not None and email_test.username != user.username:
+        flash('Another user with this email already exists, please try another', 'error')
+        return redirect('edit_profile')
+    user.email = form_email
+    user.name = form_name
     db.session.commit()
-    return redirect('edit_profile')
+    flash('Successfully updated account', 'success')
+    return redirect(url_for('edit_profile'))
 
 
 @app.route('/update_user', methods=['POST'])

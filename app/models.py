@@ -13,13 +13,18 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, nullable=False)
     name = db.Column(db.String(64))
-    email = db.Column(db.String(64))
-    password = db.Column(db.String())
+    email = db.Column(db.String(64), unique=True)
+    password = db.Column(db.String(128))
+    security_token = db.Column(db.String(64), nullable=True)
+    token_expiration = db.Column(db.DateTime, nullable=True)
 
     def __init__(self, username, password, email, name):
         self.username = username
         self.email = email
         self.name = name
+        self.password = generate_password_hash(password)
+    
+    def update_password(self, password):
         self.password = generate_password_hash(password)
 
     def __repr__(self):

@@ -26,6 +26,11 @@
                             Sign up <a href="#signup_modal" data-bs-target="#signup_modal" data-bs-toggle="modal" data-bs-dismiss="modal">here</a>
                         </div>
                     </div>
+                    <div class="row justify-content-center mt-1">
+                        <div class="col-4">
+                            <a href="#forgot_modal" data-bs-target="#forgot_modal" data-bs-toggle="modal" data-bs-dismiss="modal">Forgot password?</a>
+                        </div>
+                    </div>
                     <div class="row mt-3 mb-3">
                         <hr/>
                     </div>
@@ -100,6 +105,36 @@
                         </div>
                         <div class="row justify-content-center">
                             <button type="submit" class="btn btn-primary col-3">Signup</button>
+                        </div>
+                    </form>
+                </div> 
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="forgot_modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-2 d-flex align-self-center" >
+                            <a href="login_modal" data-bs-target="#login_modal" data-bs-toggle="modal" data-bs-dismiss="modal">Back</a>
+                            </div>
+                        <h2 class="col-9 d-flex justify-content-center">Reset Password</h2>
+                    </div>
+                </div>
+              </div>
+            <div class="modal-body">
+                <div class="container">
+                    <form action="{{ url_for('send_reset') }}" method="POST">
+                        <div class="mb-3 row">
+                            <label for="reset_email" class="form-label">Email</label>
+                            <input type="text" class="form-control" id="reset_email" name="reset_email" required>
+                        </div>
+                        <div class="row justify-content-center">
+                            <button type="submit" class="btn btn-primary col-5">Send Reset Email</button>
                         </div>
                     </form>
                 </div> 
