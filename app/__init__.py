@@ -27,18 +27,18 @@ load_dotenv('.env')
 
 # flask dance does not work with https on azure, perhaps due to proxy issue #244
 # this fixes that problem, from https://github.com/singingwolfboy/flask-dance/issues/188#issuecomment-441429783
-class ReverseProxied(object):
-    def __init__(self, app):
-        self.app = app
+# class ReverseProxied(object):
+#     def __init__(self, app):
+#         self.app = app
 
-    def __call__(self, environ, start_response):
-        scheme = environ.get('HTTP_X_FORWARDED_PROTO')
-        if scheme:
-            environ['wsgi.url_scheme'] = scheme
-        return self.app(environ, start_response)
+#     def __call__(self, environ, start_response):
+#         scheme = environ.get('HTTP_X_FORWARDED_PROTO')
+#         if scheme:
+#             environ['wsgi.url_scheme'] = scheme
+#         return self.app(environ, start_response)
 
 app = Flask(__name__)
-app.wsgi_app = ReverseProxied(app.wsgi_app)
+# app.wsgi_app = ReverseProxied(app.wsgi_app)
 
 # app = Flask(__name__)
 
