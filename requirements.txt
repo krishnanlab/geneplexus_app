@@ -1,7 +1,6 @@
+# require flask only, and use default dependencies that come from
 flask==2.2.2
-# click==8.1.3
-# Werkzeug==2.2.2
-# jinja2==3.1.2
+
 wtforms==3.0.1
 flask-wtf==1.0.1
 itsdangerous==2.1.2
@@ -13,19 +12,15 @@ python-slugify==6.1.2
 pytz==2022.2.1
 requests==2.27.1
 email_validator==1.1.3
-# for geneplexus package, check for requirements parity
-# geneplexus==1.0.0.dev3
-# numpy
-# scipy
 pandas
-# scikit-learn
 Flask-SQLAlchemy==2.5.1
 Flask-Migrate==3.1.0
 Flask-Login==0.6.2
-# requires pip installation
-sendgrid==6.9.2
 Flask-Dance
 blinker
-# postgresql
-psycopg2
+# store session in db to allow for large genesets
 Flask-Session2==1.3.1
+# email for cloud deployment
+sendgrid==6.9.2
+# db for cloud deployment
+psycopg2
