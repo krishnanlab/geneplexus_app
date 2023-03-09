@@ -137,7 +137,8 @@ def run_SL(pos_genes_in_net, negative_genes, net_genes, net_type, features, min_
     probs = clf.predict_proba(data)[:, 1]
 
     if len(pos_genes_in_net) < min_pos_genes:
-        avgp = 'Not enough positive genes'
+        # not enough genes, but need to set to same data type, so set probs to zero
+        avgp = [0.0,0.0]
     else:
         avgps = []
         
