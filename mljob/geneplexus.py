@@ -138,7 +138,7 @@ def run_SL(pos_genes_in_net, negative_genes, net_genes, net_type, features, min_
 
     if len(pos_genes_in_net) < min_pos_genes:
         # not enough genes, but need to set to same data type, so set probs to zero
-        avgp = [0.0,0.0]
+        avgps = [0.0,0.0]
     else:
         avgps = []
         
