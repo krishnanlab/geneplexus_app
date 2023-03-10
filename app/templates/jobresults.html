@@ -96,33 +96,38 @@
             </div>
             <br>
             <div class="row">
-                <div class="col-xs-12 col-sm-12">  
-                    {# checking that the value is a list here to accommodate previous jobs that output a single string (median) #}                  
-                    {% if job_output['avgps'] is not string %} 
-                    
+                <div class="col-xs-12 col-sm-12">
+                    {% set threshold_value = 15 %}  
+                    {#  checking that type of value for cross validation.  
+                        - Empty (string, list) => no validation. 
+                        - string value => previous jobs that output a single string (median) 
+                    #}    
+                                  
+                    {% if job_output['avgps']|length == 0 %}
+                        <label>No Cross-validation calculated (too few positive genes)</label>
+
+                    {% elif job_output['avgps'] is not string %} 
                         <label>Results for {{ job_output['avgps']|length}}-fold cross validation in terms of <em>log2(auPRC/prior)</em>:&nbsp;
                         <strong>{{ job_output['avgps']|join(", ") }}.</strong>
                         </label>
-                        <a href="#" data-bs-toggle="popover" data-bs-trigger="manual" data-bs-placement="right"
-                            data-bs-content="If the number of genes in the positive class is greater than 15,
-                            these metrics report the fold change of the area under the precision-recall curve
-                            (auPRC) over the prior auPRC expected by random chance. For example, a value of 1
-                            indicates that the model performs twice as good as a random ranking of genes.">
-                            <i class="fas fa-question-circle"></i>
-                        </a>
+                    
                     {% else %}
-                        {# for jobs output that have just a single string #}
+                        {# for jobs output that have just a single string, from a previous version of GP #}
                         <label>The median value of the log2(auPRC/prior)
                             for 5-fold cross validation is &nbsp</label>{{ job_output['avgps'] }}.
                         </label>&nbsp
-                        <a href="#" data-bs-toggle="popover" data-bs-trigger="manual" data-bs-placement="right"
-                            data-bs-content="If the number of genes in the positive class is greater than 20,
-                            this metric reports the fold change of the area under the precision-recall curve
-                            (auPRC) over the prior auPRC expected by random chance. For example, a value of 1
-                            indicates that the model performs twice as good as a random ranking of genes.">
-                            <i class="fas fa-question-circle"></i>
-                        </a>
+                        {% set threshold_value = 20 %}
+                    
                     {% endif %}
+
+                    <a href="#" data-bs-toggle="popover" data-bs-trigger="manual" data-bs-placement="right"
+                    data-bs-content="If the number of genes in the positive class is greater than {{threshold_value}},
+                    this metric reports the fold change of the area under the precision-recall curve
+                    (auPRC) over the prior auPRC expected by random chance. For example, a value of 1
+                    indicates that the model performs twice as good as a random ranking of genes.">
+                    <i class="fas fa-question-circle"></i>
+                    </a>
+
                 </div>
             </div>
         </div>

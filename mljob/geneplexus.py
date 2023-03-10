@@ -136,11 +136,8 @@ def run_SL(pos_genes_in_net, negative_genes, net_genes, net_type, features, min_
     mdl_weights = np.squeeze(clf.coef_)
     probs = clf.predict_proba(data)[:, 1]
 
-    if len(pos_genes_in_net) < min_pos_genes:
-        avgp = 'Not enough positive genes'
-    else:
-        avgps = []
-        
+    avgps = []
+    if len(pos_genes_in_net) >= min_pos_genes:        
         skf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=None)
         for trn_inds, tst_inds in skf.split(Xdata, ydata):
             clf_cv = LogisticRegression(max_iter=10000, solver='lbfgs', penalty='l2', C=1.0)

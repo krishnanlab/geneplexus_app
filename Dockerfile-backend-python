@@ -24,7 +24,7 @@ RUN useradd --create-home $USERNAME && \
 WORKDIR /home/$USERNAME
 USER $USERNAME
 
-COPY mljob/requirements.txt requirements.txt
+COPY mljob/requirements-nover.txt requirements.txt
 
 # install packages using conda, one at a time
 # the requirements file is in pip format, not conda, so need to install one a time 
