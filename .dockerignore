@@ -1,0 +1,11 @@
+.venv
+.venvflask222
+.venvworks
+.pytest_cache
+mljob/.venv
+__pycache__
+azure
+Terraform
+tests
+.git
+.gitignore
