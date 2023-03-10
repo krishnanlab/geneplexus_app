@@ -1,4 +1,5 @@
-FROM ubuntu:18.04
+FROM python:3.10-bullseye
+
 # Geneplexus Job Runner
 # this is the Dockerfile to build an image that will run the model and save html results
 # it uses the same Python code as the application
@@ -7,12 +8,9 @@ FROM ubuntu:18.04
 # it only runs the "runner.sh" shell script that uses environment variables to 
 # the parameters for the model 
 # those environment variables are set when the docker container is run 
-ARG CONDA_VERSION=4.9.2
-ARG PYTHON_VERSION=3.8
-
-ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
-ENV PATH /opt/miniconda/bin:$PATH
-ENV DEBIAN_FRONTEND=noninteractive
+# ARG CONDA_VERSION=4.9.2
+ARG PYTHON_VERSION=3.10
+ENV USERNAME=dockeruser
 
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils wget bzip2 curl zip && \
@@ -20,42 +18,25 @@ RUN apt-get update --fix-missing && \
     apt-get clean -y && \
     rm -rf /var/lib/apt/lists/*
 
-RUN useradd --create-home dockeruser
-WORKDIR /home/dockeruser
-USER dockeruser
+RUN useradd --create-home $USERNAME && \
+    echo PATH=$PATH:/home/$USERNAME/.local/bin >> /home/$USERNAME/.bashrc
 
-# install anaconda python
-# using anaconda because it's numpy built with Intel MKL for speed
-RUN wget --quiet     https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
-    -O ~/miniconda.sh && \
-    /bin/bash ~/miniconda.sh -b -p ~/miniconda && \
-    rm ~/miniconda.sh && \
-    ~/miniconda/bin/conda clean -tipsy 
+WORKDIR /home/$USERNAME
+USER $USERNAME
 
-# add anaconda to the front of the path
-ENV PATH="/home/dockeruser:/home/dockeruser/miniconda/bin:${PATH}"
-
-COPY mljob/requirements.txt .
+COPY mljob/requirements.txt requirements.txt
 
 # install packages using conda, one at a time
 # the requirements file is in pip format, not conda, so need to install one a time 
-RUN conda install -y conda=${CONDA_VERSION} python=${PYTHON_VERSION} pip && \
-    for p in `cat requirements.txt` ; do conda install -y -c conda-forge $p; done && \
-    conda clean -aqy && \
-    rm -rf ~/miniconda/pkgs && \
-    find ~/miniconda/ -type d -name __pycache__ -prune -exec rm -rf {} \;
-
- # TODO WARNING: 'conda clean --source-cache' is deprecated. Use 'conda build purge-all' to remove source cache files.
-
-# copy Python scripts needed into the image
-# since this will not be run by the app service, but as a stand-alone container
+RUN pip install -r requirements.txt
 
 COPY mljob mljob
 COPY runner.py .
 COPY runner.sh .
 
 # this needs to be set for the runner to know how to POST status updates.  
-ENV APP_POST_URL="https://www.geneplexus.net/jobs"
+ENV APP_POST_URL="https://geneplexusdev-hotfix.azurewebsites.net/jobs"  
+# "https://www.geneplexus-.net/jobs"
 
 # note about back-end data files
 # the data files needed by the model are not copied into this container
