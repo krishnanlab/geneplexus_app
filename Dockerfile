@@ -36,6 +36,7 @@ RUN apt-get update \
     && echo "cd /home" >> /etc/bash.bashrc 
 
 COPY sshd_config /etc/ssh/
+COPY .env-azure .env
 
 # if we copy all the application's python files into the Docker image
 # we need the statements below
@@ -71,7 +72,7 @@ RUN pip install -r /var/local/requirements.txt \
 
 # server start up and configuration
 # you may override these settings by setting GUNICORN_CMD_ARGS var in App service config
-ENV GUNICORN_CMD_ARGS="--bind=0.0.0.0  --timeout 36000  --log-file /home/site/err.log --workers=4 --threads=8 --worker-class=gthread"
+ENV GUNICORN_CMD_ARGS="--bind=0.0.0.0:8000  --timeout 36000  --log-file /home/site/err.log --workers=4 --threads=8 --worker-class=gthread"
 COPY docker-startup.sh /usr/local/bin/startup.sh
 RUN chmod a+x /usr/local/bin/startup.sh
 ENTRYPOINT ["/usr/local/bin/startup.sh"]
