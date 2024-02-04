@@ -1,9 +1,7 @@
 # DockerFile for geneplexus Python/Flask application server
 # for running on Azure App Service.  Note that Docker is not required to run the 
 # Geneplexus Flask application for testing.  This is for deployment to Azure
-FROM python:3.8
-
-
+FROM python:3.9
 
 ### ENVIRONMENT
 # match local and lang to what is on the MSU HPC as that's how the Pickle files were created
@@ -37,7 +35,7 @@ RUN apt-get update \
     && echo "MSU ADS DataScience Flask Application for Azure App Service" > /etc/motd \
     && echo "cd /home" >> /etc/bash.bashrc 
 
-COPY ./azure/sshd_config /etc/ssh/
+COPY sshd_config /etc/ssh/
 
 # if we copy all the application's python files into the Docker image
 # we need the statements below
@@ -74,6 +72,6 @@ RUN pip install -r /var/local/requirements.txt \
 # server start up and configuration
 # you may override these settings by setting GUNICORN_CMD_ARGS var in App service config
 ENV GUNICORN_CMD_ARGS="--bind=0.0.0.0  --timeout 36000  --log-file /home/site/err.log --workers=4 --threads=8 --worker-class=gthread"
-COPY azure/docker-startup.sh /usr/local/bin/startup.sh
+COPY docker-startup.sh /usr/local/bin/startup.sh
 RUN chmod a+x /usr/local/bin/startup.sh
 ENTRYPOINT ["/usr/local/bin/startup.sh"]
