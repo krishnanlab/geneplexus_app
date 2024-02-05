@@ -462,10 +462,8 @@ az_app_set_container ()
 
 
 # builds the "backend" container, or the one that just runs the ML code in model.py on a container instance
-az_build_docker_backend ()
-{
+function az_build_docker_backend () {
     #THIS HAS TO BE RUN _after_ THE WEB APP IS CREATED
-
     # TAG is set in azure_set_vars
     # check if this var is set, and if not, set to a default name
     if [[ -z "$BACKEND_IMAGE" || -z "$TAG" ]]; then
@@ -473,29 +471,40 @@ az_build_docker_backend ()
         exit 1
     fi
 
-    # TODO check that that AZCR exists first
-    
-    export AZBACKENDIMAGE_URL=$ACR.azurecr.io/$BACKEND_IMAGE:$TAG  # needed for the logic app! 
+    export AZBACKENDIMAGE_URL=$ACR.azurecr.io/$BACKEND_IMAGE:$TAG  
+    # needed for the logic app! 
 
-    # TODO  check that this docker file exists!   
     # TODO set this in az_set_vars, not here, and confirm file exists
-    export JOB_DOCKERFILE="Dockerfile-backend"  # the name of the file in this project
-    echo "using Azure ACR to build docker image $BACKEND_IMAGE:$TAG from $JOB_DOCKERFILE"
-    az acr build -t $BACKEND_IMAGE:$TAG -r $AZCR --file $JOB_DOCKERFILE .
+    export JOB_DOCKERFILE="Dockerfile-backend"  
+    # the name of the file in this project
+    # echo "using Azure ACR to build docker image $BACKEND_IMAGE:$TAG from $JOB_DOCKERFILE with callback to https://{$AZAPPNAME}.azurewebsites.net/jobs"
+    az acr build --build-arg APP_POST_URL_ARG=https://$AZAPPNAME.azurewebsites.net/jobs  -t $BACKEND_IMAGE:$TAG -r $AZCR --file $JOB_DOCKERFILE .
 
     # then should update the application settings - requires the web app to exist first, 
     # but the webapp can't run jobs without the backend container
-    
     # this is where the job container volumn mount point is truly defined for the first time
     az webapp config appsettings set --resource-group $AZRG --name $AZAPPNAME \
     --settings JOB_IMAGE_NAME=$BACKEND_IMAGE JOB_IMAGE_TAG=$TAG \
      JOB_CONTAINER_FILE_MOUNT=/home/dockeruser/$AZSHARENAME \
      CONTAINER_REGISTRY_URL=$AZCR.azurecr.io CONTAINER_REGISTRY_USER=$AZCR \
      CONTAINER_REGISTRY_PW=$(az acr credential show --name $AZCR -g $AZRG  --output tsv  --query="passwords[0]|value")
-
 }
 
 
+az_local_docker_build_backend ()
+
+{
+    # this is a function to use local docker to build local image for testing
+    # this isn't needed for Azure deploy other than for testing
+    # the name of the file in this project
+    export JOB_DOCKERFILE="Dockerfile-backend"  
+    echo "Building docker $BACKEND_IMAGE:$TAG  from $JOB_DOCKERFILE with callback to https://{$AZAPPNAME}.azurewebsites.net/jobs"
+    docker build --build-arg APP_POST_URL_ARG="https://{$AZAPPNAME}.azurewebsites.net/jobs"  -t $BACKEND_IMAGE:$TAG --file $JOB_DOCKERFILE .
+    docker images 
+    echo "Did the docker image $BACKEND_IMAGE:$TAG build? "
+    echo "to run, copy and past this... "
+    "docker run -d -v $DATA_PATH:$OUTPUT_PATH -e DATA_PATH=$DATA_PATH --name ${AZDOCKERIMAGE}_container $BACKEND_IMAGE:$TAG"    
+}
 
 # this is a work in progress and not used, saved here for experiments =
 # Azure App Service has a concept of "slots" so you can deploy updates
@@ -613,23 +622,8 @@ az_local_docker_build ()
 }
 
 
-az_local_docker_build_backend ()
-{
-    # this is a function to use local docker to build local image for testing
-    # this isn't needed for Azure deploy other than for testing
 
-    export JOB_DOCKERFILE="Dockerfile-backend"  # the name of the file in this project
 
-    echo "Building docker $BACKEND_IMAGE:$TAG  from $JOB_DOCKERFILE"
-    docker build -t $BACKEND_IMAGE:$TAG --file $JOB_DOCKERFILE .
-
-    docker images 
-    echo "Did the docker image $BACKEND_IMAGE:$TAG build? "
-
-    echo "to run, copy and past this... "
-    "docker run -d -v $DATA_PATH:$OUTPUT_PATH -e DATA_PATH=$DATA_PATH --name ${AZDOCKERIMAGE}_container $BACKEND_IMAGE:$TAG"
-    
-}
 
 az_app_delete ()
 {

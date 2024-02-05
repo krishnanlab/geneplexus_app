@@ -10,6 +10,7 @@ FROM python:3.10-bullseye
 # those environment variables are set when the docker container is run 
 # ARG CONDA_VERSION=4.9.2
 ARG PYTHON_VERSION=3.10
+ARG APP_POST_URL_ARG="https://geneplexusdev1.azurewebsites.net/jobs"
 ENV USERNAME=dockeruser
 
 RUN apt-get update --fix-missing && \
@@ -35,8 +36,7 @@ COPY runner.py .
 COPY runner.sh .
 
 # this needs to be set for the runner to know how to POST status updates.  
-ENV APP_POST_URL="https://geneplexusdev-hotfix.azurewebsites.net/jobs"  
-# "https://www.geneplexus-.net/jobs"
+ENV APP_POST_URL=$APP_POST_URL_ARG  
 
 # note about back-end data files
 # the data files needed by the model are not copied into this container
