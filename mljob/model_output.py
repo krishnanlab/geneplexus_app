@@ -75,7 +75,7 @@ def save_df_output(output_path, jobname, output_name, output_df):
     """ save data frames from model runs in a consistent way"""
     output_filename = construct_output_filename(jobname, output_name, '.tsv')
     output_filepath=construct_output_filepath(output_path, jobname, output_filename)
-    output_df.to_csv(path_or_buf = output_filepath, sep = '\t', index = False, line_terminator = '\n')
+    output_df.to_csv(path_or_buf = output_filepath, sep = '\t', index = False)
     return(output_filename)
 
 def save_graph_output(output_path, jobname, graph):
