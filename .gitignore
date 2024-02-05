@@ -1,5 +1,6 @@
 app/data_backend
 /venv/
+/ven*/
 /tests/venv/
 __pycache__/
 .env
@@ -24,3 +25,4 @@ jobs/
 # mac stuff
 .DS_Store
 
+/Terraform
