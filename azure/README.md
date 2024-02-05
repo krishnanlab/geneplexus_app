@@ -54,7 +54,9 @@ docker run -it  --env-file azure/.env -p 8000:8000 -v $(pwd):/home/site/wwwroot 
 ```
 
 
-Browse http://localhost:8000    To log-in to the running container with bash: 
+Browse http://localhost:8000    
+
+To log-in to the running container with bash: 
 
 ```bash
 docker exec -it geneplexus_container /bin/bash
