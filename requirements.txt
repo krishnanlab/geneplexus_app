@@ -16,6 +16,7 @@ python-slugify~=6.1
 requests~=2.27
 
 # email notifier uses sendgrid api
+email-validator
 sendgrid==6.9.2
 
 # email-validator==1.1.3
