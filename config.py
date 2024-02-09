@@ -29,7 +29,7 @@ class BaseConfig(object):
     JOB_CONTAINER_FILE_MOUNT = os.getenv('JOB_CONTAINER_FILE_MOUNT', '' )
     
     JOB_URL = os.getenv('JOB_URL', '')  # the URL for the logic app trigger
-    CLEANUP_URL = os.geten('CLEANUP_URL', '') # URL for the logic app trigger to delete container instances when job is complete
+    CLEANUP_URL = os.getenv('CLEANUP_URL', '') # URL for the logic app trigger to delete container instances when job is complete
 
 
     # email config
