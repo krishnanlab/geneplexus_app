@@ -177,6 +177,19 @@ def job_json(job_config, app_config):
 
     return json.dumps(job_data)
 
+def cleanup_job(job_name, app_config):
+    jobname = path_friendly_jobname(jobname)
+    if jobname and app_config['CLEANUP_URL']:
+        request_json = json.dumps({ "JOBNAME" : jobname})
+        jsonHeaders = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        response = requests.post(app_config['CLEANUP_URL'],
+                            data=request_json,
+                            headers=jsonHeaders)
+    
+        return(response)
+    else:
+        return(False)
+
 
 def launch_job(genes, job_config, app_config):
     """prep job inputs for use with file paths, create JSON data, 
