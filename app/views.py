@@ -1,7 +1,6 @@
 from flask.helpers import make_response
 from slugify.slugify import slugify
-from mljob.jobs import path_friendly_jobname, launch_job, retrieve_job_folder,retrieve_results,job_info_list,valid_results_filename,results_file_dir,job_exists,retrieve_job_info,generate_job_id, job_status_codes, retrieve_job_outputs
-
+from mljob.jobs import path_friendly_jobname, launch_job, cleanup_job, retrieve_job_folder,retrieve_results,job_info_list,valid_results_filename,results_file_dir,job_exists,retrieve_job_info,generate_job_id, job_status_codes, retrieve_job_outputs
 
 from werkzeug.exceptions import InternalServerError
 from flask import request, render_template, jsonify, session, redirect, url_for, flash, send_file, Markup, abort,send_from_directory
@@ -117,7 +116,11 @@ def job(jobname):
 
 @app.route("/jobs/<jobname>", methods = ["POST"])
 def update_job(jobname):
-    """ update the job info and possibly notify of new jobs status.  Used by external job runner.  """
+    """ update the job info, initiate cleanup of job resources,and notify completed.  
+    Used by external job runner, assumes job runner has finished and be 'cleaned up' 
+
+    Note: there is no protection on this route in that anyone can post a job name and initiate an email and job cleanup. 
+    """
 
     request_data = request.get_json()
     job_status = request_data.get('status')
@@ -128,6 +131,15 @@ def update_job(jobname):
     job_config = retrieve_job_info(jobname, app.config)
     job_config['job_url'] =  url_for('job', jobname=jobname ,_external=True)
     
+    # clean up job resources
+    cleanup_response = cleanup_job(jobname,app.config )
+    if cleanup_response:
+        app.logger.info(f"job cleanup for job {jobname} requested with response: {cleanup_response}")
+    else:
+        app.logger.error(f"job cleanup request failed for job {jobname}")
+
+    # need a check if the cleanup actually happened.  
+
     notifyaddress = job_config.get('notifyaddress')
     if notifyaddress:    
         if job_status_codes.get(job_status ).lower() == "completed":
@@ -137,8 +149,7 @@ def update_job(jobname):
         app.logger.info(f"job completed email initiated to {job_config['notifyaddress']} with response {resp}")
         return  {'notification response': resp}, resp
     else:
-        return  {'notifiation response': 202}, 202
-
+        return  {'notification response': 202}, 202  
 
 
 @app.route("/jobs/<jobname>/results",methods=['GET'])
