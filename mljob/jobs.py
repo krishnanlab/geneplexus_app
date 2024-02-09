@@ -178,9 +178,9 @@ def job_json(job_config, app_config):
     return json.dumps(job_data)
 
 def cleanup_job(job_name, app_config):
-    jobname = path_friendly_jobname(jobname)
-    if jobname and app_config['CLEANUP_URL']:
-        request_json = json.dumps({ "JOBNAME" : jobname})
+    job_name = path_friendly_jobname(job_name)
+    if job_name and app_config['CLEANUP_URL']:
+        request_json = json.dumps({ "JOBNAME" : job_name})
         jsonHeaders = {'Content-type': 'application/json', 'Accept': 'text/plain'}
         response = requests.post(app_config['CLEANUP_URL'],
                             data=request_json,
