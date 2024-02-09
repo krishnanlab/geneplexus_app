@@ -134,7 +134,7 @@ def update_job(jobname):
     # clean up job resources
     cleanup_response = cleanup_job(jobname,app.config )
     if cleanup_response:
-        app.logger.info(f"job cleanup for job {jobname} requested with response: {response}")
+        app.logger.info(f"job cleanup for job {jobname} requested with response: {cleanup_response}")
     else:
         app.logger.error(f"job cleanup request failed for job {jobname}")
 
