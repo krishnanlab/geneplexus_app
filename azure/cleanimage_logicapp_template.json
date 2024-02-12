@@ -1,0 +1,108 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "rgname" : {
+            "type": "String",
+            "defaultValue" : "[resourceGroup().name]"
+        },
+        "location": {
+            "defaultValue": "[resourceGroup().location]",
+            "type": "String"
+        },
+        "workflow_name": {
+            "defaultValue": "geneplexus-runmodel",
+            "type": "String"
+        },
+        "connection_name" : {
+            "defaultValue": "acirunner",
+            "type": "String" 
+        },
+        "subid" :{
+            "defaultValue": "[subscription().subscriptionId]",
+            "type": "String"
+        },
+        "workflows_geneplexus_cleanimage_name": {
+            "defaultValue": "geneplexus-cleanimage",
+            "type": "String"
+        }
+    },
+
+    "variables": {
+        "container_group_name": "@{encodeURIComponent('geneplexus-',triggerBody()?['JOBNAME'])}",
+        "containerGroups___encodeURIComponent__geneplexus___triggerBody_____JOBNAME_____externalid": "[concat('/subscriptions/', parameters('subid'), '/resourceGroups/',parameters('rgname'),'/providers/Microsoft.ContainerInstance/containerGroups/')]" ,
+        "connections_geneplexusacirunner_externalid":  "[concat('/subscriptions/', parameters('subid'), '/resourceGroups/',parameters('rgname'),'/providers/Microsoft.Web/connections/',parameters('connection_name'))]"
+    },
+
+    "resources": [
+        {
+            "type": "Microsoft.Logic/workflows",
+            "apiVersion": "2017-07-01",
+            "name": "[parameters('workflows_geneplexus_cleanimage_name')]",
+            "location": "centralus",
+            "tags": {
+                "environment ": "dev",
+                "project": "geneplexus"
+            },
+            "properties": {
+                "state": "Enabled",
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "$connections": {
+                            "defaultValue": {},
+                            "type": "Object"
+                        }
+                    },
+                    "triggers": {
+                        "manual": {
+                            "type": "Request",
+                            "kind": "Http",
+                            "inputs": {
+                                "schema": {
+                                    "properties": {
+                                        "JOBNAME": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "actions": {
+                        "Delete_a_container_group": {
+                            "runAfter": {},
+                            "type": "ApiConnection",
+                            "inputs": {
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['aci']['connectionId']"
+                                    }
+                                },
+                                "method": "delete",
+                                "path": "[concat(variables('containerGroups___encodeURIComponent__geneplexus___triggerBody_____JOBNAME_____externalid'),variables('container_group_name'))]",
+                                "queries": {
+                                    "x-ms-api-version": "2019-12-01"
+                                }
+                            }
+                        }
+                    },
+                    "outputs": {}
+                },
+                "parameters": {
+                    "$connections": {
+                        "value": {
+                            "aci": {
+                                "connectionId": "[variables('connections_geneplexusacirunner_externalid')]",
+                                "connectionName": "geneplexusacirunner",
+                                "id": "[concat('/subscriptions/',subscription().subscriptionId,'/providers/Microsoft.Web/locations/',parameters('location'),'/managedApis/aci')]"                            
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
