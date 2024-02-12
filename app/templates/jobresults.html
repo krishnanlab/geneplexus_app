@@ -68,6 +68,7 @@
             <div class="col-3 float-right">
                 <a href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['jobname']}}.zip"
                     class="btn btn-success">
+                    <i class="fa fa-download"></i>
                     Download all results as zip file
                 </a>
                 <!-- <a href="#" data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="right"
@@ -174,7 +175,10 @@
                             <li>Known/Novel: Indicates whether the gene was part of the input gene list (therefore <strong>Known</strong>) or not (therefore <strong>Novel</strong>).</li>
                             </ul>
                         <p>Use the buttons on the top-right of the table to download the top predictions. Download the prediction probability of all the genes in the network as a tab-separated file at this link. 
-                            <a href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_probs_file']}}" class="btn btn-outline-success">Download All Predictions</a>
+                            <a href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_probs_file']}}" class="btn btn-outline-success">
+                                <i class="fas fa-download"></i>
+                                Download All Predictions
+                            </a>
                         </p>
 
                     </div>
@@ -188,7 +192,10 @@
                         <p>The table below shows network-based ML models trained on sets of genes associated with Gene Ontology Biological Process terms ranked by their similarity to the custom ML model trained on the input genes. See the Help page for more information.</p>
 
                         <p>Use the buttons on the top-right of the table to download the table of terms shown below. Download the similarity to all Biological Processes as a tab-separated file at this link.
-                            <a href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_GO_file']}}" class="btn btn-outline-success">Download All Similarities</a>
+                            <a href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_GO_file']}}" class="btn btn-outline-success">
+                                <i class="fas fa-download"></i>
+                                Download All Similarities
+                            </a>
                         </p>
                     </div>
                     {{job_output['df_GO'].head(500).reindex(columns=['Rank', 'ID', 'Name', 'Similarity']).to_html(index=False, classes='datatables table table-striped table-bordered, width: 100%;', table_id = "gotable")   |safe }}
@@ -201,7 +208,10 @@
                         <p>The table below shows network-based ML models trained on sets of genes associated with diseases in the DisGeNet database ranked by their similarity to the custom ML model trained on the input genes. See the Help page for more information.
 
                         <p>Use the buttons on the top-right of the table to download the table of terms shown below. Download the similarity to all Diseases as a tab-separated file at this link.
-                            <a href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_dis_file']}}" class="btn  btn-outline-success">Download All Similarities</a>
+                            <a href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_dis_file']}}" class="btn  btn-outline-success">
+                                <i class="fas fa-download"></i>
+                                    Download All Similarities
+                            </a>
                         </p>
                     </div>
                     {{job_output['df_dis'].head(500).reindex(columns=['Rank', 'ID', 'Name', 'Similarity']).to_html(index=False, classes='datatables table table-striped table-bordered', table_id = "distable")   |safe }}
@@ -220,9 +230,18 @@
                             </ul>
                                 
                             <p> The graph can be exported as a PNG or SVG file and the entire list of edges as a tab-separated file.
-                                <a id="download_as_png" class="btn btn-outline-success "  href="#">PNG</a>
-                                <a id="download_as_svg" class="btn btn-outline-success "  href="#">SVG</a>
-                                <a class="btn  btn-outline-success " " href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_edgelist_file']}}" >Edgelist</a>                               
+                                <a id="download_as_png" class="btn btn-outline-success "  href="#">
+                                    <i class="fas fa-download"></i>&nbsp;
+                                    PNG
+                                </a>
+                                <a id="download_as_svg" class="btn btn-outline-success "  href="#">
+                                    <i class="fas fa-download"></i>&nbsp;
+                                    SVG
+                                </a>
+                                <a class="btn  btn-outline-success " " href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_edgelist_file']}}" >
+                                    <i class="fas fa-download"></i>&nbsp;
+                                    Edgelist
+                                </a>                               
                             </p>
                         </div>
                     </div>
@@ -337,7 +356,10 @@
                             <br><br>
                             To download the current subset of the table use the Copy, Excel or PDF buttons on the top right of the table. At most the table will display the top 500 results. 
                             To download the validation data as a tab separated values file click the following button:
-                            <a href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_convert_out_subset_file']}}" class="btn btn-outline-success">Download Validation Data</a>
+                            <a href="/jobs/{{job_output['jobname']}}/results/download/{{job_output['df_convert_out_subset_file']}}" class="btn btn-outline-success">
+                                <i class="fas fa-download"></i>
+                                Download Input Genes                            
+                            </a>
                         </p>
                     </div>
 
