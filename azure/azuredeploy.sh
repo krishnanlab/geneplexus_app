@@ -271,9 +271,19 @@ az_create_group ()
     then
         echo "resource group $AZRG already exists"
     else
-        echo "creating resource group $AZRG"
+        echo "creating resource group $AZRG and adding a keyvault"
         az group  create --location $AZLOCATION --name $AZRG --tags $AZTAGS
+        az_create_keyvault
     fi
+}
+
+az_create_keyvault ()
+{
+    az keyvault create \
+    --name $PROJECT-keyvault \
+    --resource-group $AZRG \
+    --location $AZLOCATION \
+    --enabled-for-template-deployment true
 }
 
 #########
@@ -283,10 +293,14 @@ az_create_app_registry()
 {
     echo "MAKE A REGISTRY $AZCR in group $AZRG"
     az acr create --name $AZCR --resource-group $AZRG --sku Basic --admin-enabled true
+
     # we need a password from the AZCR for other steps
     # this uses the Azure CLI JMSEpath and TSV ouutput to extract the first of two passwords
     # note this has been replaced by used of stdin password below
     # acrpw=`az acr credential show --name $AZCR -g $AZRG  --output tsv  --query="passwords[0]|value"`
+    # store pw in the kevault with the name of the ACR.  Assumes the keyvault exists. 
+
+    az keyvault secret set --vault-name "${PROJECT}-keyvault" --name "$AZCR" --value "$(az acr credential show --name $AZCR -g $AZRG  --output tsv  --query="passwords[0]|value")"
 
     # always build, assume running to rebuild
     echo "using azure acr to build the files in this repository"
