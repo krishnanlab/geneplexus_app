@@ -1,0 +1,29 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "rgname" : {
+            "value": null
+        },
+        "subid" :{
+            "value": null
+        },
+        "location": {
+            "value": null
+        },
+        "connection_name" : {
+            "value":  null  
+        },
+        "workflows_geneplexus_cleanimage_name": {
+            "value": null
+        },
+        "containerGroups___encodeURIComponent__geneplexus___triggerBody_____JOBNAME_____externalid": {
+            "value": null
+        },
+        "connections_geneplexusacirunner_externalid": {
+            "value": null
+        }
+    }
+}
+
+
