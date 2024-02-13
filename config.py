@@ -26,6 +26,9 @@ class BaseConfig(object):
     CONTAINER_REGISTRY_PW = os.getenv('CONTAINER_REGISTRY_PW', '')
 
     # used in the JSON sent to the trigger, that are sent to container launcher
+
+    JOB_MEMORY_GB = os.getenv('JOB_MEMORY_GB', 16)
+    JOB_CPU_COUNT = os.getenv('JOB_CPU_COUNT', 2)
     JOB_CONTAINER_FILE_MOUNT = os.getenv('JOB_CONTAINER_FILE_MOUNT', '' )
     
     JOB_URL = os.getenv('JOB_URL', '')  # the URL for the logic app trigger

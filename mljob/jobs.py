@@ -168,8 +168,8 @@ def job_json(job_config, app_config):
     job_data = {
         "aciName": "geneplexus-backend",
         "location": "centralus",
-        "memoryInGB": 16,
-        "cpu": 2,
+        "memoryInGB": app_config['JOB_MEMORY_GB'],
+        "cpu": app_config['JOB_CPU_COUNT'],
         "volumeMount": volume_config,
         "image": docker_image_config,
         "envvars": envvars
