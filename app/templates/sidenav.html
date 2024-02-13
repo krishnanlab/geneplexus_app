@@ -97,16 +97,17 @@
 </div>
 
 <!-- Modal -->
+
 <div class="modal fade" id="geneModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
-          <form id="modal-form" method="POST", enctype="multipart/form-data" action="{{ url_for('validate') }}">
+          <form id="modal-form" method="POST", enctype="multipart/form-data" action="{{ url_for('validate') }}" onSubmit="" >
             <div class="modal-header">
               <h5 class="modal-title me-2" id="exampleModalLabel">Enter/Upload Gene List</h5>
               <a href="#" data-bs-toggle="popover" data-bs-trigger="manual" data-bs-placement="right" data-bs-html="true" 
                         data-bs-content="Upload a file of gene IDs or enter them manually; one gene per line in both cases. Genes can be identified using NCBI Entrez IDs, Gene symbols, or Ensembl gene/transcript/protein IDs.">
                             <i class="fas fa-question-circle"></i></a>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button id="gene_modal_close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div>
@@ -147,14 +148,17 @@
                     <button type="button" id="clearButton" class="btn btn-secondary p-2">Clear Input</button>
                 </div>
                 <div>
-                    <button type="button" class="btn btn-secondary p-2" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary p-2">Done</button>
+                    <button id="gene_modal_cancel" type="button" class="btn btn-secondary p-2" data-bs-dismiss="modal">Cancel</button>
+                    <button id="gene_modal_submit" type="submit" class="btn btn-primary p-2">
+                        Done
+                    </button>
                 </div>
             </div>
           </form>
       </div>
     </div>
   </div>
+
 
   {% block scripts %}
   <script type='text/javascript' src="{{url_for('static', filename='sidebar.js')}}" defer></script>

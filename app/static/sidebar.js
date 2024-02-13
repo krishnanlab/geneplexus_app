@@ -104,3 +104,17 @@ $('#runbatch').click(function(e) {
 function disableButton() {
     $('#runbatch').prop('disabled', true);
 }
+
+$('#modal-form').on( 'submit', function( event ) {
+    submitBtn = $(this).find( '#gene_modal_submit')
+    submitBtn.text('Validating... ');
+    submitBtn.append('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>');
+    
+    submitBtn.prop( "disabled", true );
+    $(this).find( '#gene_modal_cancel').prop("disabled", true);
+    $(this).find( '#clearButton').prop("disabled", true);
+    $(this).find( '#gene_modal_close').prop("disabled", true);
+    
+    
+  }
+)
